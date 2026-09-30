@@ -1,0 +1,366 @@
+{
+  "id": "adapter",
+  "category": "structural",
+  "order": 1,
+  "difficulty": 1,
+  "icon": "plug",
+  "name": { "en": "Adapter", "fa": "آداپتر (مبدل)" },
+  "aka": { "en": "Wrapper", "fa": "Wrapper (پوشاننده)" },
+  "tagline": {
+    "en": "Make an incompatible class fit the interface your code expects.",
+    "fa": "یک کلاس ناسازگار را با رابطی که کدتان انتظار دارد جور کنید."
+  },
+  "intent": {
+    "en": "Convert the interface of a class into another interface that clients expect, so that classes with incompatible interfaces can work together.",
+    "fa": "رابط یک کلاس را به رابط دیگری که کلاینت‌ها انتظارش را دارند تبدیل می‌کند تا کلاس‌هایی با رابط‌های ناسازگار بتوانند با هم کار کنند."
+  },
+  "problem": {
+    "en": "Your monitoring service works with `TemperatureSensor`, which reports `celsius()` as a `double`. Now purchasing has bought a batch of third-party probes whose driver offers `readTenthsFahrenheit()` returning an `int` and identifies devices by `serialNumber()`. You cannot change the vendor's code, and you don't want `if (isAcme) convert(…)` checks spreading through the alarm logic, the dashboard and the logger — each of them would have to learn about Fahrenheit and tenths of a degree.",
+    "fa": "سرویس پایش شما با `TemperatureSensor` کار می‌کند که دما را با `celsius()` و به شکل `double` گزارش می‌دهد. حالا واحد خرید تعدادی پراب از یک شرکت دیگر خریده که درایورش `readTenthsFahrenheit()` را با خروجی `int` ارائه می‌کند و دستگاه‌ها را با `serialNumber()` شناسایی می‌کند. نمی‌توانید کد فروشنده را تغییر دهید و نمی‌خواهید شرط‌هایی مثل `if (isAcme) convert(…)` در منطق هشدار، داشبورد و لاگر پخش شوند؛ آن‌وقت هر کدام باید با فارنهایت و دهم درجه سروکار داشته باشند."
+  },
+  "solution": {
+    "en": "Write an **adapter** class that implements the interface your code expects (`TemperatureSensor`) and wraps an instance of the incompatible class (`AcmeProbe`). Every target method is translated into calls on the wrapped object — renaming, converting units and types along the way. Client code keeps talking to `TemperatureSensor` and never learns that a vendor probe sits behind it; the conversion lives in exactly one place.",
+    "fa": "یک کلاس **adapter** بنویسید که رابط مورد انتظار کد شما (`TemperatureSensor`) را پیاده‌سازی کند و یک نمونه از کلاس ناسازگار (`AcmeProbe`) را در خود بپیچد. هر متد رابط هدف به فراخوانی‌هایی روی شیء پیچیده‌شده ترجمه می‌شود و در این مسیر نام‌ها، واحدها و نوع‌ها تبدیل می‌شوند. کد کلاینت همچنان با `TemperatureSensor` صحبت می‌کند و هرگز نمی‌فهمد پشت آن یک پراب از شرکت دیگری نشسته است؛ تبدیل فقط در یک جا انجام می‌شود."
+  },
+  "analogy": {
+    "en": "A travel plug adapter: your laptop charger has a European plug, the hotel wall has a UK socket. Neither the charger nor the wall changes — the small adapter in between makes one fit the other. A voltage converter goes one step further and also translates what flows through it, just like our adapter turns Fahrenheit into Celsius.",
+    "fa": "تبدیل برق سفری: شارژر لپ‌تاپ شما دوشاخهٔ اروپایی دارد و پریز دیوار هتل انگلیسی است. نه شارژر عوض می‌شود و نه دیوار؛ تبدیل کوچکی که بین آن‌ها قرار می‌گیرد یکی را با دیگری جور می‌کند. مبدل ولتاژ یک قدم جلوتر می‌رود و چیزی را هم که از آن عبور می‌کند تبدیل می‌کند؛ درست مثل adapter ما که فارنهایت را به سلسیوس تبدیل می‌کند."
+  },
+  "participants": [
+    {
+      "name": "Target",
+      "role": {
+        "en": "The interface the client code is written against (`TemperatureSensor`).",
+        "fa": "رابطی که کد کلاینت بر اساس آن نوشته شده است (`TemperatureSensor`)."
+      }
+    },
+    {
+      "name": "Adaptee",
+      "role": {
+        "en": "An existing class with useful behavior but an incompatible interface — often third-party or legacy code you cannot change (`AcmeProbe`).",
+        "fa": "کلاسی موجود با رفتاری مفید اما رابطی ناسازگار؛ اغلب کد شرکت‌های دیگر یا کد قدیمی که نمی‌توانید تغییرش دهید (`AcmeProbe`)."
+      }
+    },
+    {
+      "name": "Adapter",
+      "role": {
+        "en": "Implements Target and holds an Adaptee; translates every call — names, units, types, error handling (`AcmeProbeAdapter`).",
+        "fa": "Target را پیاده‌سازی می‌کند و یک Adaptee را نگه می‌دارد؛ هر فراخوانی را ترجمه می‌کند: نام‌ها، واحدها، نوع‌ها و مدیریت خطا (`AcmeProbeAdapter`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Works only with Target (`checkOverheat()`), so native and adapted objects are interchangeable.",
+        "fa": "فقط با Target کار می‌کند (`checkOverheat()`)، پس اشیای بومی و اشیای تطبیق‌داده‌شده به‌جای هم قابل استفاده‌اند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Monitor", "kind": "client", "col": 0, "row": 0, "members": ["+ checkOverheat(sensors)"] },
+      { "id": "TemperatureSensor", "kind": "interface", "col": 2, "row": 0, "members": ["+ name() : string", "+ celsius() : double"] },
+      { "id": "Vendor code", "kind": "note", "col": 3, "row": 0, "members": ["third-party driver", "cannot be modified", "reports tenths of °F"] },
+      { "id": "BoardSensor", "kind": "concrete", "col": 1, "row": 1, "members": ["+ celsius() : double"] },
+      { "id": "AcmeProbeAdapter", "kind": "concrete", "col": 2, "row": 1, "members": ["+ name() : string", "+ celsius() : double", "- probe_ : AcmeProbe"] },
+      { "id": "AcmeProbe", "kind": "concrete", "col": 3, "row": 1, "members": ["+ serialNumber() : int", "+ readTenthsFahrenheit()"] }
+    ],
+    "edges": [
+      { "from": "Monitor", "to": "TemperatureSensor", "type": "uses", "label": "celsius()" },
+      { "from": "BoardSensor", "to": "TemperatureSensor", "type": "implements" },
+      { "from": "AcmeProbeAdapter", "to": "TemperatureSensor", "type": "implements" },
+      { "from": "AcmeProbeAdapter", "to": "AcmeProbe", "type": "owns", "label": "wraps" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Identify the Target interface your client code depends on and the Adaptee whose interface does not match.",
+      "Create an adapter class that publicly implements the Target interface.",
+      "Give the adapter an Adaptee member — by value, as `std::unique_ptr`, or as a reference, depending on who owns it.",
+      "Implement each Target method by translating the call: rename, convert units and types, map error codes to exceptions.",
+      "Hand adapter objects to the client wherever a Target is expected."
+    ],
+    "fa": [
+      "رابط Target را که کد کلاینت به آن وابسته است، و Adaptee را که رابطش جور نیست، مشخص کنید.",
+      "یک کلاس adapter بسازید که رابط Target را به‌صورت public پیاده‌سازی کند.",
+      "به adapter یک عضو از نوع Adaptee بدهید؛ by value، با `std::unique_ptr` یا به‌صورت مرجع، بسته به این‌که مالک آن کیست.",
+      "هر متد Target را با ترجمهٔ فراخوانی پیاده‌سازی کنید: تغییر نام، تبدیل واحدها و نوع‌ها، و نگاشت کدهای خطا به exception.",
+      "هر جا که کلاینت یک Target انتظار دارد، شیء adapter را به آن بدهید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You want to use an existing class — third-party, legacy, generated — but its interface doesn't match the one your code expects.",
+      "You integrate libraries from several vendors and want all of them behind one interface of your own.",
+      "You want to shield your code from an unstable external API, so its changes are absorbed by one class.",
+      "You are wrapping a C library in an idiomatic C++ interface (RAII, exceptions, `std::string`)."
+    ],
+    "fa": [
+      "می‌خواهید از یک کلاس موجود (کتابخانهٔ شرکت دیگر، کد قدیمی یا کد تولیدشده) استفاده کنید، اما رابطش با رابط مورد انتظار کد شما جور نیست.",
+      "کتابخانه‌های چند فروشنده را یکپارچه می‌کنید و می‌خواهید همه پشت یک رابط واحد متعلق به خودتان قرار بگیرند.",
+      "می‌خواهید کدتان را از یک API بیرونی ناپایدار جدا کنید تا تغییرات آن فقط در یک کلاس جذب شود.",
+      "یک کتابخانهٔ C را در یک رابط C++ اصطلاحی (idiomatic) می‌پیچید؛ با RAII، exception و `std::string`."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Reuses existing code without modifying it — often the only option for third-party code.",
+      "Single Responsibility: the conversion logic lives in one class instead of being scattered through clients.",
+      "Open/Closed: new adaptees are supported by adding adapters, not by editing clients.",
+      "Vendor code becomes easy to replace — or to fake in tests."
+    ],
+    "fa": [
+      "کد موجود را بدون تغییر دادنش دوباره به کار می‌گیرد؛ برای کد شرکت‌های دیگر اغلب تنها راه ممکن است.",
+      "اصل تک‌مسئولیتی: منطق تبدیل به‌جای پخش شدن در کلاینت‌ها، در یک کلاس قرار می‌گیرد.",
+      "اصل باز/بسته: پشتیبانی از Adapteeهای جدید با اضافه کردن adapter انجام می‌شود، نه با ویرایش کلاینت‌ها.",
+      "جایگزین کردن کد فروشنده، یا شبیه‌سازی آن در تست‌ها، آسان می‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "One more class, and one more indirection on every call.",
+      "It can hide a semantic mismatch: if the adaptee cannot really deliver what the target promises (units, precision, thread safety), the adapter only papers over it.",
+      "Adapting a large API class by class can become a maintenance burden of its own."
+    ],
+    "fa": [
+      "یک کلاس بیشتر و یک لایهٔ غیرمستقیم بیشتر در هر فراخوانی.",
+      "ممکن است یک ناسازگاری معنایی را پنهان کند: اگر Adaptee واقعاً نتواند چیزی را که Target وعده می‌دهد فراهم کند (واحد، دقت، thread-safety)، adapter فقط روی مشکل را می‌پوشاند.",
+      "تطبیق دادن یک API بزرگ، کلاس‌به‌کلاس، می‌تواند خودش به باری برای نگهداری تبدیل شود."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Prefer the **object adapter** (composition: the adaptee is a member) over the **class adapter** (`class Adapter : public Target, private Adaptee`). Composition also works with `final` classes and can wrap any existing instance.",
+      "Make ownership explicit: hold the adaptee by value or `std::unique_ptr` if the adapter owns it, and by reference only if it is guaranteed to outlive the adapter.",
+      "Keep adapters thin: translate names, units, types and errors, but put no business logic in them.",
+      "Translate error conventions at the boundary: turn C-style return codes or `errno` into exceptions or a `std::expected` (C++23).",
+      "When there is no virtual interface to implement, a lambda or `std::function` can adapt one function signature to another — the lightest adapter of all."
+    ],
+    "fa": [
+      "**object adapter** (ترکیب: Adaptee یک عضو است) را به **class adapter** (`class Adapter : public Target, private Adaptee`) ترجیح دهید. ترکیب با کلاس‌های `final` هم کار می‌کند و می‌تواند هر نمونهٔ موجودی را بپیچد.",
+      "مالکیت را صریح کنید: اگر adapter مالک Adaptee است، آن را by value یا با `std::unique_ptr` نگه دارید؛ و فقط وقتی به‌صورت مرجع نگهش دارید که تضمین شده باشد عمرش از adapter بیشتر است.",
+      "adapterها را نازک نگه دارید: نام‌ها، واحدها، نوع‌ها و خطاها را ترجمه کنید، اما هیچ منطق کسب‌وکاری در آن‌ها نگذارید.",
+      "قراردادهای خطا را در همین مرز ترجمه کنید: کدهای بازگشتی به سبک C یا `errno` را به exception یا `std::expected` (در C++23) تبدیل کنید.",
+      "وقتی رابطی با توابع virtual برای پیاده‌سازی وجود ندارد، یک lambda یا `std::function` می‌تواند امضای یک تابع را با امضای دیگری تطبیق دهد؛ سبک‌ترین adapter ممکن."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::stack`, `std::queue` and `std::priority_queue` are officially **container adaptors**: they present a stack or queue interface on top of `std::deque` or `std::vector`.",
+      "Iterator adaptors such as `std::reverse_iterator` and `std::back_insert_iterator`, and C++20 range adaptors like `std::views::reverse`.",
+      "C++ wrappers around C libraries — e.g. an RAII class over SQLite's `sqlite3_*` functions — adapt a C API to idiomatic C++."
+    ],
+    "fa": [
+      "`std::stack`، `std::queue` و `std::priority_queue` به‌طور رسمی **container adaptor** نامیده می‌شوند: رابط پشته یا صف را روی `std::deque` یا `std::vector` ارائه می‌کنند.",
+      "iterator adaptorهایی مثل `std::reverse_iterator` و `std::back_insert_iterator`، و range adaptorهای C++20 مثل `std::views::reverse`.",
+      "wrapperهای C++ روی کتابخانه‌های C (مثلاً یک کلاس RAII روی توابع `sqlite3_*` در SQLite) یک API زبان C را با C++ اصطلاحی تطبیق می‌دهند."
+    ]
+  },
+  "related": [
+    {
+      "id": "bridge",
+      "note": {
+        "en": "Bridge is designed up front so abstraction and implementation can vary independently; Adapter is applied afterwards to make existing, incompatible classes work together.",
+        "fa": "Bridge از ابتدا طراحی می‌شود تا انتزاع و پیاده‌سازی مستقل از هم تغییر کنند؛ Adapter بعداً به کار می‌رود تا کلاس‌های موجود و ناسازگار با هم کار کنند."
+      }
+    },
+    {
+      "id": "decorator",
+      "note": {
+        "en": "Decorator keeps the interface and adds behavior; Adapter changes the interface and keeps the behavior.",
+        "fa": "Decorator رابط را حفظ می‌کند و رفتار اضافه می‌کند؛ Adapter رابط را عوض می‌کند و رفتار را حفظ می‌کند."
+      }
+    },
+    {
+      "id": "facade",
+      "note": {
+        "en": "Facade defines a new, simpler interface for a whole subsystem; Adapter makes one existing class fit an interface that already exists.",
+        "fa": "Facade یک رابط جدید و ساده‌تر برای کل یک زیرسیستم تعریف می‌کند؛ Adapter یک کلاس موجود را با رابطی که از قبل وجود دارد جور می‌کند."
+      }
+    },
+    {
+      "id": "proxy",
+      "note": {
+        "en": "Proxy offers exactly the same interface as the object it stands in for; Adapter offers a different one.",
+        "fa": "Proxy دقیقاً همان رابط شیئی را ارائه می‌کند که جانشینش شده است؛ Adapter رابط متفاوتی ارائه می‌کند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A vendor's temperature probe", "fa": "پراب دمای یک شرکت دیگر" },
+    "description": {
+      "en": "`checkOverheat()` only knows `TemperatureSensor`. `AcmeProbeAdapter` makes the vendor's `AcmeProbe` look like one: it turns `serialNumber()` into `name()` and converts tenths of a degree Fahrenheit into Celsius. Our own `BoardSensor` and the adapted probes sit side by side in the same vector.",
+      "fa": "`checkOverheat()` فقط `TemperatureSensor` را می‌شناسد. `AcmeProbeAdapter` کاری می‌کند که `AcmeProbe` آن شرکت هم شبیه یک `TemperatureSensor` به نظر برسد: `serialNumber()` را به `name()` تبدیل می‌کند و دهم درجهٔ فارنهایت را به سلسیوس. `BoardSensor` خود ما و پراب‌های تطبیق‌داده‌شده کنار هم در یک vector قرار می‌گیرند."
+    },
+    "output": "cpu-board: 41.5 C\nacme-7: 70.0 C  OVERHEAT\nacme-8: 38.0 C",
+    "highlights": [
+      {
+        "lines": [9, 15],
+        "note": {
+          "en": "The Target: the interface all of our monitoring code is written against.",
+          "fa": "Target: رابطی که همهٔ کد پایش ما بر اساس آن نوشته شده است."
+        }
+      },
+      {
+        "lines": [24, 34],
+        "note": {
+          "en": "The Adaptee: useful, but with other names (`serialNumber()`), another unit (°F) and another type (`int` tenths). We may not change it.",
+          "fa": "Adaptee: مفید است، اما با نام‌های دیگر (`serialNumber()`)، واحد دیگر (°F) و نوع دیگر (دهم درجه به شکل `int`). اجازهٔ تغییرش را نداریم."
+        }
+      },
+      {
+        "lines": [36, 51],
+        "note": {
+          "en": "The Adapter is-a `TemperatureSensor` and has-an `AcmeProbe`. Each override translates one call — renaming in `name()`, unit conversion in `celsius()`.",
+          "fa": "Adapter یک `TemperatureSensor` است و یک `AcmeProbe` دارد. هر override یک فراخوانی را ترجمه می‌کند: تغییر نام در `name()` و تبدیل واحد در `celsius()`."
+        }
+      },
+      {
+        "lines": [53, 62],
+        "note": {
+          "en": "The client is unchanged and unaware: it only calls `name()` and `celsius()` through the Target interface.",
+          "fa": "کلاینت نه تغییری کرده و نه خبر دارد: فقط `name()` و `celsius()` را از طریق رابط Target صدا می‌زند."
+        }
+      },
+      {
+        "lines": [64, 70],
+        "note": {
+          "en": "Native and adapted sensors live in the same `std::vector<std::unique_ptr<TemperatureSensor>>`.",
+          "fa": "حسگرهای بومی و تطبیق‌داده‌شده در یک `std::vector<std::unique_ptr<TemperatureSensor>>` کنار هم زندگی می‌کنند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Which problem does the Adapter pattern solve?",
+        "fa": "الگوی آداپتر کدام مشکل را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "An existing class does useful work, but its interface does not match the one the client expects",
+          "A class must be instantiated at most once",
+          "A complex subsystem needs one simplified entry point",
+          "Behavior must be added to an object at run time without changing its interface"
+        ],
+        "fa": [
+          "یک کلاس موجود کار مفیدی انجام می‌دهد، اما رابطش با رابط مورد انتظار کلاینت جور نیست",
+          "از یک کلاس باید حداکثر یک نمونه ساخته شود",
+          "یک زیرسیستم پیچیده به یک نقطهٔ ورود سادهٔ واحد نیاز دارد",
+          "باید در زمان اجرا به یک شیء رفتار اضافه کرد، بدون تغییر رابط آن"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "An adapter converts one interface into another so existing code can be reused unchanged. The other options describe Singleton, Facade and Decorator.",
+        "fa": "adapter یک رابط را به رابط دیگری تبدیل می‌کند تا کد موجود بدون تغییر دوباره به کار گرفته شود. گزینه‌های دیگر به ترتیب Singleton، Facade و Decorator را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Which declaration is a correct **class adapter** (the inheritance-based variant) for `AcmeProbe`?",
+        "fa": "کدام تعریف یک **class adapter** درست (نسخهٔ مبتنی بر ارث‌بری) برای `AcmeProbe` است؟"
+      },
+      "options": {
+        "en": [
+          "`class AcmeProbeAdapter : public AcmeProbe { /* add celsius() */ };`",
+          "`class AcmeProbeAdapter { AcmeProbe probe_; /* no base class */ };`",
+          "`class AcmeProbeAdapter : private TemperatureSensor, public AcmeProbe { … };`",
+          "`class AcmeProbeAdapter : public TemperatureSensor, private AcmeProbe { … };`"
+        ],
+        "fa": [
+          "`class AcmeProbeAdapter : public AcmeProbe { /* add celsius() */ };`",
+          "`class AcmeProbeAdapter { AcmeProbe probe_; /* no base class */ };`",
+          "`class AcmeProbeAdapter : private TemperatureSensor, public AcmeProbe { … };`",
+          "`class AcmeProbeAdapter : public TemperatureSensor, private AcmeProbe { … };`"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Clients must see a `TemperatureSensor`, so the Target is inherited publicly; the Adaptee is only an implementation detail, so it is inherited privately and clients cannot call `readTenthsFahrenheit()` on the adapter. Option A is not a `TemperatureSensor`, B has no Target at all, and C hides exactly the wrong base. The example uses the more flexible object adapter instead.",
+        "fa": "کلاینت‌ها باید یک `TemperatureSensor` ببینند، پس Target به‌صورت public ارث‌بری می‌شود؛ Adaptee فقط جزئی از پیاده‌سازی است، پس به‌صورت private ارث‌بری می‌شود و کلاینت‌ها نمی‌توانند `readTenthsFahrenheit()` را روی adapter صدا بزنند. گزینهٔ اول یک `TemperatureSensor` نیست، گزینهٔ دوم اصلاً Target ندارد و گزینهٔ سوم دقیقاً کلاس پایهٔ اشتباه را پنهان می‌کند. مثال این درس به‌جای آن از object adapter که انعطاف بیشتری دارد استفاده می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "In which situation is writing an adapter the wrong choice?",
+        "fa": "در کدام وضعیت نوشتن adapter انتخاب اشتباهی است؟"
+      },
+      "options": {
+        "en": [
+          "A third-party class has the right functionality but different method names and units",
+          "Several vendor SDKs must be hidden behind one interface of your own",
+          "You own both classes and could simply make one of them implement the interface directly",
+          "A C library has to be used from idiomatic C++ code"
+        ],
+        "fa": [
+          "یک کلاس از شرکت دیگر عملکرد درستی دارد، اما نام متدها و واحدهایش فرق می‌کند",
+          "چند SDK از فروشنده‌های مختلف باید پشت یک رابط واحد متعلق به خودتان پنهان شوند",
+          "مالک هر دو کلاس هستید و می‌توانید به‌سادگی یکی از آن‌ها را وادار کنید رابط را مستقیماً پیاده‌سازی کند",
+          "یک کتابخانهٔ C باید از داخل کد C++ اصطلاحی استفاده شود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Adapter is for code you cannot or should not change. If you own the class, implementing the target interface directly avoids an extra class and an extra hop on every call. The other three are textbook uses of the pattern.",
+        "fa": "adapter برای کدی است که نمی‌توانید یا نباید تغییرش دهید. اگر مالک کلاس هستید، پیاده‌سازی مستقیم رابط هدف از یک کلاس اضافه و یک لایهٔ غیرمستقیم در هر فراخوانی جلوگیری می‌کند. سه گزینهٔ دیگر کاربردهای کتابی این الگو هستند."
+      }
+    },
+    {
+      "question": {
+        "en": "How does Adapter differ from Decorator?",
+        "fa": "آداپتر چه تفاوتی با دکوراتور دارد؟"
+      },
+      "options": {
+        "en": [
+          "Adapter adds new responsibilities to an object; Decorator converts between two interfaces",
+          "Adapter changes the interface of the wrapped object; Decorator keeps the interface and adds behavior",
+          "Decorator can only wrap third-party classes, while Adapter can only wrap your own",
+          "There is no difference; both are simply called wrappers"
+        ],
+        "fa": [
+          "آداپتر به یک شیء مسئولیت‌های جدید اضافه می‌کند؛ دکوراتور بین دو رابط تبدیل انجام می‌دهد",
+          "آداپتر رابط شیء پیچیده‌شده را تغییر می‌دهد؛ دکوراتور رابط را حفظ می‌کند و رفتار اضافه می‌کند",
+          "دکوراتور فقط کلاس‌های شرکت‌های دیگر را می‌پیچد، در حالی که آداپتر فقط کلاس‌های خودتان را",
+          "تفاوتی ندارند؛ به هر دو به‌سادگی wrapper می‌گویند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Both wrap another object, but with opposite goals. Because a decorator keeps the interface, decorators can be stacked on top of each other; an adapter exists precisely because the interfaces differ. Option A swaps the two definitions.",
+        "fa": "هر دو شیء دیگری را می‌پیچند، اما هدفشان برعکس است. چون دکوراتور رابط را حفظ می‌کند، می‌توان چند دکوراتور را روی هم قرار داد؛ آداپتر دقیقاً به این دلیل وجود دارد که رابط‌ها با هم فرق دارند. گزینهٔ اول جای این دو تعریف را عوض کرده است."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Your checkout code calls `PaymentGateway::charge(amountCents)`, but the new provider's SDK — which you cannot modify — exposes `submitTransaction(TxRequest)` and reports failures as numeric codes.",
+      "fa": "کد پرداخت شما `PaymentGateway::charge(amountCents)` را صدا می‌زند، اما SDK ارائه‌دهندهٔ جدید (که نمی‌توانید تغییرش دهید) متد `submitTransaction(TxRequest)` را ارائه می‌کند و خطاها را به شکل کدهای عددی گزارش می‌دهد."
+    },
+    {
+      "en": "An old reporting module produces its data as XML, while your new analytics library only accepts objects with a `toJson()` method; you want to feed one into the other without rewriting either.",
+      "fa": "یک ماژول گزارش‌گیری قدیمی داده‌هایش را به شکل XML تولید می‌کند، در حالی که کتابخانهٔ تحلیل جدید شما فقط اشیایی را می‌پذیرد که متد `toJson()` دارند؛ می‌خواهید خروجی اولی را به دومی بدهید، بدون این‌که هیچ‌کدام را بازنویسی کنید."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Logging into syslog", "fa": "لاگ گرفتن در syslog" },
+    "task": {
+      "en": "Operations wants every log line in syslog format, but `backupDatabase()` must keep using the app's `Logger` interface. Write `SyslogAdapter`: a `Logger` that owns a `SyslogClient`, maps each `Level` to a syslog severity (Info → 6, Warning → 4, Error → 3) and forwards the message to `send()`. Then use it in `main()` with the app name `backupd`.",
+      "fa": "تیم عملیات می‌خواهد همهٔ خطوط لاگ در قالب syslog باشند، اما `backupDatabase()` باید همچنان از رابط `Logger` برنامه استفاده کند. `SyslogAdapter` را بنویسید: یک `Logger` که مالک یک `SyslogClient` است، هر `Level` را به یک سطح syslog نگاشت می‌کند (Info → 6، Warning → 4، Error → 3) و پیام را به `send()` می‌فرستد. بعد در `main()` با نام برنامهٔ `backupd` از آن استفاده کنید."
+    },
+    "hints": {
+      "en": [
+        "The adapter is-a `Logger` and has-a `SyslogClient`: `class SyslogAdapter : public Logger { … SyslogClient client_; };`.",
+        "Take the client in an explicit constructor: `explicit SyslogAdapter(SyslogClient client) : client_(std::move(client)) {}`.",
+        "In `log()`, pick the severity with a `switch` on `level`, then call `client_.send(severity, std::string(message));` — `send()` wants a `const std::string&`, not a `std::string_view`."
+      ],
+      "fa": [
+        "adapter یک `Logger` است و یک `SyslogClient` دارد: `class SyslogAdapter : public Logger { … SyslogClient client_; };`.",
+        "client را در یک سازندهٔ explicit بگیرید: `explicit SyslogAdapter(SyslogClient client) : client_(std::move(client)) {}`.",
+        "در `log()` سطح را با یک `switch` روی `level` انتخاب کنید و بعد `client_.send(severity, std::string(message));` را صدا بزنید؛ `send()` یک `const std::string&` می‌خواهد، نه `std::string_view`."
+      ]
+    },
+    "expectedOutput": "<6> backupd: backup started\n<4> backupd: disk 91% full\n<3> backupd: backup failed: no space left"
+  }
+}

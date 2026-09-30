@@ -1,0 +1,376 @@
+{
+  "id": "object-pool",
+  "category": "idioms",
+  "order": 7,
+  "difficulty": 2,
+  "icon": "recycle",
+  "name": { "en": "Object Pool", "fa": "آبجکت پول (استخر اشیا)" },
+  "aka": {
+    "en": "Resource pool (connection pool, thread pool, buffer pool)",
+    "fa": "Resource Pool (مثل connection pool، thread pool و buffer pool)"
+  },
+  "tagline": {
+    "en": "Don't rebuild expensive objects — borrow one and give it back.",
+    "fa": "اشیای پرهزینه را از نو نسازید؛ یکی را قرض بگیرید و پس بدهید."
+  },
+  "intent": {
+    "en": "Keep a set of initialized, reusable objects and lend them out on request, so the cost of creating and destroying expensive objects is paid once instead of on every use.",
+    "fa": "مجموعه‌ای از اشیای آماده و قابل‌استفادهٔ مجدد را نگه می‌دارد و هنگام درخواست آن‌ها را قرض می‌دهد، تا هزینهٔ ساخت و نابودی اشیای پرهزینه فقط یک بار پرداخت شود نه در هر بار استفاده."
+  },
+  "problem": {
+    "en": "A web backend opens a database connection for every request. Each connection needs a TCP connect, a TLS handshake and authentication — often more time than the query itself. Under load the server spends most of its time connecting and disconnecting, and the database hits its connection limit. Threads, GPU buffers and large memory blocks have the same issue: creating them is slow, and creating too many at once exhausts the system.",
+    "fa": "یک بک‌اند وب برای هر درخواست یک اتصال پایگاه‌داده باز می‌کند. هر اتصال به برقراری اتصال TCP، یک handshake برای TLS و احراز هویت نیاز دارد که اغلب از خود کوئری بیشتر طول می‌کشد. زیر بار، سرور بیشتر وقتش را صرف وصل و قطع شدن می‌کند و پایگاه‌داده به سقف تعداد اتصال‌هایش می‌رسد. threadها، بافرهای GPU و بلوک‌های بزرگ حافظه هم همین مشکل را دارند: ساختنشان کند است و ساختن تعداد زیادی از آن‌ها به‌طور هم‌زمان منابع سیستم را تمام می‌کند."
+  },
+  "solution": {
+    "en": "Create a **pool** that owns the expensive objects. `acquire()` hands out an idle object if there is one, creates a new one only while under a size limit, and otherwise fails (or waits). When the client is done, the object goes back to the pool — reset to a clean state — instead of being destroyed. In C++ the return should be automatic: `acquire()` returns a `std::unique_ptr` with a **custom deleter** that calls `pool.release()` instead of `delete`. The handle is RAII: whether the scope ends normally or through an exception, the object always finds its way home.",
+    "fa": "یک **استخر (pool)** بسازید که مالک اشیای پرهزینه است. `acquire()` اگر شیء بیکاری موجود باشد آن را تحویل می‌دهد، فقط تا وقتی زیر سقف اندازه است شیء جدید می‌سازد و در غیر این صورت شکست می‌خورد (یا منتظر می‌ماند). وقتی کار کلاینت تمام شد، شیء به‌جای نابود شدن، پس از بازنشانی به یک وضعیت تمیز به استخر برمی‌گردد. در C++ این بازگشت باید خودکار باشد: `acquire()` یک `std::unique_ptr` با **deleter سفارشی** برمی‌گرداند که به‌جای `delete`، تابع `pool.release()` را صدا می‌زند. این handle از نوع RAII است: چه scope به‌طور عادی تمام شود و چه با یک استثنا، شیء همیشه راه خانه را پیدا می‌کند."
+  },
+  "analogy": {
+    "en": "A bike-sharing station. Building a new bike for every trip would be absurd, so the city keeps a fixed number of bikes in docks. You unlock one, ride, and dock it again; the next rider gets the same bike. If every dock is empty you wait or walk — and each bike gets a quick check before it goes back into service.",
+    "fa": "ایستگاه دوچرخهٔ اشتراکی. ساختن یک دوچرخهٔ نو برای هر سفر بی‌معنی است، پس شهر تعداد ثابتی دوچرخه را در جایگاه‌ها نگه می‌دارد. یکی را باز می‌کنید، رکاب می‌زنید و دوباره در جایگاه می‌گذارید؛ نفر بعدی همان دوچرخه را برمی‌دارد. اگر همهٔ جایگاه‌ها خالی باشند، یا منتظر می‌مانید یا پیاده می‌روید؛ و هر دوچرخه قبل از برگشتن به چرخهٔ استفاده یک بازبینی سریع می‌شود."
+  },
+  "participants": [
+    {
+      "name": "Pool (ConnectionPool)",
+      "role": {
+        "en": "Owns every reusable object, keeps the list of idle ones, enforces the size limit and hands out handles.",
+        "fa": "مالک همهٔ اشیای قابل‌استفادهٔ مجدد است، فهرست اشیای بیکار را نگه می‌دارد، سقف اندازه را اعمال می‌کند و handle تحویل می‌دهد."
+      }
+    },
+    {
+      "name": "Reusable (Connection)",
+      "role": {
+        "en": "The expensive object. It must be resettable to a clean state between users.",
+        "fa": "شیء پرهزینه. باید بتوان آن را بین دو کاربر به یک وضعیت تمیز بازنشانی کرد."
+      }
+    },
+    {
+      "name": "Handle (unique_ptr + deleter)",
+      "role": {
+        "en": "A `std::unique_ptr` whose custom deleter returns the object to the pool instead of deleting it; gives the client exclusive, RAII-managed access.",
+        "fa": "یک `std::unique_ptr` که deleter سفارشی‌اش به‌جای delete کردن، شیء را به استخر برمی‌گرداند؛ به کلاینت دسترسی انحصاری و مدیریت‌شده با RAII می‌دهد."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Acquires a handle, uses the object, and simply lets the handle go out of scope.",
+        "fa": "یک handle می‌گیرد، از شیء استفاده می‌کند و فقط اجازه می‌دهد handle از scope خارج شود."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "ConnectionPool", "kind": "concrete", "col": 2, "row": 0, "members": ["+ acquire() : Handle", "- release(c)", "- all_ : vector<unique_ptr>", "- idle_ : vector<Connection*>"] },
+      { "id": "Handle", "kind": "concrete", "col": 1, "row": 1, "members": ["- deleter : ReturnToPool", "+ operator->() : Connection*"] },
+      { "id": "Connection", "kind": "concrete", "col": 2, "row": 1, "members": ["+ query(sql)", "+ reset()"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "ConnectionPool", "type": "uses", "label": "acquire()" },
+      { "from": "Client", "to": "Handle", "type": "owns", "label": "scope-bound" },
+      { "from": "ConnectionPool", "to": "Connection", "type": "owns", "label": "all_" },
+      { "from": "Handle", "to": "Connection", "type": "refs", "label": "borrowed" },
+      { "from": "Handle", "to": "ConnectionPool", "type": "uses", "label": "release()" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Make sure the object can be reset to a clean state (`reset()`), so one user's leftovers never reach the next.",
+      "Write the pool: it owns all objects (`std::vector<std::unique_ptr<T>>`) and keeps a list of idle ones.",
+      "Implement `acquire()`: take an idle object if available, otherwise create one while under the limit, otherwise throw or wait.",
+      "Define a deleter whose `operator()` calls the pool's private `release()`, and return `std::unique_ptr<T, Deleter>` from `acquire()`.",
+      "In `release()`, reset the object and push it back onto the idle list — without ever throwing.",
+      "Make the pool non-copyable and make sure it outlives every handle it hands out."
+    ],
+    "fa": [
+      "مطمئن شوید شیء را می‌توان به وضعیت تمیز بازنشانی کرد (`reset()`) تا باقی‌ماندهٔ کار یک کاربر هرگز به کاربر بعدی نرسد.",
+      "استخر را بنویسید: مالک همهٔ اشیاست (`std::vector<std::unique_ptr<T>>`) و فهرستی از اشیای بیکار نگه می‌دارد.",
+      "`acquire()` را پیاده کنید: اگر شیء بیکاری هست آن را بدهید، وگرنه تا وقتی زیر سقف هستید یکی بسازید، وگرنه استثنا پرتاب کنید یا منتظر بمانید.",
+      "یک deleter تعریف کنید که `operator()` آن تابع خصوصی `release()` استخر را صدا بزند و از `acquire()` یک `std::unique_ptr<T, Deleter>` برگردانید.",
+      "در `release()` شیء را بازنشانی کنید و به فهرست بیکارها برگردانید؛ بدون این‌که هرگز استثنا پرتاب شود.",
+      "استخر را غیرقابل‌کپی کنید و مطمئن شوید از همهٔ handleهایی که تحویل داده بیشتر عمر می‌کند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Objects are expensive to create or destroy (connections, threads, large buffers, compiled templates) and are needed often but briefly.",
+      "The number of simultaneous objects must be capped (database connection limits, GPU memory, licences).",
+      "Allocation latency or fragmentation matters, e.g. a game loop or real-time audio that must not allocate every frame.",
+      "Profiling shows that construction and destruction dominate a hot path."
+    ],
+    "fa": [
+      "ساخت یا نابودی اشیا پرهزینه است (اتصال‌ها، threadها، بافرهای بزرگ، قالب‌های کامپایل‌شده) و مرتب اما برای مدت کوتاه به آن‌ها نیاز است.",
+      "تعداد اشیای هم‌زمان باید محدود شود (سقف اتصال پایگاه‌داده، حافظهٔ GPU، تعداد لایسنس‌ها).",
+      "تأخیر تخصیص حافظه یا تکه‌تکه شدن آن مهم است؛ مثلاً حلقهٔ بازی یا پردازش صدای بلادرنگ که نباید در هر فریم حافظه تخصیص دهد.",
+      "پروفایل کردن نشان می‌دهد که ساخت و نابودی اشیا بخش اصلی هزینهٔ یک مسیر داغ است."
+    ]
+  },
+  "pros": {
+    "en": [
+      "The creation cost is paid once; later acquisitions are nearly free.",
+      "Resource usage is capped and predictable.",
+      "No allocation churn or fragmentation in hot loops.",
+      "With a `unique_ptr` handle, returning objects is automatic and exception-safe."
+    ],
+    "fa": [
+      "هزینهٔ ساخت فقط یک بار پرداخت می‌شود و گرفتن‌های بعدی تقریباً بی‌هزینه است.",
+      "مصرف منابع محدود و قابل‌پیش‌بینی است.",
+      "در حلقه‌های داغ، تخصیص و آزادسازی پشت‌سرهم و تکه‌تکه شدن حافظه رخ نمی‌دهد.",
+      "با یک handle از نوع `unique_ptr`، برگرداندن اشیا خودکار و در برابر استثنا امن است."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Stale state: forgetting to reset an object leaks data from one user to the next — a real security risk for connections and buffers.",
+      "More complexity: lifetime rules (the pool must outlive its handles), capacity tuning and, in multithreaded code, locking.",
+      "Idle objects keep holding memory or server-side resources even when nobody needs them.",
+      "For cheap objects a pool is slower than plain construction — modern allocators are fast, so measure first."
+    ],
+    "fa": [
+      "وضعیت کهنه: فراموش کردن بازنشانی شیء، داده‌های یک کاربر را به کاربر بعدی نشت می‌دهد؛ برای اتصال‌ها و بافرها یک ریسک امنیتی واقعی است.",
+      "پیچیدگی بیشتر: قواعد طول عمر (استخر باید از handleهایش بیشتر عمر کند)، تنظیم ظرفیت و در کد چندنخی، قفل‌گذاری.",
+      "اشیای بیکار حتی وقتی کسی لازمشان ندارد، حافظه یا منابع سمت سرور را اشغال می‌کنند.",
+      "برای اشیای ارزان، استخر از ساخت معمولی کندتر است؛ allocatorهای مدرن سریع‌اند، پس اول اندازه‌گیری کنید."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Return `std::unique_ptr<T, Deleter>` whose deleter calls `pool.release(p)`: returning becomes automatic, exception-safe and impossible to forget, and the move-only handle guarantees exactly one borrower.",
+      "The deleter runs inside a destructor and must not throw: `reserve()` the idle list up front (or use an intrusive list) so putting an object back never allocates.",
+      "The pool must outlive every handle, because each deleter points back to it. Declare the pool first and `= delete` its copy operations so that pointer can't be invalidated.",
+      "Keep ownership in the pool (`std::vector<std::unique_ptr<T>>`) and lend out non-owning pointers. A `std::shared_ptr` with a custom deleter also works when borrowers must share an object, at the cost of reference counting.",
+      "In multithreaded code, guard `acquire()` and `release()` with a `std::mutex`, and use a `std::condition_variable` to wait for a free object instead of throwing.",
+      "For pooling raw memory rather than whole objects, the standard offers `std::pmr::unsynchronized_pool_resource` and `std::pmr::synchronized_pool_resource`."
+    ],
+    "fa": [
+      "یک `std::unique_ptr<T, Deleter>` برگردانید که deleter آن `pool.release(p)` را صدا می‌زند: برگرداندن خودکار، امن در برابر استثنا و غیرقابل‌فراموشی می‌شود، و handle فقط‌انتقالی (move-only) تضمین می‌کند که هر شیء دقیقاً یک قرض‌گیرنده دارد.",
+      "deleter داخل یک مخرب اجرا می‌شود و نباید استثنا پرتاب کند: از قبل برای فهرست بیکارها `reserve()` کنید (یا از یک لیست intrusive استفاده کنید) تا برگرداندن شیء هیچ‌وقت به تخصیص حافظه نیاز نداشته باشد.",
+      "استخر باید از همهٔ handleها بیشتر عمر کند، چون هر deleter به آن اشاره می‌کند. استخر را زودتر از همه تعریف کنید و عملیات کپی‌اش را `= delete` کنید تا آن اشاره‌گر نامعتبر نشود.",
+      "مالکیت را در استخر نگه دارید (`std::vector<std::unique_ptr<T>>`) و اشاره‌گرهای غیرمالک قرض بدهید. اگر قرض‌گیرنده‌ها باید یک شیء را بین خودشان به اشتراک بگذارند، `std::shared_ptr` با deleter سفارشی هم جواب می‌دهد، البته به قیمت شمارش ارجاع.",
+      "در کد چندنخی، `acquire()` و `release()` را با یک `std::mutex` محافظت کنید و به‌جای پرتاب استثنا با یک `std::condition_variable` منتظر آزاد شدن شیء بمانید.",
+      "برای pool کردن حافظهٔ خام به‌جای اشیای کامل، کتابخانهٔ استاندارد `std::pmr::unsynchronized_pool_resource` و `std::pmr::synchronized_pool_resource` را دارد."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Database connection pools: HikariCP in Java, pgBouncer in front of PostgreSQL, and Go's `database/sql`, which pools connections by default.",
+      "Thread pools such as `boost::asio::thread_pool` or oneTBB's scheduler reuse worker threads instead of spawning one per task.",
+      "Game engines pool bullets, particles and audio voices so that nothing is allocated during a frame.",
+      "`boost::object_pool` and `std::pmr::synchronized_pool_resource` recycle memory blocks for fixed-size objects."
+    ],
+    "fa": [
+      "استخرهای اتصال پایگاه‌داده: HikariCP در جاوا، pgBouncer جلوی PostgreSQL و پکیج `database/sql` در Go که به‌طور پیش‌فرض اتصال‌ها را pool می‌کند.",
+      "thread poolهایی مثل `boost::asio::thread_pool` یا زمان‌بند oneTBB به‌جای ساختن یک thread برای هر کار، از threadهای کارگر دوباره استفاده می‌کنند.",
+      "موتورهای بازی گلوله‌ها، ذرات و صداها را pool می‌کنند تا در طول یک فریم هیچ حافظه‌ای تخصیص داده نشود.",
+      "`boost::object_pool` و `std::pmr::synchronized_pool_resource` بلوک‌های حافظه را برای اشیای هم‌اندازه بازیافت می‌کنند."
+    ]
+  },
+  "related": [
+    {
+      "id": "flyweight",
+      "note": {
+        "en": "Flyweight shares one immutable object among many users at the same time; a pool lends mutable objects to one user at a time and takes them back.",
+        "fa": "Flyweight یک شیء تغییرناپذیر را هم‌زمان بین کاربران زیادی به اشتراک می‌گذارد؛ استخر اشیای تغییرپذیر را هر بار فقط به یک کاربر قرض می‌دهد و پس می‌گیرد."
+      }
+    },
+    {
+      "id": "raii",
+      "note": {
+        "en": "The handle returned by `acquire()` is RAII: its destructor gives the object back, so a loan can't leak even when an exception is thrown.",
+        "fa": "handle برگشتی از `acquire()` از نوع RAII است: مخربش شیء را پس می‌دهد، پس حتی با پرتاب استثنا هم قرض گم نمی‌شود."
+      }
+    },
+    {
+      "id": "factory-method",
+      "note": {
+        "en": "A pool is a factory that recycles: `acquire()` hides whether the object is brand-new or reused.",
+        "fa": "استخر یک factory است که بازیافت می‌کند: `acquire()` پنهان می‌کند که شیء تازه ساخته شده یا دوباره استفاده می‌شود."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "Application-wide pools (connection pool, thread pool) are often exposed as singletons — with the usual testability trade-offs.",
+        "fa": "استخرهای سراسری برنامه (connection pool، thread pool) اغلب به شکل سینگلتون در دسترس قرار می‌گیرند؛ با همان هزینه‌های معمول در تست‌پذیری."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A database connection pool", "fa": "یک استخر اتصال پایگاه‌داده" },
+    "description": {
+      "en": "Four queries run, but only two connections are ever opened. Watch the `back in the pool` lines: nobody calls `release()` explicitly — the handle's deleter does it whenever a handle goes out of scope. A third simultaneous request is rejected because the pool is capped at two.",
+      "fa": "چهار کوئری اجرا می‌شود، اما فقط دو اتصال باز می‌شود. به خط‌های `back in the pool` دقت کنید: هیچ‌کس `release()` را صریحاً صدا نمی‌زند؛ هر بار که یک handle از scope خارج می‌شود، deleter آن این کار را انجام می‌دهد. درخواست هم‌زمان سوم رد می‌شود، چون سقف استخر دو است."
+    },
+    "output": "  (opening connection #1: slow TLS handshake)\n  (opening connection #2: slow TLS handshake)\n  #1 runs: SELECT * FROM orders\n  #2 runs: UPDATE stock SET qty = qty - 1\n  (connection #2 back in the pool)\n  (connection #1 back in the pool)\nidle connections: 2\n  #1 runs: SELECT name FROM users\n  (connection #1 back in the pool)\n  #1 runs: SELECT name FROM users\n  (connection #1 back in the pool)\nrequest rejected: pool exhausted\n  (connection #2 back in the pool)\n  (connection #1 back in the pool)",
+    "highlights": [
+      {
+        "lines": [26, 31],
+        "note": {
+          "en": "The key C++ trick: a custom deleter that calls `release()` instead of `delete`. `Handle` is an ordinary `std::unique_ptr`, so it is move-only and exception-safe.",
+          "fa": "ترفند کلیدی C++: یک deleter سفارشی که به‌جای `delete`، تابع `release()` را صدا می‌زند. `Handle` یک `std::unique_ptr` معمولی است، پس فقط‌انتقالی و در برابر استثنا امن است."
+        }
+      },
+      {
+        "lines": [39, 48],
+        "note": {
+          "en": "`acquire()` reuses an idle connection if there is one, creates a new one only below the limit, and refuses otherwise.",
+          "fa": "`acquire()` اگر اتصال بیکاری باشد از آن دوباره استفاده می‌کند، فقط زیر سقف اتصال جدید می‌سازد و در غیر این صورت درخواست را رد می‌کند."
+        }
+      },
+      {
+        "lines": [51, 60],
+        "note": {
+          "en": "`release()` resets the object before it becomes idle again. The pool owns every connection through `all_`; `idle_` only lists which ones are free.",
+          "fa": "`release()` شیء را قبل از بیکار شدن دوباره بازنشانی می‌کند. استخر از طریق `all_` مالک همهٔ اتصال‌هاست و `idle_` فقط فهرست اتصال‌های آزاد است."
+        }
+      },
+      {
+        "lines": [64, 71],
+        "note": {
+          "en": "The pool is declared first, so it outlives every handle. Leaving the inner scope returns both connections automatically.",
+          "fa": "استخر زودتر از همه تعریف شده تا از همهٔ handleها بیشتر عمر کند. خروج از scope داخلی هر دو اتصال را به‌طور خودکار برمی‌گرداند."
+        }
+      },
+      {
+        "lines": [73, 84],
+        "note": {
+          "en": "Reuse in action: no new handshake in the loop. With both connections borrowed, a third request hits the limit; `x` and `y` are returned when `main()` ends.",
+          "fa": "استفادهٔ مجدد در عمل: در حلقه هیچ handshake جدیدی انجام نمی‌شود. وقتی هر دو اتصال قرض داده شده‌اند، درخواست سوم به سقف می‌خورد؛ `x` و `y` در پایان `main()` برگردانده می‌شوند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem does an Object Pool solve?",
+        "fa": "Object Pool چه مشکلی را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "The cost of repeatedly creating and destroying expensive objects, and uncontrolled growth in their number",
+          "Sharing one immutable object among many clients to save memory",
+          "Making sure a class has exactly one instance",
+          "Hiding which concrete class gets instantiated"
+        ],
+        "fa": [
+          "هزینهٔ ساخت و نابودی مکرر اشیای پرهزینه و رشد کنترل‌نشدهٔ تعداد آن‌ها",
+          "اشتراک یک شیء تغییرناپذیر بین کلاینت‌های زیاد برای صرفه‌جویی در حافظه",
+          "تضمین این‌که یک کلاس دقیقاً یک نمونه داشته باشد",
+          "پنهان کردن این‌که کدام کلاس مشخص نمونه‌سازی می‌شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "A pool pays the expensive setup once and lends the same objects out again and again, while also capping how many exist. Sharing immutable objects is Flyweight, a single instance is Singleton, and hiding the concrete class is a factory's job.",
+        "fa": "استخر هزینهٔ سنگین راه‌اندازی را یک بار می‌پردازد و همان اشیا را بارها قرض می‌دهد، و در عین حال تعدادشان را محدود می‌کند. اشتراک اشیای تغییرناپذیر کار Flyweight است، نمونهٔ یکتا کار Singleton و پنهان کردن کلاس مشخص کار یک factory."
+      }
+    },
+    {
+      "question": {
+        "en": "`acquire()` returns `std::unique_ptr<Connection, ReturnToPool>`. What does the custom deleter achieve?",
+        "fa": "`acquire()` یک `std::unique_ptr<Connection, ReturnToPool>` برمی‌گرداند. deleter سفارشی چه کاری انجام می‌دهد؟"
+      },
+      "options": {
+        "en": [
+          "It lets several owners share the connection",
+          "It deletes the connection faster than `delete` would",
+          "When the handle is destroyed — normally or during stack unwinding — the object goes back to the pool instead of being deleted",
+          "It guarantees the pool never runs out of objects"
+        ],
+        "fa": [
+          "اجازه می‌دهد چند مالک اتصال را به اشتراک بگذارند",
+          "اتصال را سریع‌تر از `delete` پاک می‌کند",
+          "وقتی handle نابود می‌شود (چه به‌طور عادی و چه هنگام unwind شدن پشته)، شیء به‌جای delete شدن به استخر برمی‌گردد",
+          "تضمین می‌کند استخر هیچ‌وقت خالی نشود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "`unique_ptr` calls its deleter from its destructor. Replacing `delete` with `pool->release(c)` turns the smart pointer into an RAII loan: the return can't be forgotten, and it still happens if an exception leaves the scope early.",
+        "fa": "`unique_ptr` در مخربش deleter را صدا می‌زند. جایگزین کردن `delete` با `pool->release(c)` این اشاره‌گر هوشمند را به یک قرض RAII تبدیل می‌کند: برگرداندن فراموش نمی‌شود و حتی اگر یک استثنا زودتر از scope خارج شود، باز هم انجام می‌شود."
+      }
+    },
+    {
+      "question": {
+        "en": "Which is the most serious pitfall of object pools?",
+        "fa": "جدی‌ترین دام استفاده از Object Pool کدام است؟"
+      },
+      "options": {
+        "en": [
+          "A pool always uses more CPU than plain `new` and `delete`",
+          "Pooled objects can't be managed by smart pointers",
+          "Pools only work in single-threaded programs",
+          "An object returned without a reset carries the previous user's state (open transactions, private data) to the next user"
+        ],
+        "fa": [
+          "استخر همیشه از `new` و `delete` معمولی CPU بیشتری مصرف می‌کند",
+          "اشیای داخل استخر را نمی‌توان با اشاره‌گرهای هوشمند مدیریت کرد",
+          "استخرها فقط در برنامه‌های تک‌نخی کار می‌کنند",
+          "شیئی که بدون بازنشانی برگردانده شود، وضعیت کاربر قبلی (تراکنش‌های باز، داده‌های خصوصی) را به کاربر بعدی می‌برد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Reuse means leftovers travel along. A connection still inside a transaction, or a buffer still holding another customer's data, is both a bug and a security hole — so `release()` must always reset. Pools do work with smart pointers (see the example) and with threads (add a mutex).",
+        "fa": "استفادهٔ مجدد یعنی باقی‌مانده‌ها هم همراه شیء می‌آیند. اتصالی که هنوز داخل یک تراکنش است یا بافری که هنوز دادهٔ مشتری دیگری را دارد، هم باگ است و هم حفرهٔ امنیتی؛ پس `release()` همیشه باید بازنشانی کند. استخرها با اشاره‌گرهای هوشمند (مثل همین مثال) و با threadها (با اضافه کردن یک mutex) کار می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "How does an Object Pool differ from Flyweight?",
+        "fa": "Object Pool چه تفاوتی با Flyweight دارد؟"
+      },
+      "options": {
+        "en": [
+          "They are the same pattern under different names",
+          "A pool lends each mutable object to one client at a time and gets it back; a flyweight is immutable and shared by many clients at once",
+          "Flyweight is only for databases, pools only for graphics",
+          "A pool stores extrinsic state, a flyweight stores only pointers"
+        ],
+        "fa": [
+          "یک الگو با دو نام متفاوت‌اند",
+          "استخر هر شیء تغییرپذیر را هر بار به یک کلاینت قرض می‌دهد و پس می‌گیرد؛ flyweight تغییرناپذیر است و هم‌زمان بین کلاینت‌های زیادی مشترک است",
+          "Flyweight فقط برای پایگاه‌داده و استخر فقط برای گرافیک است",
+          "استخر وضعیت بیرونی (extrinsic) را نگه می‌دارد و flyweight فقط اشاره‌گر"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Both reduce object creation, but a pooled connection is exclusively yours while you hold it, and you give it back. A flyweight glyph or tree model is used by thousands of clients simultaneously, so it must be immutable.",
+        "fa": "هر دو ساخت اشیا را کم می‌کنند، اما اتصالی که از استخر گرفته‌اید تا وقتی دستتان است فقط مال شماست و بعد پسش می‌دهید. یک flyweight (مثل یک glyph یا مدل درخت) هم‌زمان توسط هزاران کلاینت استفاده می‌شود، پس باید تغییرناپذیر باشد."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A bullet-hell game fires hundreds of projectiles per second; allocating and freeing each one causes frame-time spikes, so you want to keep a fixed set of projectile objects and recycle them.",
+      "fa": "یک بازی bullet-hell در هر ثانیه صدها گلوله شلیک می‌کند؛ تخصیص و آزادسازی تک‌تک آن‌ها باعث پرش در زمان فریم می‌شود، پس می‌خواهید مجموعهٔ ثابتی از اشیای گلوله نگه دارید و آن‌ها را بازیافت کنید."
+    },
+    {
+      "en": "Your service may open at most 20 connections to a payment provider and each TLS handshake takes 200 ms; request handlers should borrow an already-open connection and hand it back automatically when they finish.",
+      "fa": "سرویس شما حداکثر ۲۰ اتصال به یک درگاه پرداخت می‌تواند باز کند و هر handshake برای TLS دویست میلی‌ثانیه طول می‌کشد؛ handlerهای درخواست باید یک اتصال از قبل باز را قرض بگیرند و وقتی کارشان تمام شد خودکار پس بدهند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Recycle the canvases", "fa": "بوم‌ها را بازیافت کنید" },
+    "task": {
+      "en": "The thumbnail service allocates a new 8 MB `Canvas` for every photo — three photos, three allocations. Make `CanvasPool` really pool: `acquire()` must reuse an idle canvas when there is one, the handle's deleter must give the canvas back to the pool, and `release()` must wipe it so the next photo doesn't start on a dirty canvas. The output should show a single allocation and `(blank)` for every photo.",
+      "fa": "سرویس ساخت تصویر بندانگشتی برای هر عکس یک `Canvas` هشت مگابایتی جدید تخصیص می‌دهد: سه عکس، سه تخصیص. کاری کنید که `CanvasPool` واقعاً استخر باشد: `acquire()` اگر بوم بیکاری هست باید از آن دوباره استفاده کند، deleter مربوط به handle باید بوم را به استخر برگرداند و `release()` باید آن را پاک کند تا عکس بعدی روی بوم کثیف شروع نشود. خروجی باید فقط یک تخصیص و برای همهٔ عکس‌ها `(blank)` نشان دهد."
+    },
+    "hints": {
+      "en": [
+        "Three places change: `acquire()` (reuse), `ReturnToPool::operator()` (give back) and `release()` (reset). `main()` stays as it is.",
+        "At the start of `acquire()`: `if (!free_.empty()) { Canvas* c = free_.back(); free_.pop_back(); return Handle(c, ReturnToPool{this}); }`.",
+        "The deleter body becomes `pool->release(canvas);` and `release()` starts with `canvas->clear();`. If you see `(DIRTY!)`, the reset is missing."
+      ],
+      "fa": [
+        "سه جا باید تغییر کند: `acquire()` (استفادهٔ مجدد)، `ReturnToPool::operator()` (برگرداندن) و `release()` (بازنشانی). به `main()` دست نزنید.",
+        "در ابتدای `acquire()`: `if (!free_.empty()) { Canvas* c = free_.back(); free_.pop_back(); return Handle(c, ReturnToPool{this}); }`.",
+        "بدنهٔ deleter می‌شود `pool->release(canvas);` و `release()` با `canvas->clear();` شروع می‌شود. اگر `(DIRTY!)` دیدید، بازنشانی را جا انداخته‌اید."
+      ]
+    },
+    "expectedOutput": "allocating 8 MB canvas #1\ncanvas #1 (blank) -> thumbnail of beach.jpg\ncanvas #1 (blank) -> thumbnail of cat.png\ncanvas #1 (blank) -> thumbnail of mountain.jpg\ncanvases allocated: 1"
+  }
+}

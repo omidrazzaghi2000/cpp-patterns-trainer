@@ -1,0 +1,451 @@
+{
+  "id": "template-method",
+  "category": "behavioral",
+  "order": 10,
+  "difficulty": 1,
+  "icon": "layout-template",
+  "name": {
+    "en": "Template Method",
+    "fa": "تمپلیت متد (متد قالب)"
+  },
+  "aka": {
+    "en": "NVI — Non-Virtual Interface (the C++ idiom)",
+    "fa": "NVI یا Non-Virtual Interface (ایدیوم رایج در C++)"
+  },
+  "tagline": {
+    "en": "The base class fixes the recipe; subclasses only fill in the steps.",
+    "fa": "کلاس پایه دستور کار را ثابت می‌کند؛ زیرکلاس‌ها فقط مراحل را پر می‌کنند."
+  },
+  "intent": {
+    "en": "Define the skeleton of an algorithm in one base-class operation and defer some steps to subclasses, so they can redefine those steps without changing the algorithm's structure.",
+    "fa": "اسکلت یک الگوریتم را در یک عملیات از کلاس پایه تعریف می‌کند و انجام بعضی مراحل را به زیرکلاس‌ها می‌سپارد، تا آن‌ها بتوانند این مراحل را بدون تغییر ساختار کلی الگوریتم بازتعریف کنند."
+  },
+  "problem": {
+    "en": "A CI server runs jobs for very different projects: a C++ game engine, a TypeScript web shop, a documentation site. Every job does the same thing in the same order — check out, build, test, publish — only the concrete commands differ. If each project writes its own `run()`, the sequence is copy-pasted everywhere: one team forgets the test step, another publishes before building, and adding a new mandatory step (say, a security scan) means editing every single job.",
+    "fa": "یک سرور CI برای پروژه‌های بسیار متفاوتی job اجرا می‌کند: یک موتور بازی با C++، یک فروشگاه اینترنتی با TypeScript و یک سایت مستندات. همهٔ این jobها کار یکسانی را با ترتیب یکسان انجام می‌دهند (دریافت کد، build، تست و انتشار) و فقط دستورهای هر مرحله فرق می‌کند. اگر هر پروژه `run()` مخصوص خودش را بنویسد، این ترتیب همه‌جا کپی می‌شود: یک تیم مرحلهٔ تست را فراموش می‌کند، تیم دیگر قبل از build منتشر می‌کند و اضافه کردن یک مرحلهٔ اجباری جدید (مثلاً اسکن امنیتی) یعنی ویرایش تک‌تک jobها."
+  },
+  "solution": {
+    "en": "Put the algorithm into one base-class function — the **template method** — that calls the individual steps in the right order. Steps every subclass must supply become pure virtual **primitive operations**; optional steps become **hooks**: virtual functions with a sensible default that subclasses may override. In C++ make the template method public and non-virtual and the steps `private` virtual functions — the **Non-Virtual Interface (NVI)** idiom — so subclasses can customize every step but can never change the skeleton.",
+    "fa": "الگوریتم را در یک تابع از کلاس پایه (همان **template method**) قرار دهید که مراحل را به ترتیب درست صدا می‌زند. مراحلی که هر زیرکلاس حتماً باید فراهم کند به توابع pure virtual تبدیل می‌شوند (**primitive operation**) و مراحل اختیاری به **hook**: توابع virtual با یک رفتار پیش‌فرض معقول که زیرکلاس‌ها در صورت نیاز override می‌کنند. در C++ متد قالب را public و غیر virtual کنید و مراحل را توابع virtual از نوع `private`؛ این همان ایدیوم **Non-Virtual Interface (NVI)** است و باعث می‌شود زیرکلاس‌ها بتوانند هر مرحله را سفارشی کنند، اما هرگز نتوانند اسکلت را تغییر دهند."
+  },
+  "analogy": {
+    "en": "A restaurant franchise gives every branch the same service script: greet, take the order, cook, serve, bill. Headquarters fixes the order of the steps; each branch decides its own local menu and cooking. A branch may skip the optional dessert offer, but it may never bill before serving.",
+    "fa": "یک رستوران زنجیره‌ای به همهٔ شعبه‌هایش یک دستورالعمل واحد برای پذیرایی می‌دهد: خوشامدگویی، گرفتن سفارش، پخت، سرو و صورت‌حساب. دفتر مرکزی ترتیب مراحل را تعیین می‌کند و هر شعبه منو و شیوهٔ پخت محلی خودش را. شعبه می‌تواند پیشنهاد اختیاری دسر را حذف کند، اما هرگز نمی‌تواند قبل از سرو غذا صورت‌حساب بدهد."
+  },
+  "participants": [
+    {
+      "name": "AbstractClass (CiJob)",
+      "role": {
+        "en": "Implements the template method `run()` that fixes the order of the steps, declares the primitive operations as pure virtual and provides default hooks.",
+        "fa": "متد قالب `run()` را که ترتیب مراحل را ثابت می‌کند پیاده‌سازی می‌کند، primitive operationها را به‌صورت pure virtual اعلام می‌کند و hookهای پیش‌فرض را فراهم می‌کند."
+      }
+    },
+    {
+      "name": "ConcreteClass (GameEngineJob, WebShopJob, DocsJob)",
+      "role": {
+        "en": "Implements the primitive operations and optionally overrides hooks; it never touches the skeleton itself.",
+        "fa": "primitive operationها را پیاده‌سازی می‌کند و در صورت نیاز hookها را override می‌کند؛ هیچ‌وقت به خود اسکلت دست نمی‌زند."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Calls only the template method, usually through a base-class pointer or reference.",
+        "fa": "فقط متد قالب را صدا می‌زند، معمولاً از طریق یک اشاره‌گر یا مرجع از نوع کلاس پایه."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 0
+      },
+      {
+        "id": "CiJob",
+        "kind": "abstract",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "+ run() : void",
+          "- buildCommand() : string",
+          "- artifact() : string",
+          "- hasTests() : bool"
+        ]
+      },
+      {
+        "id": "NVI",
+        "label": "NVI idiom",
+        "kind": "note",
+        "col": 0,
+        "row": 1,
+        "members": [
+          "run(): public, non-virtual",
+          "steps: private virtual"
+        ]
+      },
+      {
+        "id": "GameEngineJob",
+        "kind": "concrete",
+        "col": 1,
+        "row": 2,
+        "members": [
+          "- buildCommand() : string",
+          "- artifact() : string"
+        ]
+      },
+      {
+        "id": "WebShopJob",
+        "kind": "concrete",
+        "col": 2,
+        "row": 2,
+        "members": [
+          "- buildCommand() : string",
+          "- testCommand() : string"
+        ]
+      },
+      {
+        "id": "DocsJob",
+        "kind": "concrete",
+        "col": 3,
+        "row": 2,
+        "members": [
+          "- buildCommand() : string",
+          "- hasTests() : bool"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "Client",
+        "to": "CiJob",
+        "type": "uses",
+        "label": "run()"
+      },
+      {
+        "from": "GameEngineJob",
+        "to": "CiJob",
+        "type": "inherits"
+      },
+      {
+        "from": "WebShopJob",
+        "to": "CiJob",
+        "type": "inherits"
+      },
+      {
+        "from": "DocsJob",
+        "to": "CiJob",
+        "type": "inherits"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Write the algorithm down as a sequence of steps and mark which steps are identical everywhere and which vary.",
+      "Create an abstract base class with a public, non-virtual template method that runs the sequence and calls one function per varying step.",
+      "Declare the mandatory varying steps as `private` pure virtual functions (primitive operations).",
+      "Turn optional steps into hooks: virtual functions with a default body, such as returning `true` or doing nothing.",
+      "Derive one concrete class per variant and override the primitive operations (and hooks where needed) with `override`.",
+      "Let clients call only the template method, typically through `std::unique_ptr<Base>` or `Base&`."
+    ],
+    "fa": [
+      "الگوریتم را به‌صورت دنباله‌ای از مراحل بنویسید و مشخص کنید کدام مراحل همه‌جا یکسان‌اند و کدام تغییر می‌کنند.",
+      "یک کلاس پایهٔ انتزاعی بسازید با یک متد قالب public و غیر virtual که این دنباله را اجرا می‌کند و برای هر مرحلهٔ متغیر یک تابع صدا می‌زند.",
+      "مراحل متغیرِ اجباری را به‌صورت توابع pure virtual از نوع `private` اعلام کنید (primitive operation).",
+      "مراحل اختیاری را به hook تبدیل کنید: توابع virtual با بدنهٔ پیش‌فرض، مثلاً برگرداندن `true` یا انجام ندادن هیچ کاری.",
+      "برای هر حالت یک کلاس مشخص مشتق کنید و primitive operationها (و در صورت نیاز hookها) را با `override` بازنویسی کنید.",
+      "کلاینت‌ها فقط متد قالب را صدا بزنند؛ معمولاً از طریق `std::unique_ptr<Base>` یا `Base&`."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Several classes run the same algorithm and differ only in a few steps — you want the common flow in exactly one place.",
+      "An order or invariant must be enforced (validate → save → log, lock → work → unlock) and subclasses must not be able to break it.",
+      "You are writing a framework or library and want to offer controlled extension points (hooks) instead of letting users override everything."
+    ],
+    "fa": [
+      "چند کلاس یک الگوریتم یکسان را اجرا می‌کنند و فقط در چند مرحله با هم فرق دارند؛ می‌خواهید جریان مشترک دقیقاً در یک جا باشد.",
+      "باید یک ترتیب یا قید ثابت (invariant) را اجبار کنید (اعتبارسنجی ← ذخیره ← لاگ، یا قفل ← کار ← آزادسازی) و زیرکلاس‌ها نباید بتوانند آن را بشکنند.",
+      "یک فریم‌ورک یا کتابخانه می‌نویسید و می‌خواهید به‌جای اجازهٔ override همه‌چیز، نقاط توسعهٔ کنترل‌شده (hook) در اختیار کاربر بگذارید."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Removes duplicated control flow: the skeleton lives in one function.",
+      "The base class owns the order, pre- and post-conditions; a subclass cannot forget or reorder a step.",
+      "Hooks are explicit, documented extension points with safe defaults.",
+      "With NVI you can later add logging, timing or checks around every step without touching any subclass."
+    ],
+    "fa": [
+      "جریان کنترل تکراری حذف می‌شود: اسکلت فقط در یک تابع زندگی می‌کند.",
+      "ترتیب مراحل و پیش‌شرط‌ها و پس‌شرط‌ها دست کلاس پایه است؛ زیرکلاس نمی‌تواند مرحله‌ای را فراموش یا جابه‌جا کند.",
+      "hookها نقاط توسعهٔ صریح و مستندی با پیش‌فرض‌های امن هستند.",
+      "با NVI می‌توانید بعداً لاگ، زمان‌سنجی یا بررسی‌های اضافه را دور همهٔ مراحل اضافه کنید، بدون این‌که به هیچ زیرکلاسی دست بزنید."
+    ]
+  },
+  "cons": {
+    "en": [
+      "It relies on inheritance: the variation is fixed per class at compile time and cannot be swapped on an existing object.",
+      "To understand a subclass you must also read the base class — the flow jumps up and down the hierarchy (the \"yo-yo problem\").",
+      "Independent variations multiply: two kinds of build × three kinds of publish already means six subclasses."
+    ],
+    "fa": [
+      "بر پایهٔ وراثت است: تنوع رفتار برای هر کلاس در زمان کامپایل ثابت می‌شود و نمی‌توان آن را روی یک شیء موجود عوض کرد.",
+      "برای فهمیدن یک زیرکلاس باید کلاس پایه را هم بخوانید؛ جریان اجرا مدام بین سطوح سلسله‌مراتب بالا و پایین می‌رود (مشکل «یویو»).",
+      "تنوع‌های مستقل در هم ضرب می‌شوند: دو نوع build ضرب در سه نوع انتشار یعنی شش زیرکلاس."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Use NVI: a public non-virtual template method plus `private` virtual steps. Access control does not affect overriding — a derived class may override a private virtual, it just cannot call it.",
+      "Make a step `protected` only when overrides need to call the base version (e.g. `CiJob::testCommand()` + extra flags); otherwise keep it `private`.",
+      "Never call the steps from the base constructor or destructor: at that moment the object is only a `CiJob`, so overrides are ignored and calling a pure virtual is undefined behavior.",
+      "Mark overrides with `override` and leaf classes with `final`: typos in a step's signature become compile errors instead of silently unused functions.",
+      "Give the base a public virtual destructor, because clients typically own jobs through `std::unique_ptr<CiJob>`.",
+      "If the variants are known at compile time and the steps are hot, CRTP gives the same skeleton without virtual calls; if behavior must change at runtime, inject a Strategy (e.g. `std::function`) instead."
+    ],
+    "fa": [
+      "از NVI استفاده کنید: یک متد قالب public و غیر virtual به همراه مراحل virtual از نوع `private`. سطح دسترسی روی override شدن اثری ندارد؛ کلاس مشتق می‌تواند یک virtual خصوصی را override کند، فقط نمی‌تواند آن را صدا بزند.",
+      "یک مرحله را فقط وقتی `protected` کنید که override باید نسخهٔ پایه را هم صدا بزند (مثلاً `CiJob::testCommand()` به‌علاوهٔ چند flag اضافه)؛ در غیر این صورت `private` نگهش دارید.",
+      "هیچ‌وقت مراحل را از سازنده یا مخرب کلاس پایه صدا نزنید: در آن لحظه شیء فقط یک `CiJob` است، پس overrideها نادیده گرفته می‌شوند و صدا زدن یک تابع pure virtual رفتار تعریف‌نشده (undefined behavior) است.",
+      "overrideها را با `override` و کلاس‌های برگ را با `final` علامت بزنید: اگر در امضای یک مرحله غلط تایپی باشد، به‌جای ساخته شدن بی‌صدای تابعی که هیچ‌وقت صدا زده نمی‌شود، خطای کامپایل می‌گیرید.",
+      "به کلاس پایه یک مخرب virtual و public بدهید، چون کلاینت‌ها معمولاً مالکیت jobها را از طریق `std::unique_ptr<CiJob>` در دست دارند.",
+      "اگر حالت‌ها در زمان کامپایل مشخص‌اند و مراحل در مسیر داغ برنامه هستند، CRTP همین اسکلت را بدون فراخوانی virtual می‌دهد؛ اگر رفتار باید در زمان اجرا عوض شود، به‌جای آن یک Strategy (مثلاً `std::function`) تزریق کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::basic_streambuf`: public non-virtual `sputc()` / `sgetc()` call the protected virtuals `overflow()` / `underflow()` — NVI in the standard library.",
+      "`std::pmr::memory_resource`: public `allocate()` / `deallocate()` forward to the private virtuals `do_allocate()` / `do_deallocate()`; locale facets do the same (`std::num_put::put()` → `do_put()`).",
+      "GoogleTest runs every test as `SetUp()` → `TestBody()` → `TearDown()`; Qt's `QThread::start()` eventually calls your overridden `run()`."
+    ],
+    "fa": [
+      "`std::basic_streambuf`: توابع public و غیر virtual مثل `sputc()` و `sgetc()` توابع virtual محافظت‌شدهٔ `overflow()` و `underflow()` را صدا می‌زنند؛ یعنی NVI در خود کتابخانهٔ استاندارد.",
+      "`std::pmr::memory_resource`: توابع public یعنی `allocate()` و `deallocate()` کار را به توابع virtual خصوصی `do_allocate()` و `do_deallocate()` می‌سپارند؛ facetهای locale هم همین کار را می‌کنند (`std::num_put::put()` ← `do_put()`).",
+      "GoogleTest هر تست را به ترتیب `SetUp()` ← `TestBody()` ← `TearDown()` اجرا می‌کند؛ `QThread::start()` در Qt هم در نهایت `run()` بازنویسی‌شدهٔ شما را صدا می‌زند."
+    ]
+  },
+  "related": [
+    {
+      "id": "strategy",
+      "note": {
+        "en": "Template Method varies steps through inheritance (per class, at compile time); Strategy swaps a whole algorithm through composition (per object, at runtime).",
+        "fa": "تمپلیت متد مراحل را از راه وراثت تغییر می‌دهد (برای هر کلاس و در زمان کامپایل)؛ استراتژی کل الگوریتم را از راه ترکیب (composition) عوض می‌کند (برای هر شیء و در زمان اجرا)."
+      }
+    },
+    {
+      "id": "factory-method",
+      "note": {
+        "en": "A factory method is often just one step of a template method: the skeleton needs an object and lets the subclass decide which class to create.",
+        "fa": "یک factory method اغلب فقط یکی از مراحل یک متد قالب است: اسکلت به یک شیء نیاز دارد و انتخاب کلاس آن را به زیرکلاس می‌سپارد."
+      }
+    },
+    {
+      "id": "crtp",
+      "note": {
+        "en": "CRTP gives a static template method: the base calls `static_cast<Derived&>(*this).step()`, resolved at compile time with no virtual calls.",
+        "fa": "CRTP یک متد قالب ایستا می‌سازد: کلاس پایه `static_cast<Derived&>(*this).step()` را صدا می‌زند که در زمان کامپایل و بدون فراخوانی virtual حل می‌شود."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "CI jobs that share one pipeline",
+      "fa": "jobهای CI با یک خط لولهٔ مشترک"
+    },
+    "description": {
+      "en": "`CiJob::run()` fixes the order checkout → build → test → publish. Each job only answers small questions like \"what is your build command?\". `GameEngineJob` keeps both hook defaults, `WebShopJob` replaces the default test command and `DocsJob` switches the tests off — yet all three print the same skeleton.",
+      "fa": "`CiJob::run()` ترتیب دریافت کد ← build ← تست ← انتشار را ثابت می‌کند. هر job فقط به سؤال‌های کوچکی مثل «دستور build تو چیست؟» جواب می‌دهد. `GameEngineJob` پیش‌فرض هر دو hook را نگه می‌دارد، `WebShopJob` دستور تست پیش‌فرض را عوض می‌کند و `DocsJob` تست را خاموش می‌کند؛ با این حال هر سه، اسکلت یکسانی را چاپ می‌کنند."
+    },
+    "output": "[ci] game-engine (C++)\n  checkout sources\n  build: cmake --build build\n  test: ctest --output-on-failure\n  publish: engine-2.1.tar.gz\n[ci] web-shop (TypeScript)\n  checkout sources\n  build: npm run build\n  test: npm test\n  publish: shop-dist.zip\n[ci] user-docs\n  checkout sources\n  build: mkdocs build\n  test: skipped\n  publish: site.zip",
+    "highlights": [
+      {
+        "lines": [
+          11,
+          23
+        ],
+        "note": {
+          "en": "The template method. It is public and non-virtual, so no subclass can replace the sequence; it mixes invariant steps (checkout) with calls to overridable steps.",
+          "fa": "متد قالب. public و غیر virtual است، پس هیچ زیرکلاسی نمی‌تواند این ترتیب را عوض کند؛ مراحل ثابت (دریافت کد) را با فراخوانی مراحل قابل override ترکیب می‌کند."
+        }
+      },
+      {
+        "lines": [
+          25,
+          34
+        ],
+        "note": {
+          "en": "Primitive operations are pure virtual — every job must supply them. Hooks have a default body, so a job overrides them only when it needs to.",
+          "fa": "primitive operationها pure virtual هستند و هر job باید آن‌ها را فراهم کند. hookها بدنهٔ پیش‌فرض دارند، پس یک job فقط در صورت نیاز آن‌ها را override می‌کند."
+        }
+      },
+      {
+        "lines": [
+          36,
+          42
+        ],
+        "note": {
+          "en": "The steps are private, yet `GameEngineJob` overrides them — C++ allows overriding a private virtual. It keeps both hook defaults, so it runs `ctest`.",
+          "fa": "مراحل private هستند، اما `GameEngineJob` آن‌ها را override می‌کند؛ C++ اجازهٔ override یک virtual خصوصی را می‌دهد. این کلاس پیش‌فرض هر دو hook را نگه می‌دارد، پس `ctest` اجرا می‌شود."
+        }
+      },
+      {
+        "lines": [
+          44,
+          56
+        ],
+        "note": {
+          "en": "Variations through hooks: `WebShopJob` changes the test command, `DocsJob` turns the test step off. Neither can move or remove the publish step.",
+          "fa": "تنوع از طریق hookها: `WebShopJob` دستور تست را عوض می‌کند و `DocsJob` مرحلهٔ تست را خاموش می‌کند. هیچ‌کدام نمی‌توانند مرحلهٔ انتشار را جابه‌جا یا حذف کنند."
+        }
+      },
+      {
+        "lines": [
+          58,
+          67
+        ],
+        "note": {
+          "en": "The client only knows `CiJob` and calls `run()`; the virtual steps dispatch to the right subclass at runtime.",
+          "fa": "کلاینت فقط `CiJob` را می‌شناسد و `run()` را صدا می‌زند؛ مراحل virtual در زمان اجرا به زیرکلاس درست هدایت می‌شوند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What does the template method itself contain?",
+        "fa": "خودِ متد قالب (template method) شامل چه چیزی است؟"
+      },
+      "options": {
+        "en": [
+          "Only pure virtual functions that subclasses must implement",
+          "The fixed sequence of steps, calling overridable functions for the parts that vary",
+          "One C++ `template` parameter per step",
+          "A pointer to a strategy object chosen at runtime"
+        ],
+        "fa": [
+          "فقط توابع pure virtual که زیرکلاس‌ها باید پیاده‌سازی کنند",
+          "ترتیب ثابت مراحل که برای بخش‌های متغیر، توابع قابل override را صدا می‌زند",
+          "برای هر مرحله یک پارامتر `template` در C++",
+          "اشاره‌گری به یک شیء استراتژی که در زمان اجرا انتخاب می‌شود"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "It is an ordinary member function that holds the algorithm's skeleton and calls the varying steps. The name has nothing to do with C++ `template`s — \"template\" means a form whose blanks the subclasses fill in.",
+        "fa": "یک تابع عضو معمولی است که اسکلت الگوریتم را نگه می‌دارد و مراحل متغیر را صدا می‌زند. این نام ربطی به `template`های C++ ندارد؛ «قالب» یعنی فرمی که جاهای خالی‌اش را زیرکلاس‌ها پر می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "`CiJob::run()` is public and non-virtual, and `buildCommand()` is a private pure virtual. Which statement is true?",
+        "fa": "`CiJob::run()` تابعی public و غیر virtual است و `buildCommand()` یک pure virtual خصوصی. کدام گزینه درست است؟"
+      },
+      "options": {
+        "en": [
+          "Derived classes cannot override `buildCommand()` because it is private",
+          "`run()` must be virtual, otherwise the overrides are never called",
+          "Derived classes can override `buildCommand()`, but only the base class decides when it is called",
+          "Clients can call `buildCommand()` directly through a `CiJob&`"
+        ],
+        "fa": [
+          "کلاس‌های مشتق نمی‌توانند `buildCommand()` را override کنند، چون private است",
+          "`run()` باید virtual باشد، وگرنه overrideها هیچ‌وقت صدا زده نمی‌شوند",
+          "کلاس‌های مشتق می‌توانند `buildCommand()` را override کنند، اما فقط کلاس پایه تصمیم می‌گیرد کِی صدا زده شود",
+          "کلاینت‌ها می‌توانند `buildCommand()` را مستقیماً از طریق یک `CiJob&` صدا بزنند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "In C++ access control and overriding are independent: a private virtual can be overridden. `run()` does not need to be virtual — the call to `buildCommand()` inside it is still dispatched virtually. Clients cannot call the step out of order because it is private.",
+        "fa": "در C++ سطح دسترسی و override شدن از هم مستقل‌اند: یک virtual خصوصی را می‌توان override کرد. `run()` لازم نیست virtual باشد، چون فراخوانی `buildCommand()` داخل آن همچنان به‌صورت virtual انجام می‌شود. کلاینت‌ها هم نمی‌توانند این مرحله را خارج از ترتیب صدا بزنند، چون private است."
+      }
+    },
+    {
+      "question": {
+        "en": "In which situation is Template Method a poor fit?",
+        "fa": "در کدام موقعیت تمپلیت متد انتخاب مناسبی نیست؟"
+      },
+      "options": {
+        "en": [
+          "Several classes share one algorithm and differ in only a few steps",
+          "A framework must enforce an order such as validate → save → log",
+          "A library wants to offer a few well-defined extension points",
+          "The behavior must be switched at runtime on an existing object, or combined freely from independent parts"
+        ],
+        "fa": [
+          "چند کلاس یک الگوریتم مشترک دارند و فقط در چند مرحله با هم فرق می‌کنند",
+          "یک فریم‌ورک باید ترتیبی مثل اعتبارسنجی ← ذخیره ← لاگ را اجبار کند",
+          "یک کتابخانه می‌خواهد چند نقطهٔ توسعهٔ کاملاً مشخص ارائه دهد",
+          "رفتار باید در زمان اجرا روی یک شیء موجود عوض شود یا آزادانه از بخش‌های مستقل ترکیب شود"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The varying steps are fixed by the object's class. You cannot change them on a live object, and every combination of independent variations needs its own subclass. Composition (Strategy) handles those cases better.",
+        "fa": "مراحل متغیر با کلاس شیء تعیین می‌شوند. نمی‌توانید آن‌ها را روی یک شیء زنده عوض کنید و هر ترکیب از تنوع‌های مستقل به زیرکلاس جداگانه نیاز دارد. ترکیب (استراتژی) این موارد را بهتر مدیریت می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "What is the key difference between Template Method and Strategy?",
+        "fa": "تفاوت اصلی تمپلیت متد و استراتژی چیست؟"
+      },
+      "options": {
+        "en": [
+          "Template Method varies steps of one algorithm via inheritance; Strategy swaps a whole algorithm via composition, even at runtime",
+          "Template Method only works with C++ templates; Strategy only with virtual functions",
+          "Strategy fixes the order of the steps; Template Method lets the client reorder them",
+          "There is none — they are two names for the same pattern"
+        ],
+        "fa": [
+          "تمپلیت متد مراحل یک الگوریتم را از راه وراثت تغییر می‌دهد؛ استراتژی کل الگوریتم را از راه ترکیب عوض می‌کند، حتی در زمان اجرا",
+          "تمپلیت متد فقط با templateهای C++ کار می‌کند و استراتژی فقط با توابع virtual",
+          "استراتژی ترتیب مراحل را ثابت می‌کند و تمپلیت متد اجازه می‌دهد کلاینت آن‌ها را جابه‌جا کند",
+          "هیچ تفاوتی ندارند؛ دو اسم برای یک الگو هستند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Template Method: \"is-a\" — the subclass fills gaps in a skeleton owned by the base class. Strategy: \"has-a\" — the context holds a replaceable algorithm object. Both solve algorithm variation, at different granularity and binding time.",
+        "fa": "تمپلیت متد بر رابطهٔ «is-a» تکیه دارد: زیرکلاس جاهای خالی اسکلتی را پر می‌کند که مالکش کلاس پایه است. استراتژی بر رابطهٔ «has-a»: context یک شیء الگوریتم قابل تعویض را نگه می‌دارد. هر دو مسئلهٔ تنوع الگوریتم را حل می‌کنند، اما با دانه‌بندی و زمان اتصال متفاوت."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Every payroll export (PDF, bank XML, CSV) must load the employees, compute the totals, format the document and archive it — always in that order — and only the formatting differs per export type.",
+      "fa": "هر خروجی حقوق و دستمزد (PDF، فایل XML بانک، CSV) باید کارمندان را بارگذاری کند، جمع‌ها را حساب کند، سند را قالب‌بندی و بایگانی کند (همیشه با همین ترتیب) و فقط قالب‌بندی در هر نوع خروجی فرق دارد."
+    },
+    {
+      "en": "A game engine's `Level` base class must always load assets, spawn the player, run the level logic and save progress; designers of new levels may only customize spawning and logic, never the order.",
+      "fa": "کلاس پایهٔ `Level` در یک موتور بازی باید همیشه assetها را بارگذاری کند، بازیکن را ظاهر کند، منطق مرحله را اجرا کند و پیشرفت را ذخیره کند؛ طراحان مرحله‌های جدید فقط مجازند ظاهر شدن و منطق را سفارشی کنند، نه ترتیب را."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "Expense reports with one skeleton",
+      "fa": "گزارش هزینه‌ها با یک اسکلت واحد"
+    },
+    "task": {
+      "en": "`ReportFormatter::render()` should be the template method: print the `header()`, then one `row()` per expense, then the `totalLine()` — but only if the `showTotal()` hook allows it. Right now it prints just the rows. Complete the skeleton, add the hook with a default of `true`, and override it in `CsvFormatter` so the CSV file has no total line while the Markdown report ends with `**total: 1370**`.",
+      "fa": "`ReportFormatter::render()` باید متد قالب باشد: اول `header()` را چاپ کند، بعد برای هر هزینه یک `row()` و در آخر `totalLine()` را؛ البته فقط اگر hook به نام `showTotal()` اجازه بدهد. فعلاً فقط سطرها چاپ می‌شوند. اسکلت را کامل کنید، hook را با مقدار پیش‌فرض `true` اضافه کنید و آن را در `CsvFormatter` طوری override کنید که فایل CSV سطر جمع نداشته باشد، ولی گزارش Markdown با `**total: 1370**` تمام شود."
+    },
+    "hints": {
+      "en": [
+        "The skeleton belongs only in the base class — neither formatter should get its own `render()`.",
+        "Keep a running `int sum` inside the loop and pass it to `totalLine(sum)` after the loop.",
+        "Add `virtual bool showTotal() const { return true; }` to the `private:` section of `ReportFormatter`, and `bool showTotal() const override { return false; }` to `CsvFormatter`."
+      ],
+      "fa": [
+        "اسکلت فقط به کلاس پایه تعلق دارد؛ هیچ‌کدام از formatterها نباید `render()` مخصوص خودش را داشته باشد.",
+        "داخل حلقه یک `int sum` را جمع بزنید و بعد از حلقه آن را به `totalLine(sum)` بدهید.",
+        "`virtual bool showTotal() const { return true; }` را به بخش `private:` در `ReportFormatter` و `bool showTotal() const override { return false; }` را به `CsvFormatter` اضافه کنید."
+      ]
+    },
+    "expectedOutput": "-- expenses.csv --\ncategory,amount\nrent,900\nfood,320\ntravel,150\n-- expenses.md --\n| category | amount |\n|---|---|\n| rent | 900 |\n| food | 320 |\n| travel | 150 |\n**total: 1370**"
+  }
+}

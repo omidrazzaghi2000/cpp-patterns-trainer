@@ -1,0 +1,380 @@
+{
+  "id": "policy-based-design",
+  "category": "idioms",
+  "order": 5,
+  "difficulty": 3,
+  "icon": "sliders-horizontal",
+  "name": { "en": "Policy-Based Design", "fa": "طراحی سیاست‌محور (Policy-Based Design)" },
+  "aka": {
+    "en": "Policy classes, host + policies (Alexandrescu, Modern C++ Design)",
+    "fa": "کلاس‌های policy، ترکیب host و policy (از کتاب Modern C++ Design نوشتهٔ Alexandrescu)"
+  },
+  "tagline": {
+    "en": "Assemble a class from interchangeable parts, chosen at compile time.",
+    "fa": "یک کلاس را از قطعات قابل‌تعویض سرهم کنید؛ انتخاب در زمان کامپایل."
+  },
+  "intent": {
+    "en": "Split a class's behaviour into independent design decisions (policies), each supplied as a template parameter, so users compose exactly the variant they need at compile time with zero runtime overhead.",
+    "fa": "رفتار یک کلاس را به تصمیم‌های طراحی مستقل (policy) تقسیم می‌کند که هر کدام به شکل یک پارامتر template داده می‌شود، تا کاربر دقیقاً همان نسخه‌ای را که لازم دارد در زمان کامپایل و بدون سربار زمان اجرا بسازد."
+  },
+  "problem": {
+    "en": "A backup tool needs archivers that may or may not compress and may or may not encrypt — and next quarter there will be more algorithms. Hand-writing every combination (`PlainArchiver`, `CompressedArchiver`, `EncryptedCompressedArchiver`, …) explodes combinatorially. Runtime strategies behind virtual interfaces fix the explosion, but they add pointers, heap allocations and virtual calls to a hot data path, and they cannot give only the encrypting archivers an extra member such as `setKey()`.",
+    "fa": "یک ابزار پشتیبان‌گیری به archiverهایی نیاز دارد که ممکن است فشرده‌سازی کنند یا نکنند و رمزنگاری کنند یا نکنند؛ و فصل بعد الگوریتم‌های بیشتری هم اضافه می‌شود. نوشتن دستی هر ترکیب (`PlainArchiver`، `CompressedArchiver`، `EncryptedCompressedArchiver` و…) به انفجار ترکیبیاتی تعداد کلاس‌ها می‌رسد. استراتژی‌های زمان اجرا پشت رابط‌های virtual این انفجار را مهار می‌کنند، اما به مسیر داغ داده‌ها اشاره‌گر، تخصیص heap و فراخوانی virtual اضافه می‌کنند و نمی‌توانند فقط به archiverهایی که رمزنگاری می‌کنند یک عضو اضافه مثل `setKey()` بدهند."
+  },
+  "solution": {
+    "en": "Turn each independent axis of variation into a **policy**: a small class with an agreed-upon interface, such as `compress()` or `encrypt()`. The **host class** is a template that takes one parameter per policy and implements the fixed skeleton by calling into them. Because policies are template arguments, the calls are resolved and inlined at compile time. The host often inherits from its policies: stateless policies then cost zero bytes (empty base optimization) and a policy can **enrich** the host's interface with its own public members. In C++20, concepts make the policy interfaces explicit and turn misuse into readable errors.",
+    "fa": "هر محور مستقل تغییر را به یک **policy** تبدیل کنید: کلاس کوچکی با یک رابط توافق‌شده، مثل `compress()` یا `encrypt()`. **کلاس میزبان (host)** یک template است که برای هر policy یک پارامتر می‌گیرد و اسکلت ثابت الگوریتم را با فراخوانی آن‌ها پیاده می‌کند. چون policyها آرگومان template هستند، فراخوانی‌ها در زمان کامپایل مشخص و inline می‌شوند. کلاس میزبان معمولاً از policyهایش ارث می‌برد: در این حالت policyهای بدون وضعیت (stateless) هیچ فضایی اشغال نمی‌کنند (empty base optimization) و هر policy می‌تواند رابط میزبان را با اعضای عمومی خودش **غنی‌تر** کند. در C++20، conceptها رابط policyها را صریح می‌کنند و استفادهٔ نادرست را به خطاهای خوانا تبدیل می‌کنند."
+  },
+  "analogy": {
+    "en": "Ordering a custom bike: you choose a frame, then pick the gear system (single-speed or 11-speed) and the brakes (rim or disc) from compatible catalogues. Every part fits a standard mount, the combination is fixed when the factory assembles the bike, and you don't carry a toolbox to swap brakes mid-ride.",
+    "fa": "سفارش یک دوچرخهٔ سفارشی: بدنه را انتخاب می‌کنید، بعد سیستم دنده (تک‌سرعته یا ۱۱ سرعته) و ترمز (لنتی یا دیسکی) را از کاتالوگ‌های سازگار برمی‌دارید. هر قطعه به یک اتصال استاندارد می‌خورد، ترکیب نهایی هنگام مونتاژ در کارخانه ثابت می‌شود و قرار نیست وسط رکاب زدن جعبه‌ابزار دربیاورید و ترمز عوض کنید."
+  },
+  "participants": [
+    {
+      "name": "Host class (Archiver)",
+      "role": {
+        "en": "Class template that implements the fixed skeleton (`pack()`) and delegates each variable decision to a policy parameter; usually inherits from its policies.",
+        "fa": "یک class template که اسکلت ثابت (`pack()`) را پیاده می‌کند و هر تصمیم متغیر را به یک پارامتر policy می‌سپارد؛ معمولاً از policyهایش ارث می‌برد."
+      }
+    },
+    {
+      "name": "Policy concept",
+      "role": {
+        "en": "The requirements a policy type must meet, e.g. `Compressor`: a `compress()` returning `std::string`. Expressed as a C++20 concept, or just documented in older code.",
+        "fa": "شرط‌هایی که یک نوع policy باید برآورده کند؛ مثلاً `Compressor`: تابعی به نام `compress()` که `std::string` برمی‌گرداند. در C++20 به شکل concept نوشته می‌شود و در کدهای قدیمی‌تر فقط مستند می‌شد."
+      }
+    },
+    {
+      "name": "Concrete policies",
+      "role": {
+        "en": "Interchangeable implementations of one policy: `NoCompression`, `RunLength`, `NoEncryption`, `ShiftCipher`. They may be stateless or carry state and extra members.",
+        "fa": "پیاده‌سازی‌های قابل‌تعویض یک policy: `NoCompression`، `RunLength`، `NoEncryption` و `ShiftCipher`. می‌توانند بدون وضعیت باشند یا وضعیت و اعضای اضافه داشته باشند."
+      }
+    },
+    {
+      "name": "Configuration (alias)",
+      "role": {
+        "en": "A type alias that fixes one combination, e.g. `using SecureArchiver = Archiver<RunLength, ShiftCipher>;`.",
+        "fa": "یک type alias که یک ترکیب مشخص را ثابت می‌کند؛ مثلاً `using SecureArchiver = Archiver<RunLength, ShiftCipher>;`."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 1 },
+      { "id": "Compressor", "kind": "interface", "col": 1, "row": 0, "members": ["+ compress(s) : string"] },
+      { "id": "Encryptor", "kind": "interface", "col": 3, "row": 0, "members": ["+ encrypt(s) : string"] },
+      { "id": "Archiver<C, E>", "kind": "concrete", "col": 2, "row": 1, "members": ["+ pack(data) : string"] },
+      { "id": "RunLength", "kind": "concrete", "col": 1, "row": 2, "members": ["+ compress(s) : string"] },
+      { "id": "ShiftCipher", "kind": "concrete", "col": 3, "row": 2, "members": ["+ setKey(key)", "+ encrypt(s) : string", "- key_ : int"] },
+      { "id": "SecureArchiver", "kind": "note", "col": 2, "row": 2, "members": ["= Archiver<RunLength,", "  ShiftCipher>"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Archiver<C, E>", "type": "uses", "label": "pack()" },
+      { "from": "Archiver<C, E>", "to": "Compressor", "type": "inherits", "label": "C" },
+      { "from": "Archiver<C, E>", "to": "Encryptor", "type": "inherits", "label": "E" },
+      { "from": "RunLength", "to": "Compressor", "type": "implements" },
+      { "from": "ShiftCipher", "to": "Encryptor", "type": "implements" },
+      { "from": "SecureArchiver", "to": "Archiver<C, E>", "type": "uses", "label": "alias of" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "List the independent decisions hidden inside the class (here: how to compress, how to encrypt); each one becomes a policy.",
+      "For each decision define the policy interface — the members the host will call — ideally as a C++20 concept (`Compressor`, `Encryptor`).",
+      "Write concrete policies as plain classes with those members: no base class, no `virtual`. Include a do-nothing default such as `NoEncryption`.",
+      "Make the host a class template with one constrained parameter per policy, give them sensible defaults, and implement the fixed algorithm by calling the policies.",
+      "Inherit from the policies when they may be empty (EBO) or should add members to the host; otherwise store them as members, e.g. with `[[no_unique_address]]`.",
+      "Publish the useful combinations as type aliases, e.g. `using SecureArchiver = Archiver<RunLength, ShiftCipher>;`."
+    ],
+    "fa": [
+      "تصمیم‌های مستقلی را که درون کلاس پنهان شده‌اند فهرست کنید (این‌جا: چطور فشرده کنیم، چطور رمز کنیم)؛ هر کدام یک policy می‌شود.",
+      "برای هر تصمیم رابط policy را تعریف کنید (عضوهایی که میزبان صدا می‌زند)، ترجیحاً به شکل یک concept در C++20 (`Compressor`، `Encryptor`).",
+      "policyهای مشخص را به شکل کلاس‌های ساده با همان اعضا بنویسید: بدون کلاس پایه و بدون `virtual`. یک پیش‌فرض بی‌اثر مثل `NoEncryption` هم بگذارید.",
+      "کلاس میزبان را یک class template با یک پارامتر محدودشده برای هر policy کنید، مقدار پیش‌فرض معقولی برایشان بگذارید و الگوریتم ثابت را با فراخوانی policyها پیاده کنید.",
+      "اگر policyها ممکن است خالی باشند (EBO) یا باید عضوی به میزبان اضافه کنند، از آن‌ها ارث ببرید؛ در غیر این صورت آن‌ها را به‌عنوان عضو نگه دارید، مثلاً با `[[no_unique_address]]`.",
+      "ترکیب‌های پرکاربرد را با type alias منتشر کنید؛ مثلاً `using SecureArchiver = Archiver<RunLength, ShiftCipher>;`."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A class has several orthogonal design decisions and different users need different combinations of them.",
+      "The choice is known at compile time and performance matters: you want inlined calls and no per-object indirection.",
+      "You're writing a reusable library component (container, smart pointer, allocator-aware type) that users must customize without forking it.",
+      "Some configurations need extra operations (like `setKey()`) that others must not have."
+    ],
+    "fa": [
+      "یک کلاس چند تصمیم طراحی متعامد (مستقل از هم) دارد و کاربران مختلف به ترکیب‌های متفاوتی از آن‌ها نیاز دارند.",
+      "انتخاب در زمان کامپایل معلوم است و کارایی مهم است: فراخوانی‌های inline و بدون هیچ واسطهٔ اضافه برای هر شیء می‌خواهید.",
+      "یک مؤلفهٔ کتابخانه‌ای قابل‌استفادهٔ مجدد می‌نویسید (کانتینر، اشاره‌گر هوشمند، نوعی که با allocator کار می‌کند) که کاربران باید بدون fork کردن آن را سفارشی کنند.",
+      "بعضی پیکربندی‌ها به عملیات اضافه‌ای (مثل `setKey()`) نیاز دارند که بقیه نباید داشته باشند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Zero runtime overhead: calls are resolved and inlined at compile time, and empty policies take no space.",
+      "No class explosion: N + M policies give N × M configurations without writing any of them by hand.",
+      "Policies are small, independently testable and reusable across different hosts.",
+      "With concepts, an invalid combination fails early with a readable error."
+    ],
+    "fa": [
+      "بدون سربار زمان اجرا: فراخوانی‌ها در زمان کامپایل مشخص و inline می‌شوند و policyهای خالی هیچ فضایی نمی‌گیرند.",
+      "بدون انفجار کلاس‌ها: N + M policy، تعداد N × M پیکربندی می‌سازد بدون این‌که هیچ‌کدام را دستی بنویسید.",
+      "policyها کوچک‌اند، مستقل تست می‌شوند و در میزبان‌های مختلف قابل‌استفادهٔ مجددند.",
+      "با conceptها، ترکیب نامعتبر زود و با یک خطای خوانا رد می‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Every configuration is a different type: `Archiver<RunLength>` and `Archiver<>` can't live in the same container or be swapped at runtime.",
+      "Behaviour cannot change at runtime without recompiling.",
+      "Heavy template use: code lives in headers, compile times grow, and without concepts the errors are cryptic.",
+      "Too many policy parameters make the host hard to understand and to name; keep them to a few truly orthogonal ones."
+    ],
+    "fa": [
+      "هر پیکربندی یک نوع متفاوت است: `Archiver<RunLength>` و `Archiver<>` نه در یک کانتینر جا می‌گیرند و نه در زمان اجرا جایگزین هم می‌شوند.",
+      "رفتار بدون کامپایل دوباره در زمان اجرا قابل تغییر نیست.",
+      "استفادهٔ سنگین از template: کد در فایل‌های header می‌ماند، زمان کامپایل بالا می‌رود و بدون conceptها خطاها رمزآلودند.",
+      "تعداد زیاد پارامترهای policy فهم و نام‌گذاری میزبان را سخت می‌کند؛ آن‌ها را به چند مورد واقعاً متعامد محدود کنید."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Use C++20 concepts (`template <Compressor C>`) to document and check policy requirements; before C++20, `static_assert` with type traits or plain documentation had to do.",
+      "Inside a host that inherits from template-parameter bases, call policy members as `this->compress()` or `Compress::compress()`: names in dependent bases are not found by plain unqualified lookup.",
+      "Inheriting gives the empty base optimization and lets a policy add public members; in C++20 a member marked `[[no_unique_address]]` also takes no space when the policy is empty.",
+      "A host must not be deleted through a pointer to one of its policy bases; Alexandrescu recommends giving such policies a protected, non-virtual destructor.",
+      "Provide default template arguments for the common case (`Archiver<>`) and type aliases for popular combinations, so users rarely spell out the full template.",
+      "Empty-base layout is compiler-specific: GCC and Clang collapse several empty bases, while MSVC needs `__declspec(empty_bases)` to do the same."
+    ],
+    "fa": [
+      "از conceptهای C++20 (`template <Compressor C>`) برای مستند کردن و بررسی شرط‌های policy استفاده کنید؛ قبل از C++20 باید با `static_assert` و type traitها یا فقط با مستندات سر می‌کردیم.",
+      "در میزبانی که از پارامترهای template ارث می‌برد، اعضای policy را به شکل `this->compress()` یا `Compress::compress()` صدا بزنید: نام‌های داخل کلاس‌های پایهٔ وابسته (dependent base) با جست‌وجوی معمولی پیدا نمی‌شوند.",
+      "ارث‌بری، empty base optimization را فعال می‌کند و به policy اجازه می‌دهد عضو عمومی اضافه کند؛ در C++20 عضوی که با `[[no_unique_address]]` علامت خورده باشد هم وقتی policy خالی است فضایی نمی‌گیرد.",
+      "میزبان نباید از طریق اشاره‌گری به یکی از policyهای پایه‌اش delete شود؛ Alexandrescu پیشنهاد می‌کند این policyها یک مخرب protected و غیر virtual داشته باشند.",
+      "برای حالت رایج آرگومان پیش‌فرض template (`Archiver<>`) و برای ترکیب‌های پرکاربرد type alias بگذارید تا کاربر به‌ندرت مجبور شود کل template را بنویسد.",
+      "چیدمان کلاس‌های پایهٔ خالی به کامپایلر بستگی دارد: GCC و Clang چند پایهٔ خالی را روی هم می‌اندازند، اما MSVC برای همین کار به `__declspec(empty_bases)` نیاز دارد."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::unique_ptr<T, Deleter>`: the deleter is a policy, `std::default_delete` is the default, and an empty deleter costs no space.",
+      "`std::basic_string<CharT, Traits, Allocator>` and every allocator-aware container take traits, comparator and allocator policies (`std::map<K, V, Compare, Alloc>`).",
+      "Andrei Alexandrescu's Loki library (\"Modern C++ Design\"): `SmartPtr` is configured by ownership, checking and storage policies.",
+      "Boost.Intrusive containers are tuned through option parameters such as `constant_time_size<false>`."
+    ],
+    "fa": [
+      "`std::unique_ptr<T, Deleter>`: deleter یک policy است، `std::default_delete` پیش‌فرض آن است و یک deleter خالی هیچ فضایی نمی‌گیرد.",
+      "`std::basic_string<CharT, Traits, Allocator>` و همهٔ کانتینرهایی که allocator می‌گیرند، policyهای traits، مقایسه‌گر و allocator دارند (`std::map<K, V, Compare, Alloc>`).",
+      "کتابخانهٔ Loki از Andrei Alexandrescu (کتاب «Modern C++ Design»): `SmartPtr` با policyهای مالکیت، بررسی و ذخیره‌سازی پیکربندی می‌شود.",
+      "کانتینرهای Boost.Intrusive با پارامترهای option مثل `constant_time_size<false>` تنظیم می‌شوند."
+    ]
+  },
+  "related": [
+    {
+      "id": "strategy",
+      "note": {
+        "en": "A policy is a compile-time strategy: Strategy swaps behaviour through a virtual interface at runtime, a policy through a template argument at compile time — faster, but fixed once compiled.",
+        "fa": "policy در واقع یک استراتژی زمان کامپایل است: Strategy رفتار را در زمان اجرا و از طریق رابط virtual عوض می‌کند و policy از طریق آرگومان template در زمان کامپایل؛ سریع‌تر است، اما بعد از کامپایل ثابت می‌ماند."
+      }
+    },
+    {
+      "id": "crtp",
+      "note": {
+        "en": "Both are static-polymorphism techniques: with CRTP a base calls into its derived class, with policies a host calls into its policy bases. They are often combined.",
+        "fa": "هر دو تکنیک چندریختی ایستا هستند: در CRTP کلاس پایه، کلاس مشتق را صدا می‌زند و در policyها میزبان، policyهای پایه‌اش را. این دو اغلب با هم ترکیب می‌شوند."
+      }
+    },
+    {
+      "id": "type-erasure",
+      "note": {
+        "en": "Type erasure is the runtime counterpart: many types hidden behind one type. Policy-based design produces one type per configuration, with zero overhead.",
+        "fa": "Type Erasure همتای زمان اجرای آن است: انواع زیاد پشت یک نوع واحد پنهان می‌شوند. طراحی سیاست‌محور برای هر پیکربندی یک نوع جداگانه و بدون سربار می‌سازد."
+      }
+    },
+    {
+      "id": "template-method",
+      "note": {
+        "en": "The host's fixed skeleton with pluggable steps resembles Template Method, but the steps come from template parameters instead of overridden virtual functions.",
+        "fa": "اسکلت ثابت میزبان با مراحل قابل‌تعویض شبیه Template Method است، با این تفاوت که مراحل از پارامترهای template می‌آیند نه از override کردن توابع virtual."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A file archiver built from policies", "fa": "یک archiver فایل ساخته‌شده از policyها" },
+    "description": {
+      "en": "`Archiver` owns the fixed pipeline (compress, then encrypt); its policies decide how each step works. Notice that `setKey()` exists only on `SecureArchiver`, because `ShiftCipher` contributes it, and that a configuration of empty policies occupies a single byte.",
+      "fa": "`Archiver` خط لولهٔ ثابت را در اختیار دارد (اول فشرده‌سازی، بعد رمزنگاری) و policyهایش تعیین می‌کنند هر مرحله چطور انجام شود. دقت کنید که `setKey()` فقط روی `SecureArchiver` وجود دارد، چون `ShiftCipher` آن را اضافه می‌کند، و این‌که پیکربندی‌ای از policyهای خالی فقط یک بایت جا می‌گیرد."
+    },
+    "output": "input:   aaaabbbccd\nplain:   aaaabbbccd\ncompact: a4b3c2d1\nsecure:  b4c3d2e1\nkey 3:   d4e3f2g1\nsize of CompactArchiver: 1 byte (empty policies are free)",
+    "highlights": [
+      {
+        "lines": [8, 16],
+        "note": {
+          "en": "C++20 concepts turn the implicit policy contracts into checked requirements: a `Compressor` must offer `compress()`, an `Encryptor` must offer `encrypt()`.",
+          "fa": "conceptهای C++20 قرارداد ضمنی policyها را به شرط‌های بررسی‌شده تبدیل می‌کنند: یک `Compressor` باید `compress()` و یک `Encryptor` باید `encrypt()` داشته باشد."
+        }
+      },
+      {
+        "lines": [39, 49],
+        "note": {
+          "en": "A stateful policy. Because the host inherits from it, its public `setKey()` becomes part of the host's interface — but only in configurations that use `ShiftCipher`.",
+          "fa": "یک policy دارای وضعیت. چون میزبان از آن ارث می‌برد، `setKey()` عمومی آن بخشی از رابط میزبان می‌شود؛ ولی فقط در پیکربندی‌هایی که از `ShiftCipher` استفاده می‌کنند."
+        }
+      },
+      {
+        "lines": [51, 60],
+        "note": {
+          "en": "The host class: constrained policy parameters with defaults, inheritance from both policies, and a fixed algorithm. `this->` is required because the members live in dependent bases.",
+          "fa": "کلاس میزبان: پارامترهای policy محدودشده با مقدار پیش‌فرض، ارث‌بری از هر دو policy و یک الگوریتم ثابت. `this->` لازم است چون اعضا در کلاس‌های پایهٔ وابسته قرار دارند."
+        }
+      },
+      {
+        "lines": [62, 65],
+        "note": {
+          "en": "Configurations are just type aliases. Each alias is a distinct, fully optimized type — no flags, no runtime branching.",
+          "fa": "پیکربندی‌ها فقط type alias هستند. هر alias یک نوع مجزا و کاملاً بهینه‌شده است؛ بدون flag و بدون انشعاب در زمان اجرا."
+        }
+      },
+      {
+        "lines": [73, 80],
+        "note": {
+          "en": "`setKey()` compiles only for `SecureArchiver`, the stateless configuration takes one byte, and an invalid policy such as `int` is rejected by the concept.",
+          "fa": "`setKey()` فقط برای `SecureArchiver` کامپایل می‌شود، پیکربندی بدون وضعیت یک بایت جا می‌گیرد و policy نامعتبری مثل `int` توسط concept رد می‌شود."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem does policy-based design mainly address?",
+        "fa": "طراحی سیاست‌محور عمدتاً چه مشکلی را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Choosing an algorithm at runtime from user input",
+          "A class with several independent design decisions whose combinations would explode into many hand-written classes",
+          "Hiding a class's implementation to reduce compile times",
+          "Ensuring that only one instance of a class exists"
+        ],
+        "fa": [
+          "انتخاب یک الگوریتم در زمان اجرا بر اساس ورودی کاربر",
+          "کلاسی با چند تصمیم طراحی مستقل که ترکیب‌هایشان به تعداد زیادی کلاس دست‌نویس منفجر می‌شود",
+          "پنهان کردن پیاده‌سازی یک کلاس برای کاهش زمان کامپایل",
+          "تضمین این‌که فقط یک نمونه از کلاس وجود داشته باشد"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Each decision becomes a template parameter, so N compression and M encryption policies yield N × M archivers without writing any of them by hand — and each combination is fixed and optimized at compile time.",
+        "fa": "هر تصمیم یک پارامتر template می‌شود، پس N policy فشرده‌سازی و M policy رمزنگاری، N × M archiver می‌سازند بدون این‌که هیچ‌کدام را دستی بنویسید؛ و هر ترکیب در زمان کامپایل ثابت و بهینه می‌شود."
+      }
+    },
+    {
+      "question": {
+        "en": "In `template <class C, class E> class Archiver : public C, public E`, why does `pack()` call `this->compress(data)` instead of just `compress(data)`?",
+        "fa": "در `template <class C, class E> class Archiver : public C, public E` چرا `pack()` به‌جای `compress(data)` از `this->compress(data)` استفاده می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Because `compress` is private in the policy",
+          "To force a virtual call",
+          "Because `this->` makes the call faster",
+          "Names from a base that depends on a template parameter aren't found by unqualified lookup; `this->` defers lookup to instantiation"
+        ],
+        "fa": [
+          "چون `compress` در policy خصوصی است",
+          "برای این‌که فراخوانی virtual شود",
+          "چون `this->` فراخوانی را سریع‌تر می‌کند",
+          "نام‌های یک کلاس پایه که به پارامتر template وابسته است با جست‌وجوی معمولی پیدا نمی‌شوند؛ `this->` جست‌وجو را تا زمان نمونه‌سازی عقب می‌اندازد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "`C` is a dependent base: while parsing the template the compiler cannot look inside it. `this->compress()` (or `C::compress()`) makes the name dependent, so it is resolved when the template is instantiated with a real policy. There is no virtual call and no runtime cost.",
+        "fa": "`C` یک پایهٔ وابسته است: کامپایلر هنگام تجزیهٔ template نمی‌تواند داخل آن را ببیند. `this->compress()` (یا `C::compress()`) نام را وابسته می‌کند تا هنگام نمونه‌سازی template با یک policy واقعی پیدا شود. هیچ فراخوانی virtual و هیچ هزینهٔ زمان اجرایی در کار نیست."
+      }
+    },
+    {
+      "question": {
+        "en": "Users must be able to switch the compression algorithm in a settings dialog while the app is running. Why is policy-based design a poor fit on its own?",
+        "fa": "کاربران باید بتوانند الگوریتم فشرده‌سازی را در حین اجرای برنامه از پنجرهٔ تنظیمات عوض کنند. چرا طراحی سیاست‌محور به‌تنهایی انتخاب مناسبی نیست؟"
+      },
+      "options": {
+        "en": [
+          "Policies are bound at compile time and each combination is a different type, so a runtime switch needs Strategy or type erasure",
+          "Policies cannot hold any state",
+          "All policy classes must derive from a common base",
+          "Compression cannot be expressed as a policy"
+        ],
+        "fa": [
+          "policyها در زمان کامپایل انتخاب می‌شوند و هر ترکیب یک نوع متفاوت است، پس تعویض در زمان اجرا به Strategy یا Type Erasure نیاز دارد",
+          "policyها نمی‌توانند هیچ وضعیتی نگه دارند",
+          "همهٔ کلاس‌های policy باید از یک کلاس پایهٔ مشترک ارث ببرند",
+          "فشرده‌سازی را نمی‌توان به شکل policy بیان کرد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "`Archiver<RunLength>` and `Archiver<NoCompression>` are unrelated types; you can't assign one to the other at runtime. Use a virtual Strategy or a type-erased wrapper — or combine them: a runtime switch that picks one of a few policy-based instantiations. (`ShiftCipher` shows that policies can hold state.)",
+        "fa": "`Archiver<RunLength>` و `Archiver<NoCompression>` دو نوع نامرتبط‌اند و نمی‌توان یکی را در زمان اجرا به دیگری انتساب داد. از یک Strategy با رابط virtual یا یک پوشانندهٔ type-erased استفاده کنید، یا ترکیبشان کنید: یک انتخاب زمان اجرا بین چند نمونهٔ سیاست‌محور. (`ShiftCipher` نشان می‌دهد که policyها می‌توانند وضعیت داشته باشند.)"
+      }
+    },
+    {
+      "question": {
+        "en": "How does a policy differ from a classic Strategy object?",
+        "fa": "یک policy چه تفاوتی با یک شیء Strategy کلاسیک دارد؟"
+      },
+      "options": {
+        "en": [
+          "A policy must be a singleton",
+          "There is no difference; the terms are synonyms",
+          "A policy is bound at compile time through a template parameter (inlined, no virtual calls); a Strategy is usually bound at runtime through a virtual interface",
+          "A Strategy can be used only once per program"
+        ],
+        "fa": [
+          "policy باید سینگلتون باشد",
+          "هیچ تفاوتی ندارند؛ این دو اصطلاح مترادف‌اند",
+          "policy در زمان کامپایل و از طریق پارامتر template انتخاب می‌شود (inline و بدون فراخوانی virtual)؛ Strategy معمولاً در زمان اجرا و از طریق یک رابط virtual انتخاب می‌شود",
+          "هر Strategy فقط یک بار در برنامه قابل‌استفاده است"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Both encapsulate a variable piece of behaviour; the difference is binding time. Templates give zero-overhead compile-time binding and even let the policy add members to the host; virtual interfaces give runtime flexibility at the cost of an indirection.",
+        "fa": "هر دو یک بخش متغیر از رفتار را کپسوله می‌کنند؛ تفاوت در زمان انتخاب است. template انتخاب زمان کامپایل بدون سربار می‌دهد و حتی اجازه می‌دهد policy عضوی به میزبان اضافه کند؛ رابط‌های virtual در ازای یک واسطهٔ اضافه، انعطاف زمان اجرا می‌دهند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "You're writing a generic matrix class for a physics engine: users must choose bounds checking (none or throwing) and storage layout (row- or column-major) independently, and the hot math loops must contain no virtual calls.",
+      "fa": "یک کلاس ماتریس عمومی برای یک موتور فیزیک می‌نویسید: کاربران باید بررسی محدودهٔ اندیس (بدون بررسی یا پرتاب استثنا) و چیدمان حافظه (سطری یا ستونی) را مستقل از هم انتخاب کنند و حلقه‌های داغ محاسباتی نباید هیچ فراخوانی virtual داشته باشند."
+    },
+    {
+      "en": "A logging library must let each application combine a message format (plain text or JSON) with a threading model (single-threaded or mutex-locked) at compile time, paying nothing for the options it doesn't use.",
+      "fa": "یک کتابخانهٔ لاگ باید به هر برنامه اجازه دهد قالب پیام (متن ساده یا JSON) را با مدل چندنخی (تک‌نخی یا قفل‌شده با mutex) در زمان کامپایل ترکیب کند و برای گزینه‌هایی که استفاده نمی‌کند هیچ هزینه‌ای نپردازد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "One slug generator, many configurations", "fa": "یک مولد slug، پیکربندی‌های متعدد" },
+    "task": {
+      "en": "The blog engine needs each post title in three forms: a URL slug (`ten-tips-for-clean-code`), a lower-case search key and an upper-case headline. Right now `Slugger` is hard-coded, so all three print the title unchanged. Turn `Slugger` into a host class template with a `CasePolicy` and a `SpacePolicy` constrained by the given `CharPolicy` concept, write the missing `UpperCase` policy, and configure the three aliases.",
+      "fa": "موتور وبلاگ عنوان هر پست را به سه شکل لازم دارد: یک slug برای URL (`ten-tips-for-clean-code`)، یک کلید جست‌وجوی حروف کوچک و یک تیتر با حروف بزرگ. فعلاً `Slugger` به‌صورت ثابت نوشته شده و هر سه خروجی همان عنوان دست‌نخورده است. `Slugger` را به یک class template میزبان با دو پارامتر `CasePolicy` و `SpacePolicy` تبدیل کنید که با concept آمادهٔ `CharPolicy` محدود شده‌اند، policy `UpperCase` را که هنوز نوشته نشده اضافه کنید و سه alias را پیکربندی کنید."
+    },
+    "hints": {
+      "en": [
+        "The host's loop should not contain any concrete rule; it only asks its two policy types what to do with each character.",
+        "Put `template <CharPolicy CasePolicy, CharPolicy SpacePolicy>` above `class Slugger` and write `out += SpacePolicy::apply(CasePolicy::apply(c));` in the loop.",
+        "`UpperCase` is `LowerCase` with `std::toupper`. Then: `using UrlSlug = Slugger<LowerCase, SpaceToDash>;`, `using SearchKey = Slugger<LowerCase, KeepSpaces>;`, `using Headline = Slugger<UpperCase, KeepSpaces>;`."
+      ],
+      "fa": [
+        "حلقهٔ میزبان نباید هیچ قانون مشخصی داشته باشد؛ فقط از دو نوع policy خودش می‌پرسد با هر کاراکتر چه کند.",
+        "بالای `class Slugger` بنویسید `template <CharPolicy CasePolicy, CharPolicy SpacePolicy>` و داخل حلقه `out += SpacePolicy::apply(CasePolicy::apply(c));` را قرار دهید.",
+        "`UpperCase` همان `LowerCase` است با `std::toupper`. بعد: `using UrlSlug = Slugger<LowerCase, SpaceToDash>;`، `using SearchKey = Slugger<LowerCase, KeepSpaces>;` و `using Headline = Slugger<UpperCase, KeepSpaces>;`."
+      ]
+    },
+    "expectedOutput": "title:    Ten Tips For Clean Code\nurl:      /blog/ten-tips-for-clean-code\nsearch:   ten tips for clean code\nheadline: TEN TIPS FOR CLEAN CODE"
+  }
+}

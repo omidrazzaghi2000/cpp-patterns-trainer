@@ -1,0 +1,339 @@
+{
+  "id": "memento",
+  "category": "behavioral",
+  "order": 6,
+  "difficulty": 2,
+  "icon": "history",
+  "name": { "en": "Memento", "fa": "ممنتو (یادگاری)" },
+  "aka": { "en": "Snapshot, Token", "fa": "Snapshot (عکس لحظه‌ای)، Token" },
+  "tagline": {
+    "en": "Save an object's state now, restore it later — without breaking encapsulation.",
+    "fa": "وضعیت شیء را همین حالا ذخیره کنید و بعداً برگردانید؛ بدون شکستن کپسوله‌سازی."
+  },
+  "intent": {
+    "en": "Without violating encapsulation, capture an object's internal state in a separate object so that the original can be restored to that state later.",
+    "fa": "بدون نقض کپسوله‌سازی، وضعیت درونی یک شیء را در شیء جداگانه‌ای ثبت می‌کند تا بعداً بتوان شیء اصلی را به همان وضعیت برگرداند."
+  },
+  "problem": {
+    "en": "A game must let the player reload the last checkpoint after the hero falls. The hero's zone, health and gold are private — and they should stay private. If the save system reads those fields through public getters and writes them back through setters, the hero's internal layout leaks into the save code: every new field means changing both classes, and nothing stops other code from calling `setHealth(9999)`. Copying the entire `Hero` is not great either: it may own resources that should not be duplicated, and the copies still need a safe place to live.",
+    "fa": "یک بازی باید به بازیکن اجازه دهد بعد از شکست قهرمان، آخرین چک‌پوینت (checkpoint) را بارگذاری کند. منطقه، سلامتی و سکه‌های قهرمان private هستند و باید private بمانند. اگر سیستم ذخیره این فیلدها را با getterهای عمومی بخواند و با setterها برگرداند، ساختار درونی قهرمان به کد ذخیره‌سازی نشت می‌کند: هر فیلد جدید یعنی تغییر هر دو کلاس، و هیچ چیز جلوی کدی را که `setHealth(9999)` را صدا بزند نمی‌گیرد. کپی کردن کل شیء `Hero` هم راه‌حل خوبی نیست؛ ممکن است مالک منابعی باشد که نباید تکثیر شوند و کپی‌ها هم به جای امنی برای نگهداری نیاز دارند."
+  },
+  "solution": {
+    "en": "Let the object that owns the state — the **originator** — produce the snapshot itself. `save()` returns a **memento**: a small value whose data members and constructor are private, with the originator declared as its `friend`. Other code can hold, copy and store mementos but cannot read or change them; only the originator's `restore()` can unpack one. A separate **caretaker** (a list of save slots, an undo stack) decides when to save and which memento to restore, without ever knowing what is inside.",
+    "fa": "بگذارید خود شیئی که مالک وضعیت است، یعنی **originator**، عکس لحظه‌ای را بسازد. `save()` یک **ممنتو** برمی‌گرداند: یک مقدار کوچک که اعضای داده و سازنده‌اش private هستند و originator به‌عنوان `friend` آن تعریف شده است. کدهای دیگر می‌توانند ممنتو را نگه دارند، کپی کنند و ذخیره کنند، اما نمی‌توانند آن را بخوانند یا تغییر دهند؛ فقط `restore()` در originator می‌تواند محتوایش را باز کند. یک **caretaker** (نگهدارنده) جداگانه، مثل فهرست اسلات‌های ذخیره یا یک پشتهٔ undo، تصمیم می‌گیرد چه زمانی ذخیره شود و کدام ممنتو برگردانده شود، بدون این‌که هیچ‌وقت بداند داخلش چیست."
+  },
+  "analogy": {
+    "en": "A bank safe-deposit box: the bank stores your box, keeps track of it and brings it back whenever you ask — but only you hold the key, so only you can open it and use what is inside.",
+    "fa": "صندوق امانات بانک: بانک صندوق شما را نگه می‌دارد، حسابش را دارد و هر وقت بخواهید آن را برایتان می‌آورد؛ اما کلید فقط دست شماست، پس فقط شما می‌توانید آن را باز کنید و از محتوایش استفاده کنید."
+  },
+  "participants": [
+    {
+      "name": "Originator",
+      "role": {
+        "en": "The object whose state must be restorable (`Hero`); it creates mementos with `save()` and rebuilds itself with `restore()`.",
+        "fa": "شیئی که وضعیتش باید قابل بازگرداندن باشد (`Hero`)؛ با `save()` ممنتو می‌سازد و با `restore()` خودش را از روی آن بازسازی می‌کند."
+      }
+    },
+    {
+      "name": "Memento",
+      "role": {
+        "en": "An immutable snapshot of the originator's state (`Checkpoint`). Its wide interface (the private data) is visible only to the originator; everyone else sees a narrow one, such as `label()`.",
+        "fa": "عکس لحظه‌ای تغییرناپذیر از وضعیت originator (`Checkpoint`). رابط کامل آن (داده‌های private) فقط برای originator قابل‌مشاهده است و بقیه فقط یک رابط محدود مثل `label()` را می‌بینند."
+      }
+    },
+    {
+      "name": "Caretaker",
+      "role": {
+        "en": "Keeps mementos (a list, a stack, fixed slots) and decides when to save and restore, but never inspects or modifies them (`SaveSlots`).",
+        "fa": "ممنتوها را نگه می‌دارد (در یک فهرست، پشته یا اسلات‌های ثابت) و تصمیم می‌گیرد کی ذخیره و کی بازیابی شود، اما هیچ‌وقت محتوای آن‌ها را بررسی یا تغییر نمی‌دهد (`SaveSlots`)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Hero", "kind": "concrete", "col": 2, "row": 0, "members": ["- zone_, health_, gold_", "+ save(label) : Checkpoint", "+ restore(Checkpoint)"] },
+      { "id": "SaveSlots", "kind": "concrete", "col": 0, "row": 2, "members": ["- slots_ : vector<Checkpoint>", "+ store(Checkpoint)", "+ latest() : Checkpoint&"] },
+      { "id": "Checkpoint", "kind": "concrete", "col": 2, "row": 2, "members": ["+ label() : string", "- zone_, health_, gold_", "- Checkpoint(...)"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Hero", "type": "uses", "label": "save / restore" },
+      { "from": "Client", "to": "SaveSlots", "type": "uses", "label": "store / latest" },
+      { "from": "Hero", "to": "Checkpoint", "type": "creates", "label": "save() as friend" },
+      { "from": "SaveSlots", "to": "Checkpoint", "type": "owns", "label": "opaque" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Decide which part of the originator's state must be restorable (here: zone, health and gold).",
+      "Create the memento class with private data members, a private constructor and `friend class Originator;` — plus, if useful, a tiny public interface for the caretaker (a label, a timestamp).",
+      "Add `Memento save() const` to the originator; it copies the current state into a new memento.",
+      "Add `void restore(const Memento&)` to the originator; it copies the state back out of the memento.",
+      "Write a caretaker that stores mementos (e.g. a `std::vector` used as an undo stack) and calls `save()` / `restore()` at the right moments."
+    ],
+    "fa": [
+      "مشخص کنید کدام بخش از وضعیت originator باید قابل بازگرداندن باشد (در این مثال: منطقه، سلامتی و سکه‌ها).",
+      "کلاس ممنتو را با اعضای دادهٔ private، سازندهٔ private و `friend class Originator;` بسازید و در صورت نیاز یک رابط عمومی کوچک برای caretaker (مثل برچسب یا زمان ذخیره) اضافه کنید.",
+      "متد `Memento save() const` را به originator اضافه کنید تا وضعیت فعلی را در یک ممنتوی جدید کپی کند.",
+      "متد `void restore(const Memento&)` را به originator اضافه کنید تا وضعیت را از ممنتو برگرداند.",
+      "یک caretaker بنویسید که ممنتوها را نگه دارد (مثلاً یک `std::vector` به‌عنوان پشتهٔ undo) و در زمان مناسب `save()` و `restore()` را صدا بزند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You need undo, checkpoints, \"Cancel\" in a settings dialog or rollback after a failed multi-step operation.",
+      "Reading and writing the object's fields directly would break its encapsulation or expose implementation details.",
+      "The state to save is reasonably small, or you can limit how many snapshots you keep."
+    ],
+    "fa": [
+      "به undo، چک‌پوینت، دکمهٔ «انصراف» در دیالوگ تنظیمات یا برگرداندن وضعیت بعد از شکست یک عملیات چندمرحله‌ای نیاز دارید.",
+      "خواندن و نوشتن مستقیم فیلدهای شیء، کپسوله‌سازی آن را می‌شکند یا جزئیات پیاده‌سازی را آشکار می‌کند.",
+      "حجم وضعیتی که باید ذخیره شود معقول است، یا می‌توانید تعداد عکس‌های لحظه‌ای نگه‌داشته‌شده را محدود کنید."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Preserves encapsulation: the saved state never leaks through public getters or setters.",
+      "Keeps the originator simple — history management lives in the caretaker.",
+      "Mementos are plain values: easy to keep in containers, copy, or serialise to disk."
+    ],
+    "fa": [
+      "کپسوله‌سازی حفظ می‌شود: وضعیت ذخیره‌شده هیچ‌وقت از طریق getter یا setter عمومی بیرون نمی‌ریزد.",
+      "originator ساده می‌ماند؛ مدیریت تاریخچه بر عهدهٔ caretaker است.",
+      "ممنتوها مقدارهای ساده‌ای هستند: نگه داشتنشان در کانتینرها، کپی کردن یا ذخیره‌شان روی دیسک آسان است."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Can use a lot of memory when snapshots are large or taken very often.",
+      "The caretaker has to manage the mementos' lifetime, e.g. cap the undo history.",
+      "Mementos persisted to disk may no longer fit a newer version of the originator (think of saved games after an update)."
+    ],
+    "fa": [
+      "وقتی عکس‌های لحظه‌ای بزرگ باشند یا خیلی زیاد گرفته شوند، حافظهٔ زیادی مصرف می‌شود.",
+      "caretaker باید طول عمر ممنتوها را مدیریت کند؛ مثلاً تاریخچهٔ undo را محدود کند.",
+      "ممنتوهایی که روی دیسک ذخیره شده‌اند ممکن است با نسخهٔ جدیدتر originator سازگار نباشند (مثل فایل‌های ذخیرهٔ بازی بعد از یک به‌روزرسانی)."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "`friend class Originator;` inside the memento is the idiomatic way to give the originator full access while everyone else sees only the public part. If you nest the memento inside the originator you still need the `friend`: a nested class can access its enclosing class's privates, but not the other way round.",
+      "Make mementos value types and store them by value in a `std::vector` or `std::deque`; no `new` or `std::unique_ptr` is needed unless the saved state is polymorphic.",
+      "Copy deep state: if the originator holds a `std::unique_ptr` or other pointers, the memento must copy the pointed-to data. Copying only the pointer aliases the live object, so a later `restore()` changes nothing.",
+      "Keep mementos immutable with private data and no setters — but avoid `const` data members, because they disable assignment, which `std::vector::erase` and friends require.",
+      "Bound the history: pop the oldest entry from a `std::deque` once it exceeds N items, or store diffs instead of full copies when the state is large."
+    ],
+    "fa": [
+      "قرار دادن `friend class Originator;` داخل ممنتو روش رایج C++ برای دادن دسترسی کامل به originator است، در حالی که بقیه فقط بخش عمومی را می‌بینند. اگر ممنتو را داخل originator تعریف کنید (nested class) باز هم به `friend` نیاز دارید: کلاس تودرتو به اعضای private کلاس بیرونی دسترسی دارد، اما برعکس آن صادق نیست.",
+      "ممنتوها را از نوع مقداری (value type) طراحی کنید و آن‌ها را به‌صورت مقداری در `std::vector` یا `std::deque` نگه دارید؛ تا وقتی وضعیت ذخیره‌شده چندریختی (polymorphic) نباشد، به `new` یا `std::unique_ptr` نیازی نیست.",
+      "وضعیت را عمیق (deep) کپی کنید: اگر originator یک `std::unique_ptr` یا اشاره‌گرهای دیگر دارد، ممنتو باید دادهٔ مورد اشاره را کپی کند. کپی کردن خود اشاره‌گر فقط به همان شیء زنده اشاره می‌کند و `restore()` بعدی هیچ چیزی را برنمی‌گرداند.",
+      "ممنتوها را با دادهٔ private و بدون setter تغییرناپذیر نگه دارید؛ اما از اعضای دادهٔ `const` پرهیز کنید، چون عمل انتساب را غیرفعال می‌کنند و `std::vector::erase` و توابع مشابه به آن نیاز دارند.",
+      "تاریخچه را محدود کنید: وقتی تعداد ورودی‌های یک `std::deque` از N بیشتر شد، قدیمی‌ترین را حذف کنید، یا وقتی وضعیت بزرگ است به‌جای کپی کامل، فقط تفاوت‌ها (diff) را ذخیره کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Undo stacks in text, image and vector editors, where each entry keeps a snapshot (or a compact diff) of the document state.",
+      "Save games and checkpoints, and database savepoints (`SAVEPOINT` / `ROLLBACK TO SAVEPOINT`).",
+      "The standard random engines such as `std::mt19937` can write their complete state to a stream with `operator<<` and restore it with `operator>>` — a snapshot you store without interpreting it."
+    ],
+    "fa": [
+      "پشته‌های undo در ویرایشگرهای متن، تصویر و گرافیک برداری که هر ورودی آن یک عکس لحظه‌ای (یا diff فشرده) از وضعیت سند را نگه می‌دارد.",
+      "ذخیرهٔ بازی‌ها و چک‌پوینت‌ها، و savepointهای پایگاه داده (`SAVEPOINT` / `ROLLBACK TO SAVEPOINT`).",
+      "موتورهای تولید عدد تصادفی استاندارد مثل `std::mt19937` می‌توانند کل وضعیتشان را با `operator<<` در یک stream بنویسند و با `operator>>` بازیابی کنند؛ یک عکس لحظه‌ای که آن را بدون تفسیر محتوایش نگه می‌دارید."
+    ]
+  },
+  "related": [
+    {
+      "id": "command",
+      "note": {
+        "en": "They team up for undo: a command can take a memento of its receiver before executing and restore it in `undo()`. The command records what to do, the memento records what the state was.",
+        "fa": "برای undo با هم کار می‌کنند: یک command می‌تواند پیش از اجرا از گیرنده‌اش ممنتو بگیرد و در `undo()` آن را بازگرداند. command ثبت می‌کند چه کاری انجام شود و ممنتو ثبت می‌کند وضعیت قبلاً چه بوده است."
+      }
+    },
+    {
+      "id": "prototype",
+      "note": {
+        "en": "A prototype clone copies the whole object and exposes it; a memento captures only the restorable state and hides it. For simple objects, a clone can serve as a lightweight snapshot.",
+        "fa": "پروتوتایپ کل شیء را کپی می‌کند و در اختیار می‌گذارد؛ ممنتو فقط وضعیت قابل بازگرداندن را ثبت و پنهان می‌کند. برای اشیای ساده، یک کلون می‌تواند نقش عکس لحظه‌ای سبک را بازی کند."
+      }
+    },
+    {
+      "id": "iterator",
+      "note": {
+        "en": "A memento can capture the position of an iteration so that a traversal can be paused and resumed later.",
+        "fa": "یک ممنتو می‌تواند موقعیت فعلی پیمایش را ثبت کند تا بتوان پیمایش را متوقف کرد و بعداً از همان‌جا ادامه داد."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Game checkpoints", "fa": "چک‌پوینت‌های بازی" },
+    "description": {
+      "en": "`Hero` creates `Checkpoint` objects with `save()` and rebuilds itself with `restore()`. `SaveSlots` keeps the checkpoints and hands back the latest one, but because the members are private and only `Hero` is a `friend`, it can read nothing except the label. After the hero falls in the Dragon Lair, loading the checkpoint brings back the exact state from the forest.",
+      "fa": "`Hero` با `save()` اشیای `Checkpoint` می‌سازد و با `restore()` خودش را بازسازی می‌کند. `SaveSlots` چک‌پوینت‌ها را نگه می‌دارد و آخرینشان را برمی‌گرداند، اما چون اعضا private هستند و فقط `Hero` دوست (`friend`) این کلاس است، جز برچسب هیچ چیزی را نمی‌تواند بخواند. بعد از شکست قهرمان در Dragon Lair، بارگذاری چک‌پوینت دقیقاً همان وضعیت جنگل را برمی‌گرداند."
+    },
+    "output": "saved \"new game\"\n  hero in Dark Forest: hp 70, gold 50\nsaved \"forest cleared\"\n  hero in Dragon Lair: hp 0, gold 50\ngame over! 2 checkpoints available\nloading \"forest cleared\"\n  hero in Dark Forest: hp 70, gold 50",
+    "highlights": [
+      {
+        "lines": [8, 22],
+        "note": {
+          "en": "The memento. Its data and constructor are private; `friend class Hero;` gives the originator the wide interface, while everyone else only sees `label()`.",
+          "fa": "ممنتو. داده‌ها و سازنده‌اش private هستند؛ `friend class Hero;` رابط کامل را فقط به originator می‌دهد و بقیه فقط `label()` را می‌بینند."
+        }
+      },
+      {
+        "lines": [27, 34],
+        "note": {
+          "en": "`save()` copies the current state into a new checkpoint and `restore()` copies it back. Only `Hero` decides which fields belong in a snapshot.",
+          "fa": "`save()` وضعیت فعلی را در یک چک‌پوینت جدید کپی می‌کند و `restore()` آن را برمی‌گرداند. فقط `Hero` تصمیم می‌گیرد کدام فیلدها در عکس لحظه‌ای قرار بگیرند."
+        }
+      },
+      {
+        "lines": [51, 63],
+        "note": {
+          "en": "The caretaker stores checkpoints by value and decides which one to hand back, but it cannot look inside them.",
+          "fa": "caretaker چک‌پوینت‌ها را به‌صورت مقداری نگه می‌دارد و تصمیم می‌گیرد کدام را برگرداند، اما نمی‌تواند داخل آن‌ها را ببیند."
+        }
+      },
+      {
+        "lines": [79, 84],
+        "note": {
+          "en": "Restoring after \"game over\". The commented-out line would not compile: outsiders cannot read or tamper with a snapshot.",
+          "fa": "بازیابی بعد از «game over». خط کامنت‌شده کامپایل نمی‌شود: کدهای بیرونی نمی‌توانند عکس لحظه‌ای را بخوانند یا دستکاری کنند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What does the Memento pattern let you do?",
+        "fa": "الگوی ممنتو چه امکانی به شما می‌دهد؟"
+      },
+      "options": {
+        "en": [
+          "Share one copy of common state among many objects to save memory",
+          "Save and later restore an object's internal state without exposing that state to other classes",
+          "Notify dependent objects automatically whenever an object's state changes",
+          "Change an object's behaviour when its internal state changes"
+        ],
+        "fa": [
+          "به اشتراک گذاشتن یک نسخه از وضعیت مشترک بین اشیای زیاد برای صرفه‌جویی در حافظه",
+          "ذخیره و بازیابی بعدی وضعیت درونی یک شیء بدون آشکار کردن آن وضعیت برای کلاس‌های دیگر",
+          "خبر دادن خودکار به اشیای وابسته هر بار که وضعیت یک شیء تغییر می‌کند",
+          "تغییر رفتار یک شیء وقتی وضعیت درونی‌اش عوض می‌شود"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Memento is about externalising state for later restoration while keeping it opaque. Sharing common state is Flyweight, automatic change notification is Observer, and behaviour that depends on internal state is State.",
+        "fa": "ممنتو دربارهٔ بیرون بردن وضعیت برای بازیابی بعدی است، به شکلی که محتوای آن پنهان بماند. اشتراک وضعیت مشترک کار فلای‌ویت است، اعلان خودکار تغییرات کار آبزرور و رفتاری که به وضعیت درونی وابسته است کار استیت."
+      }
+    },
+    {
+      "question": {
+        "en": "A `SaveSlots` caretaker stores `Checkpoint` mementos created by `Hero`. What typically prevents the caretaker from reading a checkpoint's saved health?",
+        "fa": "یک caretaker به نام `SaveSlots` ممنتوهای `Checkpoint` را که `Hero` ساخته نگه می‌دارد. معمولاً چه چیزی مانع می‌شود که caretaker مقدار سلامتی ذخیره‌شده در یک چک‌پوینت را بخواند؟"
+      },
+      "options": {
+        "en": [
+          "`SaveSlots` only stores `const` references to checkpoints",
+          "The health value is encrypted inside the checkpoint",
+          "`Checkpoint`'s data members are private and only `Hero` is declared a `friend`",
+          "`Checkpoint` is an abstract class"
+        ],
+        "fa": [
+          "`SaveSlots` فقط ارجاع‌های `const` به چک‌پوینت‌ها نگه می‌دارد",
+          "مقدار سلامتی داخل چک‌پوینت رمزنگاری شده است",
+          "اعضای دادهٔ `Checkpoint` private هستند و فقط `Hero` به‌عنوان `friend` تعریف شده است",
+          "`Checkpoint` یک کلاس انتزاعی است"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "C++ access control does the work: private members plus a single `friend` give the originator a wide interface and everyone else a narrow one (`label()`). `const` would only prevent modification, not reading.",
+        "fa": "کنترل دسترسی C++ این کار را انجام می‌دهد: اعضای private به‌همراه یک `friend` به originator رابط کامل و به بقیه رابط محدود (`label()`) می‌دهند. `const` فقط جلوی تغییر را می‌گیرد، نه خواندن را."
+      }
+    },
+    {
+      "question": {
+        "en": "An image editor holds a 50 MB bitmap and the user makes hundreds of tiny edits. What is the main concern with taking a full memento before every edit?",
+        "fa": "یک ویرایشگر تصویر یک bitmap پنجاه‌مگابایتی دارد و کاربر صدها ویرایش کوچک انجام می‌دهد. نگرانی اصلی در گرفتن یک ممنتوی کامل قبل از هر ویرایش چیست؟"
+      },
+      "options": {
+        "en": [
+          "Memory grows quickly — store diffs, compress snapshots or cap the history",
+          "C++ mementos cannot hold objects larger than the stack",
+          "The editor's encapsulation would be broken",
+          "The caretaker would have to become a friend of the editor"
+        ],
+        "fa": [
+          "حافظه به‌سرعت پر می‌شود؛ باید diff ذخیره کنید، عکس‌های لحظه‌ای را فشرده کنید یا تاریخچه را محدود کنید",
+          "در C++ ممنتو نمی‌تواند شیئی بزرگ‌تر از stack را نگه دارد",
+          "کپسوله‌سازی ویرایشگر شکسته می‌شود",
+          "caretaker باید friend ویرایشگر شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Memento's main cost is space. For big states, save only what changed (or combine it with Command, which stores the operation instead of the state) and limit how many snapshots you keep.",
+        "fa": "هزینهٔ اصلی ممنتو فضای حافظه است. برای وضعیت‌های بزرگ فقط چیزی را که تغییر کرده ذخیره کنید (یا آن را با کامند ترکیب کنید که به‌جای وضعیت، خود عملیات را نگه می‌دارد) و تعداد عکس‌های لحظه‌ای را محدود کنید."
+      }
+    },
+    {
+      "question": {
+        "en": "How do Memento and Command typically relate in an undo system?",
+        "fa": "ممنتو و کامند معمولاً در یک سیستم undo چه رابطه‌ای با هم دارند؟"
+      },
+      "options": {
+        "en": [
+          "They are unrelated; undo is always built with Observer",
+          "Command makes Memento unnecessary because commands never need saved state",
+          "The memento executes operations and the command stores the history",
+          "A command can save a memento of its receiver before executing and restore it in `undo()`"
+        ],
+        "fa": [
+          "هیچ ربطی به هم ندارند؛ undo همیشه با آبزرور ساخته می‌شود",
+          "کامند ممنتو را بی‌فایده می‌کند، چون commandها هیچ‌وقت به وضعیت ذخیره‌شده نیاز ندارند",
+          "ممنتو عملیات را اجرا می‌کند و command تاریخچه را نگه می‌دارد",
+          "یک command می‌تواند پیش از اجرا از گیرنده‌اش ممنتو بگیرد و در `undo()` آن را بازگرداند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Command records the action, Memento records the state before it. When an operation is hard to reverse by computation (e.g. a blur filter), storing a memento is the simplest way to implement `undo()`.",
+        "fa": "کامند خودِ عمل را ثبت می‌کند و ممنتو وضعیتِ پیش از آن را. وقتی معکوس کردن یک عملیات با محاسبه سخت است (مثلاً فیلتر blur)، ذخیرهٔ یک ممنتو ساده‌ترین راه پیاده‌سازی `undo()` است."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A drawing app's preferences dialog applies changes live; pressing \"Cancel\" must put every setting back exactly as it was, without the dialog knowing the settings object's private fields.",
+      "fa": "دیالوگ تنظیمات یک برنامهٔ نقاشی تغییرات را بلافاصله اعمال می‌کند؛ زدن دکمهٔ «انصراف» باید همهٔ تنظیمات را دقیقاً به حالت قبل برگرداند، بدون این‌که دیالوگ فیلدهای private شیء تنظیمات را بشناسد."
+    },
+    {
+      "en": "A spreadsheet must roll a sheet back to its previous contents when a multi-cell paste fails halfway, while the sheet's internal storage stays hidden from the paste code.",
+      "fa": "یک صفحه‌گسترده باید وقتی چسباندن چندخانه‌ای در نیمه‌راه شکست می‌خورد، برگه را به محتوای قبلی‌اش برگرداند، در حالی که ساختار ذخیره‌سازی درونی برگه از کد چسباندن پنهان می‌ماند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Undo for a photo editor", "fa": "قابلیت undo برای ویرایشگر عکس" },
+    "task": {
+      "en": "The editor already has a `Snapshot` memento and a `History` caretaker, but undo does nothing yet. Implement `PhotoEditor::save()` so it captures brightness, contrast and grayscale, `PhotoEditor::restore()` so it copies them back, and `History::undo()` so it restores the newest snapshot and removes it. The two undos must step back to the `brighter` state and then to the `original` one.",
+      "fa": "ویرایشگر همین حالا یک ممنتو به نام `Snapshot` و یک caretaker به نام `History` دارد، اما undo هنوز هیچ کاری نمی‌کند. `PhotoEditor::save()` را طوری پیاده‌سازی کنید که روشنایی، کنتراست و سیاه‌وسفید بودن را ثبت کند، `PhotoEditor::restore()` را طوری که آن‌ها را برگرداند و `History::undo()` را طوری که جدیدترین عکس لحظه‌ای را بازیابی و سپس حذف کند. دو undo باید ابتدا به وضعیت `brighter` و سپس به وضعیت `original` برگردند."
+    },
+    "hints": {
+      "en": [
+        "`Snapshot`'s constructor is private, but `PhotoEditor` is its friend, so the editor may call `Snapshot{...}` and read `snapshot.brightness_` directly.",
+        "`save()` is one line: `return Snapshot{brightness_, contrast_, grayscale_};` — `restore()` is three assignments in the opposite direction.",
+        "`undo()`: `if (undo_.empty()) return;` then `editor_.restore(undo_.back());` and finally `undo_.pop_back();` — restore before popping, because `back()` returns a reference into the vector."
+      ],
+      "fa": [
+        "سازندهٔ `Snapshot` private است، اما `PhotoEditor` دوست (friend) آن است؛ پس ویرایشگر می‌تواند `Snapshot{...}` را صدا بزند و `snapshot.brightness_` را مستقیم بخواند.",
+        "`save()` یک خط است: `return Snapshot{brightness_, contrast_, grayscale_};` و `restore()` سه انتساب در جهت مخالف است.",
+        "`undo()`: ابتدا `if (undo_.empty()) return;`، بعد `editor_.restore(undo_.back());` و در آخر `undo_.pop_back();`. قبل از حذف، بازیابی کنید، چون `back()` ارجاعی به داخل vector برمی‌گرداند."
+      ]
+    },
+    "expectedOutput": "original: brightness 0, contrast 0, color\nbrighter: brightness 20, contrast 10, color\ndramatic: brightness 15, contrast 40, grayscale\nundo: brightness 20, contrast 10, color\nundo: brightness 0, contrast 0, color"
+  }
+}

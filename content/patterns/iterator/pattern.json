@@ -1,0 +1,465 @@
+{
+  "id": "iterator",
+  "category": "behavioral",
+  "order": 4,
+  "difficulty": 2,
+  "icon": "iteration-cw",
+  "name": {
+    "en": "Iterator",
+    "fa": "ایتریتور (پیمایشگر)"
+  },
+  "aka": {
+    "en": "Cursor",
+    "fa": "Cursor (مکان‌نما)"
+  },
+  "tagline": {
+    "en": "Walk through a collection without knowing how it is stored.",
+    "fa": "پیمایش یک مجموعه، بدون این‌که بدانید چطور ذخیره شده است."
+  },
+  "intent": {
+    "en": "Provide a way to access the elements of an aggregate object sequentially without exposing its underlying representation.",
+    "fa": "راهی فراهم می‌کند تا به عناصر یک شیء مجموعه‌ای (aggregate) به‌ترتیب دسترسی داشته باشید، بدون این‌که ساختار داخلی آن فاش شود."
+  },
+  "problem": {
+    "en": "A weather station keeps the last N temperature readings in a ring buffer: a fixed array plus a `head_` index that wraps around. Code that wants to print, average or find the maximum reading would have to know about `head_`, the modulo arithmetic and how many slots are filled — and all of it would break the day the buffer changes its layout. Meanwhile range-for loops and standard algorithms such as `std::max_element` cannot be used on the buffer at all.",
+    "fa": "یک ایستگاه هواشناسی آخرین N دمای اندازه‌گیری‌شده را در یک بافر حلقوی (ring buffer) نگه می‌دارد: یک آرایهٔ ثابت به‌علاوهٔ اندیس `head_` که دور آرایه می‌چرخد. کدی که بخواهد خوانش‌ها را چاپ کند، میانگین بگیرد یا بیشینه را پیدا کند، باید از `head_`، محاسبهٔ باقی‌مانده (modulo) و تعداد خانه‌های پرشده خبر داشته باشد؛ و روزی که چیدمان بافر عوض شود، همهٔ این کدها می‌شکنند. از طرف دیگر، حلقهٔ range-for و الگوریتم‌های استاندارد مثل `std::max_element` اصلاً روی این بافر قابل استفاده نیستند."
+  },
+  "solution": {
+    "en": "Move the traversal logic into a separate iterator object. The container hands out iterators through `begin()` and `end()`; each iterator keeps a position and knows how to reach the element at that position and the next one (here: logical index → physical slot `(head_ + pos_) % N`). In C++ the iterator follows the standard protocol — `operator*`, `operator++`, `operator==` plus the member type aliases — so it plugs straight into range-for, `<algorithm>` and C++20 ranges, which all work only through that interface.",
+    "fa": "منطق پیمایش را به یک شیء ایتریتور جداگانه منتقل کنید. مجموعه از طریق `begin()` و `end()` ایتریتور تحویل می‌دهد؛ هر ایتریتور یک موقعیت نگه می‌دارد و می‌داند چطور به عنصرِ همان موقعیت و عنصر بعدی برسد (اینجا اندیس منطقی به خانهٔ فیزیکی `(head_ + pos_) % N` نگاشت می‌شود). در C++ ایتریتور از پروتکل استاندارد پیروی می‌کند (`operator*`، `operator++`، `operator==` به‌علاوهٔ نام‌های نوعی عضو)، پس مستقیماً با range-for، `<algorithm>` و rangeهای C++20 کار می‌کند؛ چون همهٔ آن‌ها فقط از طریق همین رابط با مجموعه حرف می‌زنند."
+  },
+  "analogy": {
+    "en": "The channel-up button on a TV remote. You don't need to know how channels are stored or numbered internally — some are skipped, some are favourites — you just press \"next\" and the remote knows which channel comes after the current one.",
+    "fa": "دکمهٔ «کانال بعدی» روی کنترل تلویزیون. لازم نیست بدانید کانال‌ها در داخل چطور ذخیره یا شماره‌گذاری شده‌اند (بعضی رد می‌شوند، بعضی جزو علاقه‌مندی‌ها هستند)؛ فقط «بعدی» را می‌زنید و کنترل می‌داند بعد از کانال فعلی کدام کانال می‌آید."
+  },
+  "participants": [
+    {
+      "name": "Iterator",
+      "role": {
+        "en": "The traversal interface. In C++ it is a set of operations rather than a base class — `*it`, `++it`, `it == end` — checked by concepts such as `std::forward_iterator`.",
+        "fa": "رابط پیمایش. در C++ این رابط به‌جای یک کلاس پایه، مجموعه‌ای از عملیات است (`*it`، `++it`، `it == end`) که با conceptهایی مثل `std::forward_iterator` بررسی می‌شود."
+      }
+    },
+    {
+      "name": "ConcreteIterator",
+      "role": {
+        "en": "Tracks the current position and implements the traversal for one container (`RingBuffer::const_iterator`).",
+        "fa": "موقعیت فعلی را نگه می‌دارد و پیمایش را برای یک مجموعهٔ مشخص پیاده‌سازی می‌کند (`RingBuffer::const_iterator`)."
+      }
+    },
+    {
+      "name": "Aggregate",
+      "role": {
+        "en": "The collection protocol that creates iterators: `begin()` and `end()`.",
+        "fa": "پروتکل مجموعه که ایتریتور می‌سازد: `begin()` و `end()`."
+      }
+    },
+    {
+      "name": "ConcreteAggregate",
+      "role": {
+        "en": "Stores the elements and returns iterators to its first element and to one past its last (`RingBuffer`).",
+        "fa": "عناصر را ذخیره می‌کند و ایتریتورهایی به اولین عنصر و به یکی بعد از آخرین عنصر برمی‌گرداند (`RingBuffer`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Uses only iterators — range-for, `std::max_element`, `std::ranges::count_if` — never the internal layout.",
+        "fa": "فقط از ایتریتورها استفاده می‌کند (range-for، `std::max_element`، `std::ranges::count_if`) و هرگز به ساختار داخلی دست نمی‌زند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Aggregate",
+        "kind": "interface",
+        "col": 1,
+        "row": 0,
+        "members": [
+          "+ begin() : Iterator",
+          "+ end() : Iterator"
+        ]
+      },
+      {
+        "id": "Iterator",
+        "kind": "interface",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "+ operator*() : const T&",
+          "+ operator++() : Iterator&",
+          "+ operator==(it) : bool"
+        ]
+      },
+      {
+        "id": "ConcreteAggregate",
+        "kind": "concrete",
+        "col": 1,
+        "row": 1,
+        "members": [
+          "- data_ : array<T, N>",
+          "- head_, size_ : size_t",
+          "+ begin() / end()"
+        ]
+      },
+      {
+        "id": "ConcreteIterator",
+        "kind": "concrete",
+        "col": 2,
+        "row": 1,
+        "members": [
+          "- buf_ : const Aggregate*",
+          "- pos_ : size_t"
+        ]
+      },
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 2
+      }
+    ],
+    "edges": [
+      {
+        "from": "ConcreteAggregate",
+        "to": "Aggregate",
+        "type": "implements"
+      },
+      {
+        "from": "ConcreteIterator",
+        "to": "Iterator",
+        "type": "implements"
+      },
+      {
+        "from": "ConcreteAggregate",
+        "to": "ConcreteIterator",
+        "type": "creates"
+      },
+      {
+        "from": "Client",
+        "to": "ConcreteAggregate",
+        "type": "uses",
+        "label": "begin() / end()"
+      },
+      {
+        "from": "Client",
+        "to": "ConcreteIterator",
+        "type": "uses",
+        "label": "*it, ++it"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Decide what the iterator must remember: usually a pointer to the container and a position (index, node pointer…).",
+      "Write the iterator class with `operator*`, pre- and post-increment `operator++` and `operator==`, plus the aliases `iterator_category`, `value_type`, `difference_type`, `pointer` and `reference`.",
+      "Put the traversal logic inside the iterator (wrap-around, skipping empty slots, walking a tree) so clients never see it.",
+      "Give the container `begin()` and `end()` — `const` versions returning a `const_iterator` — where `end()` is one past the last element.",
+      "Check the contract at compile time with `static_assert(std::forward_iterator<It>)`, then use range-for and the standard algorithms."
+    ],
+    "fa": [
+      "مشخص کنید ایتریتور چه چیزی را باید به خاطر بسپارد: معمولاً یک اشاره‌گر به مجموعه و یک موقعیت (اندیس، اشاره‌گر به گره و…).",
+      "کلاس ایتریتور را با `operator*`، `operator++` پیشوندی و پسوندی و `operator==` بنویسید و نام‌های نوعی `iterator_category`، `value_type`، `difference_type`، `pointer` و `reference` را هم تعریف کنید.",
+      "منطق پیمایش (دور زدن در آرایه، رد شدن از خانه‌های خالی، پیمایش درخت) را داخل ایتریتور بگذارید تا کلاینت‌ها هرگز آن را نبینند.",
+      "به مجموعه `begin()` و `end()` بدهید (نسخه‌های `const` که `const_iterator` برمی‌گردانند)؛ `end()` به یکی بعد از آخرین عنصر اشاره می‌کند.",
+      "قرارداد را در زمان کامپایل با `static_assert(std::forward_iterator<It>)` بررسی کنید و بعد از range-for و الگوریتم‌های استاندارد استفاده کنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "The collection's internal structure is complex or should stay hidden (ring buffer, tree, hash table, sparse storage).",
+      "You want several traversal orders over the same data (in-order vs pre-order, forward vs reverse).",
+      "A custom container should work with range-for, `<algorithm>` and C++20 ranges.",
+      "Elements should be produced lazily (lines of a file, pages from a server) without building a full container first."
+    ],
+    "fa": [
+      "ساختار داخلی مجموعه پیچیده است یا باید پنهان بماند (بافر حلقوی، درخت، جدول درهم‌سازی، ذخیره‌سازی پراکنده).",
+      "می‌خواهید روی یک داده چند ترتیب پیمایش مختلف داشته باشید (میان‌ترتیب یا پیش‌ترتیب، رو به جلو یا معکوس).",
+      "یک مجموعهٔ سفارشی باید با range-for، `<algorithm>` و rangeهای C++20 کار کند.",
+      "عناصر باید به‌صورت تنبل تولید شوند (خط‌های یک فایل، صفحه‌های یک سرور) بدون این‌که اول یک مجموعهٔ کامل ساخته شود."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Separates traversal from storage: the container can change without breaking client code.",
+      "One uniform interface for every collection — all standard algorithms work for free.",
+      "Several traversals can be in progress at once, each with its own position."
+    ],
+    "fa": [
+      "پیمایش را از ذخیره‌سازی جدا می‌کند: مجموعه می‌تواند تغییر کند بدون این‌که کد کلاینت بشکند.",
+      "یک رابط یکسان برای همهٔ مجموعه‌ها؛ همهٔ الگوریتم‌های استاندارد بدون زحمت اضافه کار می‌کنند.",
+      "چند پیمایش می‌توانند هم‌زمان در جریان باشند، هر کدام با موقعیت خودش."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Writing a correct, standard-conforming iterator takes boilerplate and care (const-correctness, end handling, iterator categories).",
+      "Iterators can be invalidated when the container changes — in the ring buffer, a `push()` on a full buffer silently shifts what every existing iterator points to.",
+      "Overkill for simple arrays: `std::vector`, `std::array` and `std::span` already provide iterators."
+    ],
+    "fa": [
+      "نوشتن یک ایتریتور درست و سازگار با استاندارد کد تکراری و دقت زیادی لازم دارد (const-correctness، مدیریت انتها، دسته‌بندی ایتریتورها).",
+      "ایتریتورها ممکن است با تغییر مجموعه نامعتبر شوند؛ در بافر حلقوی، یک `push()` روی بافر پر بی‌صدا عنصری را که همهٔ ایتریتورهای موجود به آن اشاره می‌کنند جابه‌جا می‌کند.",
+      "برای آرایه‌های ساده زیادی است: `std::vector`، `std::array` و `std::span` از قبل ایتریتور دارند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Provide the five member aliases — `std::iterator_traits` and the C++20 concepts look for them. Don't inherit from `std::iterator`; it is deprecated since C++17.",
+      "A forward iterator must be default-constructible, copyable and equality-comparable; in C++20 `bool operator==(const It&) const = default;` also gives you `!=`.",
+      "Verify your work with `static_assert(std::forward_iterator<It>)` — if a requirement is missing, the compiler tells you which one.",
+      "Offer `begin() const` / `end() const` returning a `const_iterator`, so `const` containers and `for (const auto& x : c)` work.",
+      "For generated or unbounded sequences, C++20 lets `end()` return a separate sentinel type, and C++23's `std::generator` can replace a hand-written iterator entirely."
+    ],
+    "fa": [
+      "پنج نام نوعی عضو را تعریف کنید؛ `std::iterator_traits` و conceptهای C++20 دنبال آن‌ها می‌گردند. از `std::iterator` ارث‌بری نکنید؛ از C++17 منسوخ (deprecated) شده است.",
+      "ایتریتور forward باید سازندهٔ پیش‌فرض داشته باشد، قابل کپی باشد و بتوان آن را با `==` مقایسه کرد؛ در C++20 تعریف `bool operator==(const It&) const = default;` عملگر `!=` را هم به شما می‌دهد.",
+      "کارتان را با `static_assert(std::forward_iterator<It>)` بررسی کنید؛ اگر شرطی کم باشد، کامپایلر می‌گوید کدام است.",
+      "`begin() const` و `end() const` را با خروجی `const_iterator` ارائه کنید تا مجموعه‌های `const` و `for (const auto& x : c)` کار کنند.",
+      "برای دنباله‌های تولیدی یا بی‌انتها، C++20 اجازه می‌دهد `end()` نوع جداگانه‌ای به نام sentinel برگرداند و `std::generator` در C++23 می‌تواند کاملاً جای ایتریتور دست‌نویس را بگیرد."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Every standard container exposes iterators; `std::istream_iterator` and `std::filesystem::directory_iterator` walk input streams and directories the same way.",
+      "C++20 views such as `std::views::filter` and `std::views::transform` are lazy iterator adaptors.",
+      "Qt containers offer both STL-style iterators and Java-style ones (`QListIterator`).",
+      "Database cursors — e.g. stepping through rows with SQLite's `sqlite3_step()` — fetch results one at a time."
+    ],
+    "fa": [
+      "همهٔ مجموعه‌های استاندارد ایتریتور دارند؛ `std::istream_iterator` و `std::filesystem::directory_iterator` هم جریان‌های ورودی و پوشه‌ها را به همین شکل پیمایش می‌کنند.",
+      "viewهای C++20 مثل `std::views::filter` و `std::views::transform` آداپتورهای تنبل روی ایتریتورها هستند.",
+      "مجموعه‌های Qt هم ایتریتورهای سبک STL و هم سبک Java (`QListIterator`) ارائه می‌دهند.",
+      "cursorهای پایگاه داده (مثلاً جلو رفتن روی سطرها با `sqlite3_step()` در SQLite) نتایج را یکی‌یکی واکشی می‌کنند."
+    ]
+  },
+  "related": [
+    {
+      "id": "composite",
+      "note": {
+        "en": "Iterators are the usual way to walk a composite tree (depth-first or breadth-first) without exposing its nodes.",
+        "fa": "ایتریتورها روش رایج پیمایش یک درخت کامپوزیت (عمق‌اول یا سطح‌اول) بدون فاش کردن گره‌های آن هستند."
+      }
+    },
+    {
+      "id": "visitor",
+      "note": {
+        "en": "An iterator decides **where to go next**; a visitor decides **what to do** at each element — they are often used together.",
+        "fa": "ایتریتور تصمیم می‌گیرد **بعد کجا برود**؛ ویزیتور تصمیم می‌گیرد **روی هر عنصر چه کاری انجام شود**؛ این دو اغلب با هم استفاده می‌شوند."
+      }
+    },
+    {
+      "id": "factory-method",
+      "note": {
+        "en": "`begin()` and `end()` are factory methods: each container creates the iterator type that knows its own layout.",
+        "fa": "`begin()` و `end()` متدهای کارخانه‌ای (factory method) هستند: هر مجموعه نوع ایتریتوری را می‌سازد که ساختار خودش را می‌شناسد."
+      }
+    },
+    {
+      "id": "memento",
+      "note": {
+        "en": "An iterator's position can be saved and restored like a memento to pause a traversal and resume it later.",
+        "fa": "موقعیت یک ایتریتور را می‌توان مثل یک memento ذخیره و بازیابی کرد تا پیمایش را متوقف کرد و بعداً از همان جا ادامه داد."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "A ring buffer of sensor readings",
+      "fa": "بافر حلقوی برای خوانش‌های حسگر"
+    },
+    "description": {
+      "en": "Six readings are pushed into a 4-slot `RingBuffer`, so the two oldest are overwritten and the data physically wraps around the array. The `const_iterator` hides that wrap-around: range-for, `std::max_element` and `std::ranges::count_if` all see a simple oldest-to-newest sequence.",
+      "fa": "شش خوانش در یک `RingBuffer` چهارخانه‌ای قرار می‌گیرند؛ پس دو خوانش قدیمی‌تر بازنویسی می‌شوند و داده‌ها از نظر فیزیکی دور آرایه می‌چرخند. `const_iterator` این دور زدن را پنهان می‌کند: range-for، `std::max_element` و `std::ranges::count_if` همگی یک دنبالهٔ ساده از قدیمی‌ترین تا جدیدترین می‌بینند."
+    },
+    "output": "last 4 readings: 23.5 22.5 24 21\nmax: 24\nabove 22: 3",
+    "highlights": [
+      {
+        "lines": [
+          15,
+          20
+        ],
+        "note": {
+          "en": "The member aliases that `std::iterator_traits` and the C++20 iterator concepts read. `forward_iterator_tag` promises multi-pass traversal.",
+          "fa": "نام‌های نوعی عضو که `std::iterator_traits` و conceptهای ایتریتور در C++20 آن‌ها را می‌خوانند. `forward_iterator_tag` پیمایش چندباره (multi-pass) را تضمین می‌کند."
+        }
+      },
+      {
+        "lines": [
+          25,
+          29
+        ],
+        "note": {
+          "en": "The whole traversal algorithm: dereferencing maps a logical position to the physical slot `(head_ + pos_) % N`.",
+          "fa": "کل الگوریتم پیمایش همین است: dereference کردن، موقعیت منطقی را به خانهٔ فیزیکی `(head_ + pos_) % N` نگاشت می‌کند."
+        }
+      },
+      {
+        "lines": [
+          42,
+          43
+        ],
+        "note": {
+          "en": "The aggregate creates iterators. `end()` is one past the newest reading, just like in standard containers.",
+          "fa": "مجموعه ایتریتورها را می‌سازد. `end()` درست مثل مجموعه‌های استاندارد به یکی بعد از جدیدترین خوانش اشاره می‌کند."
+        }
+      },
+      {
+        "lines": [
+          52,
+          53
+        ],
+        "note": {
+          "en": "`static_assert` with the `std::forward_iterator` concept proves at compile time that the iterator fulfils the contract.",
+          "fa": "`static_assert` همراه با concept `std::forward_iterator` در زمان کامپایل ثابت می‌کند که ایتریتور قرارداد را رعایت کرده است."
+        }
+      },
+      {
+        "lines": [
+          59,
+          69
+        ],
+        "note": {
+          "en": "Clients — range-for and both algorithm styles — use only the iterator interface and never see `head_` or the modulo.",
+          "fa": "کلاینت‌ها (range-for و هر دو سبک الگوریتم) فقط از رابط ایتریتور استفاده می‌کنند و هرگز `head_` یا محاسبهٔ باقی‌مانده را نمی‌بینند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What does the Iterator pattern primarily hide from client code?",
+        "fa": "الگوی ایتریتور در اصل چه چیزی را از کد کلاینت پنهان می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "The type of the elements",
+          "The number of elements",
+          "How the collection stores its elements and how to get from one element to the next",
+          "Whether the elements are `const`"
+        ],
+        "fa": [
+          "نوع عناصر",
+          "تعداد عناصر",
+          "این‌که مجموعه عناصرش را چطور ذخیره می‌کند و چطور از یک عنصر به عنصر بعدی می‌رسد",
+          "این‌که عناصر `const` هستند یا نه"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Clients still know the element type (`value_type`), but not the storage layout: in the example they never learn about `head_` or the wrap-around — the iterator encapsulates the traversal.",
+        "fa": "کلاینت‌ها همچنان نوع عنصر (`value_type`) را می‌دانند، اما از چیدمان ذخیره‌سازی خبر ندارند: در مثال هرگز چیزی دربارهٔ `head_` یا دور زدن آرایه نمی‌فهمند، چون ایتریتور پیمایش را کپسوله کرده است."
+      }
+    },
+    {
+      "question": {
+        "en": "Which requirement of `std::forward_iterator` is easy to forget when writing your own iterator?",
+        "fa": "هنگام نوشتن ایتریتور سفارشی، کدام شرط `std::forward_iterator` به‌راحتی فراموش می‌شود؟"
+      },
+      "options": {
+        "en": [
+          "A default constructor",
+          "An `operator<` to order iterators",
+          "Inheriting from `std::iterator`",
+          "An `operator[]` for random access"
+        ],
+        "fa": [
+          "سازندهٔ پیش‌فرض",
+          "یک `operator<` برای مرتب کردن ایتریتورها",
+          "ارث‌بری از `std::iterator`",
+          "یک `operator[]` برای دسترسی تصادفی"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "`std::forward_iterator` requires the iterator to be `std::regular`, which includes being default-constructible — hence `const_iterator() = default;` in the example. `operator<` and `operator[]` belong to random-access iterators, and `std::iterator` is deprecated.",
+        "fa": "`std::forward_iterator` لازم دارد که ایتریتور `std::regular` باشد و این شامل داشتن سازندهٔ پیش‌فرض هم می‌شود؛ به همین دلیل در مثال `const_iterator() = default;` نوشته شده است. `operator<` و `operator[]` مربوط به ایتریتورهای random-access هستند و `std::iterator` هم منسوخ شده است."
+      }
+    },
+    {
+      "question": {
+        "en": "When is writing a custom iterator probably NOT worth it?",
+        "fa": "چه زمانی نوشتن یک ایتریتور سفارشی احتمالاً ارزشش را ندارد؟"
+      },
+      "options": {
+        "en": [
+          "When the container has a non-trivial layout such as a ring buffer or a tree",
+          "When clients should use standard algorithms on your container",
+          "When several independent traversals must be in progress at once",
+          "When your class just wraps a `std::vector` — expose the vector's iterators or a `std::span` instead"
+        ],
+        "fa": [
+          "وقتی مجموعه چیدمان غیرساده‌ای مثل بافر حلقوی یا درخت دارد",
+          "وقتی کلاینت‌ها باید الگوریتم‌های استاندارد را روی مجموعهٔ شما اجرا کنند",
+          "وقتی چند پیمایش مستقل باید هم‌زمان در جریان باشند",
+          "وقتی کلاس شما فقط یک `std::vector` را پوشانده است؛ به‌جایش ایتریتورهای همان vector یا یک `std::span` را در اختیار بگذارید"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "If the storage already is a standard container, forwarding its `begin()`/`end()` (or returning a `std::span`) gives full iterator support without any boilerplate. The other three situations are exactly where a custom iterator pays off.",
+        "fa": "اگر ذخیره‌سازی از قبل یک مجموعهٔ استاندارد است، برگرداندن `begin()` و `end()` آن (یا یک `std::span`) بدون هیچ کد اضافه‌ای پشتیبانی کامل از ایتریتور را فراهم می‌کند. سه وضعیت دیگر دقیقاً همان جایی است که ایتریتور سفارشی ارزشش را دارد."
+      }
+    },
+    {
+      "question": {
+        "en": "How do Iterator and Visitor differ when processing a collection?",
+        "fa": "ایتریتور و ویزیتور در پردازش یک مجموعه چه تفاوتی دارند؟"
+      },
+      "options": {
+        "en": [
+          "They are identical; Visitor is just another name for Iterator",
+          "An iterator controls the traversal (where next); a visitor defines the operation performed on each element (what to do)",
+          "A visitor can only visit the first element",
+          "An iterator must modify the elements it visits"
+        ],
+        "fa": [
+          "یکسان‌اند؛ ویزیتور فقط نام دیگر ایتریتور است",
+          "ایتریتور پیمایش را کنترل می‌کند (بعد کجا)؛ ویزیتور عملیاتی را که روی هر عنصر انجام می‌شود تعریف می‌کند (چه کاری)",
+          "ویزیتور فقط می‌تواند اولین عنصر را ملاقات کند",
+          "ایتریتور باید عناصری را که پیمایش می‌کند تغییر دهد"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "They answer different questions and combine naturally: iterate over a heterogeneous structure and let a visitor handle each element according to its concrete type.",
+        "fa": "این دو به پرسش‌های متفاوتی جواب می‌دهند و به‌طور طبیعی با هم ترکیب می‌شوند: روی یک ساختار ناهمگن پیمایش می‌کنید و می‌گذارید ویزیتور هر عنصر را بر اساس نوع مشخصش پردازش کند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A chat app loads messages from the server page by page; UI code should walk all messages with a plain `for` loop without knowing anything about pages or network requests.",
+      "fa": "یک اپ گفت‌وگو پیام‌ها را صفحه به صفحه از سرور بارگذاری می‌کند؛ کد رابط کاربری باید بتواند با یک حلقهٔ `for` ساده روی همهٔ پیام‌ها حرکت کند، بدون این‌که چیزی دربارهٔ صفحه‌ها یا درخواست‌های شبکه بداند."
+    },
+    {
+      "en": "A binary search tree class must let users visit its keys in sorted order and run standard algorithms like `std::find_if` on it, without exposing its node pointers.",
+      "fa": "یک کلاس درخت جست‌وجوی دودویی باید به کاربران اجازه دهد کلیدهایش را به ترتیب مرتب‌شده ببینند و الگوریتم‌های استاندارد مثل `std::find_if` را رویش اجرا کنند، بدون این‌که اشاره‌گرهای گره‌ها فاش شود."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "Skipping empty inventory slots",
+      "fa": "رد شدن از خانه‌های خالی کوله‌پشتی"
+    },
+    "task": {
+      "en": "An `Inventory` has 8 fixed slots, most of them empty (`count == 0`). Its iterator currently visits every slot, so range-for prints empty entries and `std::distance` reports 8 kinds of items. Make the iterator skip empty slots — in `skipEmpty()`, in the constructor (so `begin()` starts at the first item) and after every `++` — so that all client code in `main()` sees only real items without changing a single line there.",
+      "fa": "یک `Inventory` هشت خانهٔ ثابت دارد که بیشترشان خالی‌اند (`count == 0`). ایتریتور آن فعلاً از همهٔ خانه‌ها عبور می‌کند، برای همین range-for موارد خالی را هم چاپ می‌کند و `std::distance` هشت نوع آیتم گزارش می‌دهد. کاری کنید که ایتریتور از خانه‌های خالی رد شود (در `skipEmpty()`، در سازنده تا `begin()` از اولین آیتم شروع شود، و بعد از هر `++`)، طوری که همهٔ کد کلاینت در `main()` بدون تغییر حتی یک خط، فقط آیتم‌های واقعی را ببیند."
+    },
+    "hints": {
+      "en": [
+        "All three TODOs live inside `const_iterator`; `main()` and the rest of `Inventory` stay unchanged.",
+        "`skipEmpty()` is a `while` loop with two conditions: the position is still inside the array, and the current slot is empty. Check the bounds first.",
+        "`while (slot_ < inv_->slots_.size() && inv_->slots_[slot_].count == 0) ++slot_;` — then call `skipEmpty()` in the constructor body and right after `++slot_` in `operator++`."
+      ],
+      "fa": [
+        "هر سه TODO داخل `const_iterator` هستند؛ `main()` و بقیهٔ `Inventory` تغییری نمی‌کنند.",
+        "`skipEmpty()` یک حلقهٔ `while` با دو شرط است: موقعیت هنوز داخل آرایه باشد و خانهٔ فعلی خالی باشد. اول مرز آرایه را بررسی کنید.",
+        "بنویسید `while (slot_ < inv_->slots_.size() && inv_->slots_[slot_].count == 0) ++slot_;` و بعد `skipEmpty()` را در بدنهٔ سازنده و درست بعد از `++slot_` در `operator++` صدا بزنید."
+      ]
+    },
+    "expectedOutput": "- potion x3\n- arrow x20\n- map x1\n- gold x150\nkinds of items: 4\nhas a map: true"
+  }
+}

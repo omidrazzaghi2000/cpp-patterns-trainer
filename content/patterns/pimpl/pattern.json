@@ -1,0 +1,360 @@
+{
+  "id": "pimpl",
+  "category": "idioms",
+  "order": 2,
+  "difficulty": 2,
+  "icon": "eye-off",
+  "name": { "en": "Pimpl", "fa": "پیمپل (اشاره‌گر به پیاده‌سازی)" },
+  "aka": {
+    "en": "Pointer to Implementation; Compilation Firewall; Opaque Pointer; d-pointer (Qt)",
+    "fa": "Pointer to Implementation (اشاره‌گر به پیاده‌سازی)؛ Compilation Firewall؛ Opaque Pointer؛ d-pointer در Qt"
+  },
+  "tagline": {
+    "en": "Hide a class's private parts behind one pointer — and stop recompiling the world.",
+    "fa": "بخش خصوصی کلاس را پشت یک اشاره‌گر پنهان کنید و دیگر کل پروژه را از نو کامپایل نکنید."
+  },
+  "intent": {
+    "en": "Move a class's private data and helpers into a separate implementation class that is only forward-declared in the header and reached through an opaque pointer, so implementation changes affect neither the header, its clients nor the binary interface.",
+    "fa": "داده‌ها و توابع کمکی خصوصی یک کلاس را به یک کلاس پیاده‌سازی جداگانه منتقل می‌کند که در header فقط forward declare شده و از طریق یک اشاره‌گر مات (opaque) به آن دسترسی داریم؛ تا تغییر پیاده‌سازی نه روی header اثر بگذارد، نه روی کلاینت‌ها و نه روی رابط باینری (ABI)."
+  },
+  "problem": {
+    "en": "In C++ a class's private members are written in its header: every client that includes `spell_checker.h` also sees — and depends on — `std::unordered_set`, helper types and third-party headers that are used only inside the class. Adding one private field changes the object's size, so every translation unit that includes the header must be recompiled; in a large code base a one-line change can trigger a rebuild of hundreds of files. For libraries it is worse: the class layout is part of the ABI, so a new private member breaks binary compatibility with applications that were already compiled against the old version.",
+    "fa": "در C++ اعضای خصوصی یک کلاس در header آن نوشته می‌شوند: هر کلاینتی که `spell_checker.h` را include می‌کند، `std::unordered_set`، نوع‌های کمکی و headerهای کتابخانه‌های بیرونی را هم می‌بیند و به آن‌ها وابسته می‌شود؛ حتی اگر فقط داخل کلاس استفاده شوند. اضافه کردن یک فیلد خصوصی اندازهٔ شیء را تغییر می‌دهد، پس هر translation unitی که این header را include کرده باید دوباره کامپایل شود؛ در یک کدبیس بزرگ، تغییر یک خط می‌تواند صدها فایل را دوباره build کند. برای کتابخانه‌ها وضع بدتر است: چیدمان کلاس بخشی از ABI است و یک عضو خصوصی جدید، سازگاری باینری با برنامه‌هایی را که با نسخهٔ قبلی کامپایل شده‌اند می‌شکند."
+  },
+  "solution": {
+    "en": "Split the class in two. The public class keeps only its interface plus one data member, `std::unique_ptr<Impl>`, where `Impl` is merely forward-declared in the header. The real data and private helpers go into `struct Impl`, defined in the `.cpp` file together with all the heavy includes, and every public member function forwards to `impl_->...`. Because clients only ever see a pointer, the header and the object's size stay the same when the implementation changes — the header becomes a **compilation firewall**. The one subtlety: `std::unique_ptr` needs the complete `Impl` to destroy it, so the destructor and the move operations are declared in the header but defined in the `.cpp`, after `Impl`.",
+    "fa": "کلاس را دو تکه کنید. کلاس عمومی فقط رابطش را نگه می‌دارد به‌علاوهٔ یک عضو داده: `std::unique_ptr<Impl>` که `Impl` در header فقط forward declare شده است. داده‌های واقعی و توابع کمکی خصوصی به `struct Impl` منتقل می‌شوند که همراه با همهٔ includeهای سنگین در فایل `.cpp` تعریف می‌شود و هر تابع عضو عمومی کار را به `impl_->...` می‌سپارد. چون کلاینت‌ها همیشه فقط یک اشاره‌گر می‌بینند، با تغییر پیاده‌سازی نه header عوض می‌شود و نه اندازهٔ شیء؛ header به یک **دیوار آتش کامپایل (compilation firewall)** تبدیل می‌شود. تنها نکتهٔ ظریف: `std::unique_ptr` برای نابود کردن `Impl` باید نوع کامل آن را ببیند، پس مخرب و عملیات move در header اعلام می‌شوند، اما در `.cpp` و بعد از تعریف `Impl` تعریف می‌شوند."
+  },
+  "analogy": {
+    "en": "A restaurant's menu versus its kitchen. Guests read the menu (the header) and order from it; recipes, suppliers and equipment (the Impl) stay behind the kitchen door. The chef can switch suppliers or buy a new oven without reprinting a single menu — as long as the dishes on offer stay the same.",
+    "fa": "منوی یک رستوران در برابر آشپزخانه‌اش. مهمان‌ها منو (header) را می‌خوانند و از روی آن سفارش می‌دهند؛ دستور پخت‌ها، تأمین‌کننده‌ها و تجهیزات (Impl) پشت در آشپزخانه می‌مانند. سرآشپز می‌تواند تأمین‌کننده را عوض کند یا فر جدید بخرد، بدون این‌که حتی یک منو را دوباره چاپ کند؛ تا وقتی غذاهای منو همان باشند."
+  },
+  "participants": [
+    {
+      "name": "Public class (SpellChecker)",
+      "role": {
+        "en": "Declares the stable public API and holds a single `std::unique_ptr<Impl>`; its member functions forward to the implementation.",
+        "fa": "رابط عمومی پایدار را اعلام می‌کند و فقط یک `std::unique_ptr<Impl>` نگه می‌دارد؛ توابع عضوش کار را به پیاده‌سازی می‌سپارند."
+      }
+    },
+    {
+      "name": "Impl (SpellChecker::Impl)",
+      "role": {
+        "en": "A nested struct, only forward-declared in the header and defined in the `.cpp`; it owns all private data, helpers and heavy dependencies.",
+        "fa": "یک struct تودرتو که در header فقط forward declare و در `.cpp` تعریف می‌شود؛ مالک همهٔ داده‌های خصوصی، توابع کمکی و وابستگی‌های سنگین است."
+      }
+    },
+    {
+      "name": "Client (main.cpp)",
+      "role": {
+        "en": "Includes only the header, so changes inside `Impl` never force it to recompile.",
+        "fa": "فقط header را include می‌کند، پس تغییرات داخل `Impl` هرگز آن را مجبور به کامپایل دوباره نمی‌کنند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "label": "main.cpp", "kind": "client", "col": 0, "row": 0 },
+      { "id": "SpellChecker", "kind": "concrete", "col": 1, "row": 0, "members": ["+ learn(word)", "+ isKnown(word) : bool", "+ ~SpellChecker()", "- impl_ : unique_ptr<Impl>"] },
+      { "id": "Impl", "label": "SpellChecker::Impl", "kind": "concrete", "col": 3, "row": 0, "members": ["+ words : unordered_set", "+ normalize(w) : string"] },
+      { "id": "HeaderNote", "label": "spell_checker.h", "kind": "note", "col": 1, "row": 2, "members": ["struct Impl; (incomplete)", "size = one pointer, fixed"] },
+      { "id": "SourceNote", "label": "spell_checker.cpp", "kind": "note", "col": 3, "row": 2, "members": ["#include <unordered_set>", "struct Impl { ... };", "~SpellChecker() = default;"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "SpellChecker", "type": "uses", "label": "learn / isKnown" },
+      { "from": "SpellChecker", "to": "Impl", "type": "owns", "label": "impl_" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "In the header, forward-declare a private nested `struct Impl;` and replace all private data members with `std::unique_ptr<Impl> impl_;`.",
+      "Declare — but do not define — the destructor and the move operations in the header, because `Impl` is incomplete there.",
+      "In the `.cpp`, define `struct ClassName::Impl` with the data, the private helpers and all heavy `#include`s.",
+      "Create the implementation in the constructor: `impl_(std::make_unique<Impl>())`.",
+      "After the `Impl` definition, define `~ClassName() = default;` and the move operations `= default` (plus a deep-copying copy constructor if the class must be copyable).",
+      "Implement every public member function by forwarding to `impl_->...`."
+    ],
+    "fa": [
+      "در header یک struct تودرتوی خصوصی `struct Impl;` را forward declare کنید و همهٔ اعضای دادهٔ خصوصی را با `std::unique_ptr<Impl> impl_;` جایگزین کنید.",
+      "مخرب و عملیات move را در header اعلام کنید، اما تعریف نکنید؛ چون `Impl` آن‌جا ناقص (incomplete) است.",
+      "در `.cpp` تعریف `struct ClassName::Impl` را با داده‌ها، توابع کمکی خصوصی و همهٔ `#include`های سنگین بنویسید.",
+      "پیاده‌سازی را در سازنده بسازید: `impl_(std::make_unique<Impl>())`.",
+      "بعد از تعریف `Impl`، `~ClassName() = default;` و عملیات move را با `= default` تعریف کنید (و اگر کلاس باید قابل کپی باشد، یک سازندهٔ کپی عمیق هم بنویسید).",
+      "هر تابع عضو عمومی را با سپردن کار به `impl_->...` پیاده‌سازی کنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A widely included header drags in heavy or platform-specific headers (`<windows.h>`, OpenSSL, a GUI toolkit) that clients should not see.",
+      "Build times suffer because small private changes trigger large rebuilds.",
+      "You ship a shared library and need a stable ABI: new private members must not change the class layout.",
+      "Implementation details must stay completely out of public headers, e.g. in an SDK that ships only headers and binaries."
+    ],
+    "fa": [
+      "یک header پرکاربرد headerهای سنگین یا وابسته به سکو (`<windows.h>`، OpenSSL، یک toolkit گرافیکی) را با خودش می‌آورد که کلاینت‌ها نباید ببینند.",
+      "زمان build زیاد است، چون تغییرات کوچک خصوصی باعث build دوبارهٔ بخش بزرگی از پروژه می‌شوند.",
+      "یک کتابخانهٔ اشتراکی (shared library) منتشر می‌کنید و به ABI پایدار نیاز دارید: عضو خصوصی جدید نباید چیدمان کلاس را تغییر دهد.",
+      "جزئیات پیاده‌سازی باید کاملاً بیرون از headerهای عمومی بماند؛ مثلاً در یک SDK که فقط header و فایل باینری منتشر می‌کند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Compilation firewall: a private change recompiles one `.cpp`, not every client.",
+      "ABI stability: the object's size and layout stay fixed while the implementation evolves.",
+      "Clean headers: clients see only the interface, and heavy includes stay out of them.",
+      "Cheap moves and swaps: only a pointer changes hands."
+    ],
+    "fa": [
+      "دیوار آتش کامپایل: یک تغییر خصوصی فقط یک `.cpp` را دوباره کامپایل می‌کند، نه همهٔ کلاینت‌ها را.",
+      "پایداری ABI: اندازه و چیدمان شیء ثابت می‌ماند، در حالی که پیاده‌سازی تکامل پیدا می‌کند.",
+      "headerهای تمیز: کلاینت‌ها فقط رابط را می‌بینند و includeهای سنگین از header بیرون می‌مانند.",
+      "move و swap ارزان: فقط یک اشاره‌گر دست‌به‌دست می‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "One heap allocation per object and an extra indirection on every call, with worse cache locality.",
+      "Boilerplate: every public function needs a forwarding definition, and special members must be written out of line.",
+      "Copying needs a hand-written deep copy, and a moved-from object holds a null `impl_`.",
+      "`const` does not propagate: inside a `const` member function, `impl_->` still yields a non-const `Impl`."
+    ],
+    "fa": [
+      "برای هر شیء یک تخصیص حافظه روی heap و در هر فراخوانی یک واسطهٔ اضافه، همراه با locality ضعیف‌تر در cache.",
+      "کد تکراری: هر تابع عمومی به یک تعریف واسط نیاز دارد و اعضای ویژه باید بیرون از کلاس نوشته شوند.",
+      "کپی کردن به یک کپی عمیق دست‌نویس نیاز دارد و شیئی که از آن move شده `impl_` تهی دارد.",
+      "`const` منتقل نمی‌شود: داخل یک تابع عضو `const` هم `impl_->` یک `Impl` غیر const برمی‌گرداند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Hold the implementation in `std::unique_ptr<Impl>` — not a raw pointer, not `std::shared_ptr`: it expresses sole ownership and cleans up automatically.",
+      "`unique_ptr`'s deleter needs the complete type. Declare the destructor in the header and define it (even as `= default`) in the `.cpp` after `Impl`; otherwise clients fail with \"invalid application of `sizeof` to incomplete type\". In this single-file simulation `Impl` appears later in the same file, so the mistake can slip through — in a real header/source split it cannot.",
+      "A user-declared destructor suppresses the implicit move operations, so declare them yourself (`noexcept`) and default them in the `.cpp`. If the class must be copyable, write the deep copy: `W(const W& o) : impl_(std::make_unique<Impl>(*o.impl_)) {}`.",
+      "`unique_ptr` does not propagate `const`: a `const` member function can still modify `*impl_`. Be disciplined, or use `std::experimental::propagate_const<std::unique_ptr<Impl>>` where available.",
+      "After a move the source's `impl_` is null: document that a moved-from object may only be destroyed or assigned to, or check for `nullptr` in the member functions.",
+      "Don't use Pimpl for small, hot value types (points, colors, iterators): the allocation and indirection cost more than the compile-time savings are worth."
+    ],
+    "fa": [
+      "پیاده‌سازی را در `std::unique_ptr<Impl>` نگه دارید، نه اشاره‌گر خام و نه `std::shared_ptr`: مالکیت انحصاری را بیان می‌کند و خودکار تمیزکاری می‌کند.",
+      "deleter در `unique_ptr` به نوع کامل نیاز دارد. مخرب را در header اعلام کنید و در `.cpp` بعد از `Impl` تعریف کنید (حتی به شکل `= default`)؛ وگرنه کامپایل کلاینت‌ها با خطای «invalid application of `sizeof` to incomplete type» شکست می‌خورد. در این شبیه‌سازی تک‌فایلی `Impl` کمی پایین‌تر در همان فایل آمده، پس این اشتباه ممکن است دیده نشود؛ اما در تقسیم واقعی header و source حتماً خطا می‌دهد.",
+      "مخربی که کاربر اعلام کرده باشد، عملیات move ضمنی را حذف می‌کند؛ پس آن‌ها را خودتان (با `noexcept`) اعلام کنید و در `.cpp` با `= default` تعریف کنید. اگر کلاس باید قابل کپی باشد، کپی عمیق را بنویسید: `W(const W& o) : impl_(std::make_unique<Impl>(*o.impl_)) {}`.",
+      "`unique_ptr` ویژگی `const` را منتقل نمی‌کند: یک تابع عضو `const` همچنان می‌تواند `*impl_` را تغییر دهد. منضبط باشید یا در صورت دسترسی از `std::experimental::propagate_const<std::unique_ptr<Impl>>` استفاده کنید.",
+      "بعد از move، `impl_` در شیء مبدأ تهی است: مستند کنید که شیء moveشده فقط قابل نابود کردن یا مقداردهی دوباره است، یا در توابع عضو `nullptr` را بررسی کنید.",
+      "برای value typeهای کوچک و پرتکرار (نقطه، رنگ، iterator) از پیمپل استفاده نکنید: هزینهٔ تخصیص حافظه و واسطهٔ اضافه از صرفه‌جویی در زمان کامپایل بیشتر است."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt's \"d-pointer\" (`QObjectPrivate`, the `Q_D` / `Q_DECLARE_PRIVATE` macros) keeps binary compatibility across minor releases; KDE Frameworks follow the same rule.",
+      "The C standard library's `FILE*` and OpenSSL's opaque types (`SSL_CTX`, `EVP_MD_CTX` since 1.1.0) apply the same idea in C: clients never see the struct layout.",
+      "Herb Sutter's GotW #100/#101 (\"Compilation Firewalls\") popularized the modern `std::unique_ptr<Impl>` form."
+    ],
+    "fa": [
+      "«d-pointer» در Qt (`QObjectPrivate` و ماکروهای `Q_D` و `Q_DECLARE_PRIVATE`) سازگاری باینری را بین نسخه‌های فرعی حفظ می‌کند؛ KDE Frameworks هم از همین قاعده پیروی می‌کند.",
+      "`FILE*` در کتابخانهٔ استاندارد C و نوع‌های مات OpenSSL (`SSL_CTX` و `EVP_MD_CTX` از نسخهٔ 1.1.0) همین ایده را در زبان C پیاده می‌کنند: کلاینت‌ها هرگز چیدمان struct را نمی‌بینند.",
+      "مقاله‌های GotW #100 و #101 از Herb Sutter با عنوان «Compilation Firewalls» شکل مدرن `std::unique_ptr<Impl>` را رایج کردند."
+    ]
+  },
+  "related": [
+    {
+      "id": "bridge",
+      "note": {
+        "en": "Pimpl is a degenerate Bridge: an abstraction with exactly one implementation, used to decouple compilation rather than to vary implementations at runtime.",
+        "fa": "پیمپل نوع ساده‌شده‌ای از بریج است: یک انتزاع با دقیقاً یک پیاده‌سازی که هدفش جدا کردن وابستگی کامپایل است، نه عوض کردن پیاده‌سازی در زمان اجرا."
+      }
+    },
+    {
+      "id": "raii",
+      "note": {
+        "en": "`std::unique_ptr<Impl>` is the RAII owner of the implementation — which is exactly why the destructor must be defined where `Impl` is complete.",
+        "fa": "`std::unique_ptr<Impl>` مالک RAII پیاده‌سازی است و دقیقاً به همین دلیل مخرب باید جایی تعریف شود که `Impl` کامل است."
+      }
+    },
+    {
+      "id": "type-erasure",
+      "note": {
+        "en": "Type erasure also hides a concrete type behind a pointer, but to get runtime polymorphism with value semantics; Pimpl hides one fixed implementation to shield clients from its details.",
+        "fa": "type erasure هم یک نوع مشخص را پشت یک اشاره‌گر پنهان می‌کند، اما برای رسیدن به چندریختی زمان اجرا با value semantics؛ پیمپل یک پیاده‌سازی ثابت را پنهان می‌کند تا کلاینت‌ها از جزئیات آن در امان باشند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A spell checker with a hidden dictionary", "fa": "غلط‌یابی با فرهنگ لغت پنهان" },
+    "description": {
+      "en": "Read the program as three files. The header section contains no `std::unordered_set` and no helper function — only `struct Impl;` and a `std::unique_ptr`. Everything else lives in the `.cpp` section, so you could switch the dictionary to a trie tomorrow and not a single client would recompile. The last line shows that the object is just one pointer wide.",
+      "fa": "برنامه را مثل سه فایل جدا بخوانید. بخش header هیچ `std::unordered_set` و هیچ تابع کمکی‌ای ندارد؛ فقط `struct Impl;` و یک `std::unique_ptr`. بقیهٔ چیزها در بخش `.cpp` است، پس می‌توانید فردا فرهنگ لغت را به یک trie تبدیل کنید و حتی یک کلاینت هم دوباره کامپایل نشود. خط آخر نشان می‌دهد که اندازهٔ شیء فقط به‌اندازهٔ یک اشاره‌گر است."
+    },
+    "output": "Header: ok\npimpl: ok\npoynter: misspelled\nvocabulary: 5 words\nobject is one pointer wide: true",
+    "highlights": [
+      {
+        "lines": [4, 22],
+        "note": {
+          "en": "The header: a stable public API, a forward-declared `Impl` and a single `std::unique_ptr`. The destructor and move operations are only declared, because `Impl` is incomplete here.",
+          "fa": "header: یک رابط عمومی پایدار، یک `Impl` که فقط forward declare شده و یک `std::unique_ptr`. مخرب و عملیات move فقط اعلام شده‌اند، چون `Impl` این‌جا ناقص است."
+        }
+      },
+      {
+        "lines": [24, 35],
+        "note": {
+          "en": "The hidden part: the data structure, the helper `normalize()` and the `<unordered_set>` include. Changing anything here recompiles only this `.cpp`.",
+          "fa": "بخش پنهان: ساختمان داده، تابع کمکی `normalize()` و include مربوط به `<unordered_set>`. تغییر هر چیزی در این‌جا فقط همین `.cpp` را دوباره کامپایل می‌کند."
+        }
+      },
+      {
+        "lines": [37, 41],
+        "note": {
+          "en": "The crucial detail: the special members are defined **after** `Impl` is complete, so `std::unique_ptr`'s deleter can see how to destroy it.",
+          "fa": "نکتهٔ حیاتی: اعضای ویژه **بعد از** کامل شدن `Impl` تعریف شده‌اند، تا deleter در `std::unique_ptr` بداند چطور آن را نابود کند."
+        }
+      },
+      {
+        "lines": [43, 49],
+        "note": {
+          "en": "Each public member function simply forwards to `impl_->...`. This boilerplate is the price of the firewall.",
+          "fa": "هر تابع عضو عمومی فقط کار را به `impl_->...` می‌سپارد. این کد تکراری بهای دیوار آتش کامپایل است."
+        }
+      },
+      {
+        "lines": [55, 66],
+        "note": {
+          "en": "The client uses only the public API. Moving costs one pointer copy, and `sizeof(SpellChecker)` equals `sizeof(void*)` no matter how much data `Impl` holds.",
+          "fa": "کلاینت فقط از رابط عمومی استفاده می‌کند. move فقط به‌اندازهٔ کپی یک اشاره‌گر هزینه دارد و `sizeof(SpellChecker)` برابر `sizeof(void*)` است، مهم نیست `Impl` چقدر داده داشته باشد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the main problem Pimpl solves?",
+        "fa": "مسئلهٔ اصلی‌ای که پیمپل حل می‌کند چیست؟"
+      },
+      "options": {
+        "en": [
+          "Private members are part of the header, so changing them forces every client to recompile and can break the ABI",
+          "Virtual function calls are too slow",
+          "Objects of the class cannot be created on the stack",
+          "A class cannot switch between several implementations at runtime"
+        ],
+        "fa": [
+          "اعضای خصوصی بخشی از header هستند، پس تغییرشان همهٔ کلاینت‌ها را مجبور به کامپایل دوباره می‌کند و می‌تواند ABI را بشکند",
+          "فراخوانی توابع virtual خیلی کند است",
+          "اشیای کلاس را نمی‌توان روی stack ساخت",
+          "کلاس نمی‌تواند در زمان اجرا بین چند پیاده‌سازی جابه‌جا شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Private data determines the object's size and layout, and it lives in the header. Moving it behind an opaque pointer turns the header into a compilation firewall and keeps the ABI stable. Runtime switching between implementations is Bridge/Strategy territory.",
+        "fa": "دادهٔ خصوصی اندازه و چیدمان شیء را تعیین می‌کند و در header قرار دارد. بردن آن پشت یک اشاره‌گر مات، header را به دیوار آتش کامپایل تبدیل می‌کند و ABI را پایدار نگه می‌دارد. جابه‌جایی بین پیاده‌سازی‌ها در زمان اجرا قلمرو بریج و استراتژی است."
+      }
+    },
+    {
+      "question": {
+        "en": "Why is `~SpellChecker()` only declared in the header and defined as `= default` in the `.cpp`, after `struct Impl`?",
+        "fa": "چرا `~SpellChecker()` در header فقط اعلام شده و در `.cpp` بعد از `struct Impl` به شکل `= default` تعریف می‌شود؟"
+      },
+      "options": {
+        "en": [
+          "Destructors can never be defaulted inside a header",
+          "To make the destructor virtual",
+          "The deleter of `std::unique_ptr<Impl>` needs `Impl` to be a complete type wherever the destructor is generated",
+          "So that the destructor may access the private members of `Impl`"
+        ],
+        "fa": [
+          "مخرب‌ها هرگز نمی‌توانند داخل header به شکل default تعریف شوند",
+          "برای این‌که مخرب virtual شود",
+          "deleter در `std::unique_ptr<Impl>` نیاز دارد که `Impl` هر جا مخرب تولید می‌شود نوعی کامل باشد",
+          "تا مخرب بتواند به اعضای خصوصی `Impl` دسترسی داشته باشد"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "`std::default_delete<Impl>` uses `sizeof(Impl)` and calls `delete`, which requires the full definition. If the destructor were generated in the header, every client would instantiate it without seeing `Impl` and fail to compile. Defining it in the `.cpp` confines that code to the one place where `Impl` is known.",
+        "fa": "`std::default_delete<Impl>` از `sizeof(Impl)` استفاده می‌کند و `delete` را صدا می‌زند که به تعریف کامل نیاز دارد. اگر مخرب در header تولید می‌شد، هر کلاینت آن را بدون دیدن `Impl` نمونه‌سازی می‌کرد و کامپایل شکست می‌خورد. تعریف آن در `.cpp` این کد را به تنها جایی محدود می‌کند که `Impl` شناخته‌شده است."
+      }
+    },
+    {
+      "question": {
+        "en": "When is Pimpl a poor choice?",
+        "fa": "چه زمانی پیمپل انتخاب بدی است؟"
+      },
+      "options": {
+        "en": [
+          "For a class in a public SDK header that must stay ABI-stable",
+          "For a small value type like `Point2D` that is created millions of times in a hot loop",
+          "For a class whose header currently includes `<windows.h>`",
+          "For a class whose private members change often in a large code base"
+        ],
+        "fa": [
+          "برای کلاسی در header یک SDK عمومی که ABI آن باید پایدار بماند",
+          "برای یک value type کوچک مثل `Point2D` که در یک حلقهٔ داغ میلیون‌ها بار ساخته می‌شود",
+          "برای کلاسی که header آن فعلاً `<windows.h>` را include می‌کند",
+          "برای کلاسی در یک کدبیس بزرگ که اعضای خصوصی‌اش مدام تغییر می‌کنند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Every object costs a heap allocation and every access an extra indirection, which hurts cache locality. For small, hot value types that cost dominates — and their layout rarely changes anyway. The other three are textbook reasons to use Pimpl.",
+        "fa": "هر شیء یک تخصیص heap و هر دسترسی یک واسطهٔ اضافه هزینه دارد که به locality در cache آسیب می‌زند. برای value typeهای کوچک و پرتکرار این هزینه غالب است و چیدمانشان هم به‌ندرت عوض می‌شود. سه گزینهٔ دیگر دلایل کلاسیک استفاده از پیمپل هستند."
+      }
+    },
+    {
+      "question": {
+        "en": "How is Pimpl related to the Bridge pattern?",
+        "fa": "پیمپل چه ارتباطی با الگوی بریج دارد؟"
+      },
+      "options": {
+        "en": [
+          "They are unrelated: Bridge is about inheritance, Pimpl about templates",
+          "Pimpl requires an abstract `Impl` interface with several implementations",
+          "Bridge is simply the compile-time version of Pimpl",
+          "Pimpl is a special case of Bridge with exactly one fixed implementation; its goal is decoupling compilation, not swapping implementations"
+        ],
+        "fa": [
+          "ربطی به هم ندارند: بریج دربارهٔ وراثت است و پیمپل دربارهٔ templateها",
+          "پیمپل به یک رابط انتزاعی `Impl` با چند پیاده‌سازی نیاز دارد",
+          "بریج فقط نسخهٔ زمان کامپایل پیمپل است",
+          "پیمپل حالت خاصی از بریج با دقیقاً یک پیاده‌سازی ثابت است؛ هدفش جدا کردن وابستگی کامپایل است، نه عوض کردن پیاده‌سازی"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Both separate an abstraction from its implementation through a pointer. Bridge does it so that implementations can vary independently (often chosen at runtime); Pimpl has a single concrete `Impl` and exists to hide it from the compiler's view of clients.",
+        "fa": "هر دو با یک اشاره‌گر، انتزاع را از پیاده‌سازی جدا می‌کنند. بریج این کار را می‌کند تا پیاده‌سازی‌ها مستقل از هم تغییر کنند (اغلب با انتخاب در زمان اجرا)؛ پیمپل فقط یک `Impl` مشخص دارد و هدفش پنهان کردن آن از دید کامپایلر در کد کلاینت‌هاست."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Your team ships a C++ SDK as a prebuilt shared library; customers must be able to drop in version 2.1 without recompiling, even though you added fields to several public classes.",
+      "fa": "تیم شما یک SDK به زبان C++ را به شکل کتابخانهٔ اشتراکی از پیش کامپایل‌شده منتشر می‌کند؛ مشتری‌ها باید بتوانند نسخهٔ 2.1 را بدون کامپایل دوباره جایگزین کنند، در حالی که شما به چند کلاس عمومی فیلد جدید اضافه کرده‌اید."
+    },
+    {
+      "en": "Changing one private field of `Renderer` triggers a 25-minute rebuild, because 400 files include `renderer.h`, which in turn includes the Vulkan and windowing-system headers.",
+      "fa": "تغییر یک فیلد خصوصی در `Renderer` باعث یک build دوبارهٔ ۲۵ دقیقه‌ای می‌شود، چون ۴۰۰ فایل `renderer.h` را include می‌کنند و آن هم به نوبهٔ خود headerهای Vulkan و سیستم پنجره‌ها را include می‌کند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A leaderboard behind a compilation firewall", "fa": "جدول امتیازات پشت دیوار آتش کامپایل" },
+    "task": {
+      "en": "`Leaderboard`'s header exposes a `std::map` and a round counter, so every file that includes it depends on `<map>` and recompiles whenever the data changes. Apply Pimpl: replace the private members with a forward-declared `Impl` and a `std::unique_ptr<Impl>`, define `Impl` in the `.cpp` section, create it in the constructor, add the move operations that `std::move(board)` needs, and forward both member functions through `impl_`. The last line must become `header exposes only a pointer: true`.",
+      "fa": "header کلاس `Leaderboard` یک `std::map` و یک شمارندهٔ دور را نشان می‌دهد، پس هر فایلی که آن را include می‌کند به `<map>` وابسته است و با هر تغییر داده‌ها دوباره کامپایل می‌شود. پیمپل را اعمال کنید: اعضای خصوصی را با یک `Impl` که forward declare شده و یک `std::unique_ptr<Impl>` جایگزین کنید، `Impl` را در بخش `.cpp` تعریف کنید، آن را در سازنده بسازید، عملیات moveی را که `std::move(board)` لازم دارد اضافه کنید و هر دو تابع عضو را از طریق `impl_` پیاده‌سازی کنید. خط آخر خروجی باید `header exposes only a pointer: true` شود."
+    },
+    "hints": {
+      "en": [
+        "Under `private:` only `struct Impl;` and `std::unique_ptr<Impl> impl_;` should remain; `#include <map>` moves down next to the `Impl` definition.",
+        "Because `~Leaderboard()` is user-declared, no move operations are generated — and a `std::unique_ptr` cannot be copied. Declare `Leaderboard(Leaderboard&&) noexcept;` and `Leaderboard& operator=(Leaderboard&&) noexcept;` in the header.",
+        "In the `.cpp` section: `struct Leaderboard::Impl { std::map<std::string, int> scores; int rounds = 0; };`, then `Leaderboard::Leaderboard() : impl_(std::make_unique<Impl>()) {}` and `Leaderboard::Leaderboard(Leaderboard&&) noexcept = default;` (the same for the assignment).",
+        "Finally replace `scores_` and `rounds_` with `impl_->scores` and `impl_->rounds`."
+      ],
+      "fa": [
+        "زیر `private:` فقط باید `struct Impl;` و `std::unique_ptr<Impl> impl_;` باقی بماند؛ `#include <map>` پایین و کنار تعریف `Impl` می‌رود.",
+        "چون `~Leaderboard()` را کاربر اعلام کرده، عملیات move تولید نمی‌شوند و `std::unique_ptr` هم قابل کپی نیست. `Leaderboard(Leaderboard&&) noexcept;` و `Leaderboard& operator=(Leaderboard&&) noexcept;` را در header اعلام کنید.",
+        "در بخش `.cpp`: `struct Leaderboard::Impl { std::map<std::string, int> scores; int rounds = 0; };`، سپس `Leaderboard::Leaderboard() : impl_(std::make_unique<Impl>()) {}` و `Leaderboard::Leaderboard(Leaderboard&&) noexcept = default;` (و همین‌طور برای عملگر انتساب).",
+        "در آخر `scores_` و `rounds_` را با `impl_->scores` و `impl_->rounds` جایگزین کنید."
+      ]
+    },
+    "expectedOutput": "after 3 rounds:\n  kian: 90\n  mira: 165\nheader exposes only a pointer: true"
+  }
+}

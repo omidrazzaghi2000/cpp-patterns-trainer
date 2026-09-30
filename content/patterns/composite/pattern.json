@@ -1,0 +1,366 @@
+{
+  "id": "composite",
+  "category": "structural",
+  "order": 3,
+  "difficulty": 2,
+  "icon": "folder-tree",
+  "name": { "en": "Composite", "fa": "کامپوزیت (مرکب)" },
+  "aka": { "en": "Object Tree, Part-Whole Hierarchy", "fa": "درخت اشیا، سلسله‌مراتب جزء-کل" },
+  "tagline": {
+    "en": "Treat a single object and a whole tree of them the same way.",
+    "fa": "با یک شیء تنها و یک درخت کامل از اشیا به یک شکل رفتار کنید."
+  },
+  "intent": {
+    "en": "Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly.",
+    "fa": "اشیا را در ساختارهای درختی کنار هم قرار می‌دهد تا سلسله‌مراتب «جزء-کل» را نمایش دهد. Composite به کلاینت‌ها اجازه می‌دهد با اشیای منفرد و ترکیب‌هایی از آن‌ها به یک شکل رفتار کنند."
+  },
+  "problem": {
+    "en": "A disk-usage tool must report the size of a project. A file has a size; a folder's size is the sum of everything inside it — files and other folders, nested to any depth. If client code handles `File` and `Folder` as unrelated types, every operation (size, print, search, delete) turns into \"if it's a file … else if it's a folder …\" with hand-written recursion duplicated everywhere, and each new node type (symlink, zip archive) means editing all of those branches.",
+    "fa": "یک ابزار محاسبهٔ فضای دیسک باید حجم یک پروژه را گزارش کند. هر فایل حجمی دارد و حجم هر پوشه مجموع همهٔ چیزهایی است که داخلش قرار دارد: فایل‌ها و پوشه‌های دیگر، با هر عمقی از تودرتویی. اگر کد کلاینت `File` و `Folder` را دو نوع بی‌ربط در نظر بگیرد، هر عملیاتی (حجم، چاپ، جست‌وجو، حذف) به «اگر فایل است … وگرنه اگر پوشه است …» همراه با یک بازگشت دست‌نویس تبدیل می‌شود که همه‌جا تکرار شده و هر نوع گرهٔ جدید (symlink، فایل zip) یعنی ویرایش تمام این شاخه‌ها."
+  },
+  "solution": {
+    "en": "Define one **Component** interface (`Node`) with the operations that make sense for every element, such as `size()` and `print()`. **Leaves** (`File`) implement them directly. The **Composite** (`Folder`) implements the same interface, stores its children as `std::unique_ptr<Node>` — so a child may itself be a composite — and implements each operation by delegating to its children and combining the results. The recursion falls out naturally, and the client just calls `node.size()` without ever asking what kind of node it holds.",
+    "fa": "یک رابط **Component** (`Node`) با عملیاتی تعریف کنید که برای همهٔ اجزا معنا دارند، مثل `size()` و `print()`. **برگ‌ها** (`File`) این عملیات را مستقیم پیاده‌سازی می‌کنند. **Composite** (`Folder`) هم همین رابط را پیاده‌سازی می‌کند، فرزندانش را به شکل `std::unique_ptr<Node>` نگه می‌دارد (پس هر فرزند می‌تواند خودش یک Composite باشد) و هر عملیات را با سپردن آن به فرزندان و ترکیب نتایج انجام می‌دهد. بازگشت به‌طور طبیعی شکل می‌گیرد و کلاینت بدون این‌که بپرسد با چه نوع گره‌ای سروکار دارد، فقط `node.size()` را صدا می‌زند."
+  },
+  "analogy": {
+    "en": "A music playlist. You can press \"play\" or ask for the total duration of a single song, an album, or a playlist that contains albums and other playlists. The player doesn't care what's inside: a playlist simply asks each of its items the same question and adds up the answers.",
+    "fa": "یک پلی‌لیست موسیقی را در نظر بگیرید. می‌توانید دکمهٔ «پخش» را بزنید یا مدت‌زمان کل را بپرسید؛ چه برای یک آهنگ، چه یک آلبوم و چه پلی‌لیستی که خودش شامل آلبوم‌ها و پلی‌لیست‌های دیگر است. پخش‌کننده اهمیتی نمی‌دهد داخلش چیست: هر پلی‌لیست همان سؤال را از تک‌تک اعضایش می‌پرسد و جواب‌ها را جمع می‌زند."
+  },
+  "participants": [
+    {
+      "name": "Component",
+      "role": {
+        "en": "`Node`: declares the interface shared by leaves and composites (and may hold common state such as the name).",
+        "fa": "`Node`: رابط مشترک برگ‌ها و Compositeها را اعلان می‌کند (و می‌تواند وضعیت مشترکی مثل نام را هم نگه دارد)."
+      }
+    },
+    {
+      "name": "Leaf",
+      "role": {
+        "en": "`File`: an element with no children that performs the actual work itself.",
+        "fa": "`File`: عنصری بدون فرزند که کار اصلی را خودش انجام می‌دهد."
+      }
+    },
+    {
+      "name": "Composite",
+      "role": {
+        "en": "`Folder`: owns child components, offers child management (`add()`), and implements every operation by delegating to its children.",
+        "fa": "`Folder`: مالک اجزای فرزند است، مدیریت فرزندان (`add()`) را فراهم می‌کند و هر عملیات را با سپردن به فرزندانش پیاده‌سازی می‌کند."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Builds the tree and works with any node — leaf or subtree — only through the Component interface.",
+        "fa": "درخت را می‌سازد و با هر گره‌ای (برگ یا زیردرخت) فقط از طریق رابط Component کار می‌کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Component", "kind": "abstract", "col": 2, "row": 0, "members": ["+ name() : string", "+ size() : size_t", "+ print(depth)"] },
+      { "id": "Leaf", "kind": "concrete", "col": 1, "row": 2, "members": ["- bytes_ : size_t", "+ size() : size_t", "+ print(depth)"] },
+      { "id": "Composite", "kind": "concrete", "col": 3, "row": 2, "members": ["- children : vector<ptr>", "+ add(unique_ptr<Component>)", "+ size() : size_t", "+ print(depth)"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Component", "type": "uses" },
+      { "from": "Leaf", "to": "Component", "type": "inherits" },
+      { "from": "Composite", "to": "Component", "type": "inherits" },
+      { "from": "Composite", "to": "Component", "type": "owns", "label": "children 0..*" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Check that your model really is a tree: every element is either a simple leaf or a container of elements.",
+      "Declare a Component interface with operations that are meaningful for both leaves and containers.",
+      "Implement the leaf classes; they do the actual work.",
+      "Implement the composite: store children as `std::vector<std::unique_ptr<Component>>`, provide `add()`, and implement each operation by iterating over the children and combining their results.",
+      "Build the tree in client code and call operations on the root — or on any subtree — through the Component interface."
+    ],
+    "fa": [
+      "مطمئن شوید مدل شما واقعاً یک درخت است: هر عنصر یا یک برگ ساده است یا ظرفی از عناصر دیگر.",
+      "یک رابط Component با عملیاتی اعلان کنید که هم برای برگ‌ها و هم برای ظرف‌ها معنا داشته باشند.",
+      "کلاس‌های برگ را پیاده‌سازی کنید؛ کار اصلی را آن‌ها انجام می‌دهند.",
+      "Composite را پیاده‌سازی کنید: فرزندان را در `std::vector<std::unique_ptr<Component>>` نگه دارید، متد `add()` را فراهم کنید و هر عملیات را با پیمایش فرزندان و ترکیب نتایجشان بنویسید.",
+      "درخت را در کد کلاینت بسازید و عملیات را روی ریشه (یا هر زیردرختی) از طریق رابط Component صدا بزنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Your data is naturally a part-whole hierarchy: file systems, UI widget trees, scene graphs, org charts, bills of materials.",
+      "Clients should treat single objects and groups identically (select one shape or a group, then move either).",
+      "Operations on the whole are defined recursively from operations on its parts (total size, total price, render, validate)."
+    ],
+    "fa": [
+      "داده‌های شما ذاتاً یک سلسله‌مراتب جزء-کل هستند: سیستم فایل، درخت ویجت‌های رابط کاربری، scene graph، چارت سازمانی یا فهرست قطعات یک محصول.",
+      "کلاینت‌ها باید با یک شیء تنها و یک گروه دقیقاً یکسان رفتار کنند (یک شکل یا یک گروه را انتخاب و هر کدام را جابه‌جا کنید).",
+      "عملیات روی کل به‌صورت بازگشتی از روی عملیات اجزا تعریف می‌شود (حجم کل، قیمت کل، رندر، اعتبارسنجی)."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Client code stays simple: no type checks and no hand-written recursion over two kinds of objects.",
+      "Open/Closed: new leaf or composite types plug in without changing clients.",
+      "Arbitrarily deep nesting comes for free.",
+      "With `unique_ptr` children ownership is obvious, and destroying the root frees the whole tree."
+    ],
+    "fa": [
+      "کد کلاینت ساده می‌ماند: نه بررسی نوع لازم است و نه بازگشت دست‌نویس روی دو نوع شیء.",
+      "اصل باز/بسته: انواع جدید برگ یا Composite بدون تغییر کلاینت‌ها اضافه می‌شوند.",
+      "تودرتویی با هر عمقی بدون هزینهٔ اضافه به دست می‌آید.",
+      "با فرزندان `unique_ptr` مالکیت کاملاً روشن است و نابود کردن ریشه کل درخت را آزاد می‌کند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "The shared interface can become too general: operations like `add()` make no sense for a leaf (the transparency vs. safety trade-off).",
+      "It is hard to restrict what a composite may contain (\"only images in this album\") with the type system; you need runtime checks.",
+      "Naive recursive operations can be slow on big or deep trees (e.g. recomputing `size()` again and again); consider caching."
+    ],
+    "fa": [
+      "رابط مشترک ممکن است بیش از حد کلی شود: عملیاتی مثل `add()` برای برگ معنایی ندارد (بده‌بستان بین شفافیت و ایمنی).",
+      "محدود کردن این‌که یک Composite چه چیزهایی می‌تواند داشته باشد («فقط عکس در این آلبوم») با سیستم نوع‌ها سخت است و به بررسی در زمان اجرا نیاز دارد.",
+      "عملیات بازگشتیِ ساده‌لوحانه روی درخت‌های بزرگ یا عمیق می‌تواند کند باشد (مثلاً محاسبهٔ مکرر `size()`)؛ کش کردن را در نظر بگیرید."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Store children as `std::vector<std::unique_ptr<Component>>`: the parent owns its subtree and everything is released automatically when the root dies.",
+      "If a child needs a back-pointer to its parent, make it a raw non-owning pointer (`Folder* parent_`) — a second owning smart pointer would create a cycle.",
+      "Decide transparency vs. safety: put `add()` only on the Composite (type-safe, as in the example) or on the Component (uniform, but leaves must reject it at runtime).",
+      "Never put default arguments on virtual functions (`print(int depth = 0)`): the default is picked from the static type of the pointer, not from the object's dynamic type.",
+      "Recursion on a very deep tree can overflow the stack; for untrusted input (e.g. parsed JSON) enforce a depth limit or use an explicit stack."
+    ],
+    "fa": [
+      "فرزندان را در `std::vector<std::unique_ptr<Component>>` نگه دارید: والد مالک زیردرخت خودش است و با نابود شدن ریشه همه‌چیز به‌طور خودکار آزاد می‌شود.",
+      "اگر فرزند به اشاره‌گری به والدش نیاز دارد، آن را یک اشاره‌گر خام بدون مالکیت (`Folder* parent_`) تعریف کنید؛ یک اشاره‌گر هوشمند مالکِ دوم باعث ایجاد چرخه می‌شود.",
+      "بین شفافیت و ایمنی انتخاب کنید: `add()` را فقط در Composite بگذارید (type-safe، مثل مثال) یا در Component (یکدست، اما برگ‌ها باید در زمان اجرا آن را رد کنند).",
+      "هرگز روی توابع virtual آرگومان پیش‌فرض نگذارید (`print(int depth = 0)`): مقدار پیش‌فرض از نوع ایستای اشاره‌گر انتخاب می‌شود، نه از نوع پویای شیء.",
+      "بازگشت روی درختی خیلی عمیق می‌تواند پشته را سرریز کند؛ برای ورودی‌های نامطمئن (مثلاً JSON تجزیه‌شده) محدودیت عمق بگذارید یا از یک پشتهٔ صریح استفاده کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::filesystem`: directories contain files and directories, and `recursive_directory_iterator` walks exactly this kind of tree.",
+      "Qt's `QObject` parent–child tree and `QWidget` hierarchies: deleting a parent deletes all of its children.",
+      "Scene graphs in game engines (Godot's `Node` tree, Unreal's scene components) and the browser DOM.",
+      "Compiler ASTs such as Clang's: an expression node contains other expression nodes."
+    ],
+    "fa": [
+      "`std::filesystem`: پوشه‌ها شامل فایل‌ها و پوشه‌های دیگرند و `recursive_directory_iterator` دقیقاً همین نوع درخت را پیمایش می‌کند.",
+      "درخت والد-فرزند `QObject` و سلسله‌مراتب `QWidget` در Qt: حذف والد همهٔ فرزندانش را هم حذف می‌کند.",
+      "scene graph در موتورهای بازی (درخت `Node` در Godot و scene componentهای Unreal) و DOM در مرورگرها.",
+      "درخت‌های AST کامپایلرها مثل Clang: یک گرهٔ عبارت، گره‌های عبارت دیگری را در خود دارد."
+    ]
+  },
+  "related": [
+    {
+      "id": "decorator",
+      "note": {
+        "en": "Similar recursive structure, but a Decorator wraps exactly one child to add behavior, while a Composite holds many children and combines their results.",
+        "fa": "ساختار بازگشتی مشابهی دارند، اما Decorator دقیقاً یک فرزند را می‌پوشاند تا رفتاری اضافه کند، در حالی که Composite چندین فرزند دارد و نتایجشان را ترکیب می‌کند."
+      }
+    },
+    {
+      "id": "iterator",
+      "note": {
+        "en": "An Iterator can traverse a composite tree (depth-first, breadth-first) without exposing how children are stored.",
+        "fa": "یک Iterator می‌تواند درخت Composite را (عمق‌اول یا سطح‌اول) پیمایش کند بدون این‌که نحوهٔ ذخیرهٔ فرزندان را فاش کند."
+      }
+    },
+    {
+      "id": "visitor",
+      "note": {
+        "en": "Visitor adds new operations over a composite tree (export, validation) without adding a virtual method to every node class.",
+        "fa": "Visitor عملیات جدیدی روی درخت Composite اضافه می‌کند (خروجی گرفتن، اعتبارسنجی) بدون این‌که به هر کلاس گره یک متد virtual تازه اضافه شود."
+      }
+    },
+    {
+      "id": "flyweight",
+      "note": {
+        "en": "In huge trees, identical leaves can be shared flyweights to save memory — as long as they don't store a pointer to their parent.",
+        "fa": "در درخت‌های بسیار بزرگ، برگ‌های یکسان می‌توانند Flyweightهای مشترک باشند تا در مصرف حافظه صرفه‌جویی شود؛ به شرطی که اشاره‌گری به والدشان نگه ندارند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Disk usage of a project folder", "fa": "حجم پوشهٔ یک پروژه روی دیسک" },
+    "description": {
+      "en": "`File` (leaf) and `Folder` (composite) both implement `Node`. A folder adds up the sizes of its children without knowing whether they are files or other folders, and `report()` accepts either one through a `const Node&`.",
+      "fa": "`File` (برگ) و `Folder` (Composite) هر دو `Node` را پیاده‌سازی می‌کنند. هر پوشه حجم فرزندانش را جمع می‌زند بدون این‌که بداند فایل‌اند یا پوشه‌های دیگر، و `report()` هر دو را از طریق یک `const Node&` می‌پذیرد."
+    },
+    "output": "project/ (6300 B)\n  README.md (800 B)\n  src/ (5500 B)\n    main.cpp (1200 B)\n    parser.cpp (3400 B)\n    util/ (900 B)\n      strings.cpp (900 B)\nLICENSE -> 1100 bytes\nproject -> 6300 bytes",
+    "highlights": [
+      {
+        "lines": [10, 23],
+        "note": {
+          "en": "The Component: one interface for every node. Note that `print()` takes `depth` without a default argument — defaults on virtual functions are a classic C++ trap.",
+          "fa": "Component: یک رابط برای همهٔ گره‌ها. دقت کنید `print()` پارامتر `depth` را بدون مقدار پیش‌فرض می‌گیرد؛ آرگومان پیش‌فرض روی توابع virtual یک تلهٔ کلاسیک C++ است."
+        }
+      },
+      {
+        "lines": [26, 36],
+        "note": {
+          "en": "The Leaf answers directly from its own data: a file simply knows its size.",
+          "fa": "برگ مستقیماً از دادهٔ خودش جواب می‌دهد: فایل خودش حجمش را می‌داند."
+        }
+      },
+      {
+        "lines": [43, 46],
+        "note": {
+          "en": "`add()` accepts any `std::unique_ptr<Node>`, so a child can be a file or another folder. The folder owns its children (line 60), and returning `*this` enables chaining.",
+          "fa": "`add()` هر `std::unique_ptr<Node>` را می‌پذیرد، پس فرزند می‌تواند فایل یا پوشهٔ دیگری باشد. پوشه مالک فرزندانش است (خط ۶۰) و برگرداندن `*this` امکان زنجیره‌کردن فراخوانی‌ها را می‌دهد."
+        }
+      },
+      {
+        "lines": [48, 57],
+        "note": {
+          "en": "The heart of the pattern: the composite implements each operation by delegating to its children. When a child is a folder, the call recurses automatically — no type checks anywhere.",
+          "fa": "قلب الگو: Composite هر عملیات را با سپردن به فرزندانش پیاده‌سازی می‌کند. وقتی فرزند خودش پوشه باشد، فراخوانی به‌طور خودکار بازگشتی می‌شود؛ بدون هیچ بررسی نوعی."
+        }
+      },
+      {
+        "lines": [80, 83],
+        "note": {
+          "en": "The client prints the whole tree with one call and passes a single file and a whole project to the same `report()` function.",
+          "fa": "کلاینت با یک فراخوانی کل درخت را چاپ می‌کند و یک فایل تنها و یک پروژهٔ کامل را به همان تابع `report()` می‌دهد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the core idea of the Composite pattern?",
+        "fa": "ایدهٔ اصلی الگوی Composite چیست؟"
+      },
+      "options": {
+        "en": [
+          "A complex object is assembled step by step by a director",
+          "Several subsystems are hidden behind one simplified entry point",
+          "Objects are always combined with templates instead of inheritance",
+          "Single objects and groups of objects are treated uniformly through one interface"
+        ],
+        "fa": [
+          "یک شیء پیچیده مرحله‌به‌مرحله توسط یک director ساخته می‌شود",
+          "چند زیرسیستم پشت یک نقطهٔ ورود ساده‌شده پنهان می‌شوند",
+          "اشیا همیشه به‌جای ارث‌بری با template ترکیب می‌شوند",
+          "با اشیای منفرد و گروه‌هایی از اشیا از طریق یک رابط، یکسان رفتار می‌شود"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "`Folder` implements the same interface as `File`, so code like `report(node)` works on one file or on a whole tree. The first two options describe Builder and Facade.",
+        "fa": "`Folder` همان رابط `File` را پیاده‌سازی می‌کند، پس کدی مثل `report(node)` هم روی یک فایل و هم روی یک درخت کامل کار می‌کند. دو گزینهٔ اول Builder و Facade را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Why does `Folder` store `std::vector<std::unique_ptr<Node>>` instead of `std::vector<Node>`?",
+        "fa": "چرا `Folder` به‌جای `std::vector<Node>` از `std::vector<std::unique_ptr<Node>>` استفاده می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "`Node` is abstract, and storing by value would slice files and folders down to a plain `Node` anyway",
+          "`std::unique_ptr` makes virtual function calls faster",
+          "`std::vector` cannot store objects that contain a `std::string`",
+          "So that the same child can be added to several folders at once"
+        ],
+        "fa": [
+          "`Node` انتزاعی است و ذخیره به‌صورت مقداری در هر حال فایل‌ها و پوشه‌ها را به یک `Node` ساده برش (slice) می‌داد",
+          "`std::unique_ptr` فراخوانی توابع virtual را سریع‌تر می‌کند",
+          "`std::vector` نمی‌تواند اشیایی را که `std::string` دارند ذخیره کند",
+          "تا یک فرزند بتواند هم‌زمان به چند پوشه اضافه شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Polymorphism in C++ needs indirection: a container of values holds exactly one type, and an abstract class can't even be instantiated. `unique_ptr` adds clear ownership — which also means a child can NOT be shared between folders (the tree stays a tree).",
+        "fa": "چندریختی در C++ به واسطه (اشاره‌گر یا مرجع) نیاز دارد: ظرفی از مقادیر دقیقاً یک نوع را نگه می‌دارد و از کلاس انتزاعی اصلاً نمی‌توان نمونه ساخت. `unique_ptr` مالکیت روشنی هم اضافه می‌کند؛ یعنی یک فرزند نمی‌تواند بین چند پوشه مشترک باشد (درخت، درخت باقی می‌ماند)."
+      }
+    },
+    {
+      "question": {
+        "en": "What is the main downside of declaring `add(child)` in the Component interface, so that leaves have it too?",
+        "fa": "مهم‌ترین عیب اعلان `add(child)` در رابط Component (به‌طوری که برگ‌ها هم آن را داشته باشند) چیست؟"
+      },
+      "options": {
+        "en": [
+          "The tree can no longer be traversed recursively",
+          "Children must then be stored as `std::shared_ptr`",
+          "Leaves get an operation that makes no sense for them, so misuse is only caught at runtime",
+          "Composites can no longer contain other composites"
+        ],
+        "fa": [
+          "دیگر نمی‌توان درخت را به‌صورت بازگشتی پیمایش کرد",
+          "فرزندان باید از آن به بعد به شکل `std::shared_ptr` ذخیره شوند",
+          "برگ‌ها عملیاتی می‌گیرند که برایشان معنا ندارد و استفادهٔ نادرست فقط در زمان اجرا کشف می‌شود",
+          "Compositeها دیگر نمی‌توانند Compositeهای دیگر را در خود داشته باشند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "This is the transparency vs. safety trade-off. A fully uniform interface is convenient, but `file.add(x)` then compiles and must throw or be ignored. Keeping `add()` on the Composite only, as the example does, lets the compiler reject it.",
+        "fa": "این همان بده‌بستان شفافیت و ایمنی است. رابط کاملاً یکدست راحت است، اما آن‌وقت `file.add(x)` کامپایل می‌شود و باید exception پرتاب کند یا نادیده گرفته شود. اگر مثل مثال `add()` فقط در Composite باشد، کامپایلر خودش جلوی آن را می‌گیرد."
+      }
+    },
+    {
+      "question": {
+        "en": "Composite and Decorator both build recursive structures of components. What distinguishes them?",
+        "fa": "Composite و Decorator هر دو ساختارهای بازگشتی از اجزا می‌سازند. چه چیزی آن‌ها را از هم متمایز می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Decorator works only at compile time, Composite only at runtime",
+          "A decorator wraps exactly one component to add behavior; a composite holds many children and combines their results",
+          "Composite requires multiple inheritance, Decorator does not",
+          "Nothing — they are the same pattern under two names"
+        ],
+        "fa": [
+          "Decorator فقط در زمان کامپایل کار می‌کند و Composite فقط در زمان اجرا",
+          "Decorator دقیقاً یک جزء را می‌پوشاند تا رفتاری اضافه کند؛ Composite چندین فرزند دارد و نتایجشان را ترکیب می‌کند",
+          "Composite به ارث‌بری چندگانه نیاز دارد و Decorator نه",
+          "هیچ؛ هر دو یک الگو با دو اسم مختلف‌اند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Structurally both implement the component interface and hold components, but the intent differs: Decorator enriches one object (a chain), Composite aggregates many (a tree). They combine well — you can decorate a whole subtree.",
+        "fa": "از نظر ساختار هر دو رابط Component را پیاده‌سازی می‌کنند و جزء نگه می‌دارند، اما هدفشان فرق دارد: Decorator یک شیء را غنی‌تر می‌کند (یک زنجیره) و Composite چندین شیء را تجمیع می‌کند (یک درخت). این دو به‌خوبی ترکیب می‌شوند؛ می‌توانید یک زیردرخت کامل را decorate کنید."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A vector-graphics editor lets users group shapes, group those groups again, and then move, recolor or delete a selection — whether it's one circle or fifty nested objects.",
+      "fa": "یک ویرایشگر گرافیک برداری به کاربر اجازه می‌دهد شکل‌ها را گروه کند، آن گروه‌ها را دوباره گروه کند و بعد انتخابش را جابه‌جا کند، رنگش را عوض کند یا حذفش کند؛ چه یک دایره باشد، چه پنجاه شیء تودرتو."
+    },
+    {
+      "en": "A bill-of-materials system must compute the price of a car, which consists of assemblies made of sub-assemblies, all the way down to individual screws.",
+      "fa": "یک سیستم فهرست قطعات باید قیمت یک خودرو را حساب کند؛ خودرویی که از مجموعه‌هایی ساخته شده که خودشان از زیرمجموعه‌ها تشکیل شده‌اند، تا برسد به تک‌تک پیچ‌ها."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Payroll of a nested org chart", "fa": "حقوق ماهانهٔ یک چارت سازمانی تودرتو" },
+    "task": {
+      "en": "`Department` can only hold `Employee`s and computes nothing, so the starter prints `Engineering [0]`. Make it a real composite: let it store any `OrgUnit` so departments can contain departments, compute `cost()` as the sum over its members, print members one level deeper, and add the `Backend` team to `Engineering`.",
+      "fa": "`Department` فقط می‌تواند `Employee` نگه دارد و هیچ چیزی حساب نمی‌کند، برای همین کد اولیه `Engineering [0]` را چاپ می‌کند. آن را به یک Composite واقعی تبدیل کنید: بگذارید هر `OrgUnit` را نگه دارد تا دپارتمان‌ها بتوانند دپارتمان‌های دیگر را در خود داشته باشند، `cost()` را مجموع هزینهٔ اعضا حساب کنید، اعضا را یک سطح عمیق‌تر چاپ کنید و تیم `Backend` را به `Engineering` اضافه کنید."
+    },
+    "hints": {
+      "en": [
+        "A department must treat an employee and a sub-department the same way — which type do they have in common?",
+        "Change both the parameter of `add()` and `members_` to use `std::unique_ptr<OrgUnit>`.",
+        "`cost()`: `for (const auto& m : members_) total += m->cost();`. `print()`: call `m->print(depth + 1)` for every member.",
+        "In `main()` write `engineering.add(std::move(backend));` — a `std::unique_ptr<Department>` converts to `std::unique_ptr<OrgUnit>` automatically."
+      ],
+      "fa": [
+        "دپارتمان باید با یک کارمند و یک زیردپارتمان یکسان رفتار کند؛ نوع مشترک این دو چیست؟",
+        "هم پارامتر `add()` و هم `members_` را به `std::unique_ptr<OrgUnit>` تغییر دهید.",
+        "برای `cost()`: `for (const auto& m : members_) total += m->cost();`. برای `print()`: برای هر عضو `m->print(depth + 1)` را صدا بزنید.",
+        "در `main()` بنویسید `engineering.add(std::move(backend));`؛ یک `std::unique_ptr<Department>` به‌طور خودکار به `std::unique_ptr<OrgUnit>` تبدیل می‌شود."
+      ]
+    },
+    "expectedOutput": "Engineering [19000]\n  Neda (CTO): 9000\n  Backend [10000]\n    Sara: 5200\n    Reza: 4800\ntotal payroll: 19000"
+  }
+}

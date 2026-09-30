@@ -1,0 +1,364 @@
+{
+  "id": "copy-and-swap",
+  "category": "idioms",
+  "order": 8,
+  "difficulty": 2,
+  "icon": "arrow-left-right",
+  "name": { "en": "Copy-and-Swap", "fa": "کپی و جابه‌جایی (Copy-and-Swap)" },
+  "aka": {
+    "en": "Create-Temporary-and-Swap, unified assignment operator",
+    "fa": "Create-Temporary-and-Swap، عملگر انتساب یکپارچه"
+  },
+  "tagline": {
+    "en": "Copy first, then swap: assignment that fully succeeds or changes nothing.",
+    "fa": "اول کپی، بعد جابه‌جایی: انتسابی که یا کامل انجام می‌شود یا هیچ چیز را تغییر نمی‌دهد."
+  },
+  "intent": {
+    "en": "Implement a class's assignment operator in terms of its copy constructor and a non-throwing `swap`, gaining the strong exception guarantee, safe self-assignment and a single operator for both copy and move assignment.",
+    "fa": "عملگر انتساب یک کلاس را بر پایهٔ سازندهٔ کپی و یک `swap` بدون استثنا پیاده‌سازی می‌کند تا ضمانت قوی استثنا، انتساب به خودِ امن و یک عملگر واحد برای انتساب کپی و انتساب انتقال به دست آید."
+  },
+  "problem": {
+    "en": "An audio editor's `AudioClip` owns a raw `short*` sample buffer. The textbook assignment operator first `delete[]`s its own buffer, then allocates a new one and copies. If that allocation throws `std::bad_alloc`, the clip has already lost its samples — and unless you're careful it still holds a dangling pointer that will be deleted a second time. The same operator also needs an `if (this == &other)` guard for self-assignment, and it repeats logic that already exists in the copy constructor and the destructor.",
+    "fa": "کلاس `AudioClip` در یک ویرایشگر صوتی مالک یک بافر خام `short*` برای نمونه‌های صوتی است. عملگر انتساب «کتابی» اول بافر خودش را `delete[]` می‌کند، بعد بافر جدیدی تخصیص می‌دهد و کپی می‌کند. اگر آن تخصیص `std::bad_alloc` پرتاب کند، کلیپ نمونه‌هایش را از دست داده و اگر حواستان نباشد هنوز یک اشاره‌گر آویزان (dangling) هم دارد که بعداً برای بار دوم delete می‌شود. همین عملگر برای انتساب به خود هم به محافظ `if (this == &other)` نیاز دارد و منطقی را تکرار می‌کند که از قبل در سازندهٔ کپی و مخرب وجود دارد."
+  },
+  "solution": {
+    "en": "Do everything that can fail **before** touching `*this`, then commit with an operation that cannot fail. Write a `noexcept` `swap` that exchanges the members — a pointer and a size, which can't throw. Then let `operator=` take its parameter **by value**: the compiler builds that copy (or a cheap move, for rvalues) with the copy constructor before the body runs. The body only swaps `*this` with the parameter, and the parameter's destructor frees the old buffer on the way out. If the copy throws, `*this` was never modified — the **strong exception guarantee**. Self-assignment needs no special case, and the same operator handles both copy and move assignment.",
+    "fa": "هر کاری را که ممکن است شکست بخورد **قبل** از دست زدن به `*this` انجام دهید و بعد با عملیاتی که نمی‌تواند شکست بخورد تغییر را نهایی کنید. یک `swap` با `noexcept` بنویسید که اعضا را با هم عوض کند؛ یک اشاره‌گر و یک اندازه، که امکان پرتاب استثنا ندارند. بعد `operator=` را طوری بنویسید که پارامترش را **by value** بگیرد: کامپایلر قبل از اجرای بدنه، آن کپی را با سازندهٔ کپی می‌سازد (یا برای rvalueها یک انتقال ارزان انجام می‌دهد). بدنه فقط `*this` را با پارامتر swap می‌کند و مخرب پارامتر هنگام خروج، بافر قدیمی را آزاد می‌کند. اگر کپی استثنا پرتاب کند، `*this` اصلاً تغییری نکرده است؛ یعنی **ضمانت قوی استثنا** (strong exception guarantee). انتساب به خود هیچ حالت خاصی لازم ندارد و همین یک عملگر هم انتساب کپی را انجام می‌دهد و هم انتساب انتقال را."
+  },
+  "analogy": {
+    "en": "Changing a shop window display: you don't strip the current display and then build the new one in front of customers — if a piece turns out to be missing, the window is left empty. You assemble the new display in the back room, and only when it's completely ready do you swap the two in one quick move. The old display is carted away afterwards.",
+    "fa": "عوض کردن ویترین یک مغازه: ویترین فعلی را خالی نمی‌کنید که بعد جلوی چشم مشتری‌ها ویترین جدید را بچینید؛ چون اگر معلوم شود قطعه‌ای کم است، ویترین خالی می‌ماند. ویترین جدید را در انبار پشتی آماده می‌کنید و فقط وقتی کاملاً آماده شد، با یک حرکت سریع جای دو ویترین را عوض می‌کنید. ویترین قدیمی بعداً جمع می‌شود."
+  },
+  "participants": [
+    {
+      "name": "Resource owner (AudioClip)",
+      "role": {
+        "en": "The class that manages a raw resource by hand: its constructors acquire it and its destructor releases it.",
+        "fa": "کلاسی که یک منبع خام را به‌صورت دستی مدیریت می‌کند: سازنده‌هایش آن را می‌گیرند و مخربش آزادش می‌کند."
+      }
+    },
+    {
+      "name": "Copy constructor",
+      "role": {
+        "en": "Does all the risky work — allocating and copying — without touching any existing object.",
+        "fa": "همهٔ کارهای پرخطر (تخصیص و کپی) را بدون دست زدن به هیچ شیء موجودی انجام می‌دهد."
+      }
+    },
+    {
+      "name": "swap (noexcept friend)",
+      "role": {
+        "en": "Exchanges the members of two objects and cannot throw; defined as a hidden friend so ADL finds it.",
+        "fa": "اعضای دو شیء را با هم عوض می‌کند و نمی‌تواند استثنا پرتاب کند؛ به شکل hidden friend تعریف می‌شود تا ADL آن را پیدا کند."
+      }
+    },
+    {
+      "name": "operator=(T other)",
+      "role": {
+        "en": "Receives a ready-made copy by value, swaps it into `*this`, and lets the parameter's destructor release the old state.",
+        "fa": "یک کپی آماده را by value دریافت می‌کند، آن را با `*this` جابه‌جا می‌کند و اجازه می‌دهد مخرب پارامتر وضعیت قدیمی را آزاد کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 1, "members": ["a = b;"] },
+      { "id": "b", "label": "b (source)", "kind": "concrete", "col": 1, "row": 0, "members": ["- size_ : size_t", "- data_ : short*"] },
+      { "id": "a", "label": "a (*this)", "kind": "concrete", "col": 1, "row": 1, "members": ["- size_ : size_t", "- data_ : short*", "+ operator=(AudioClip other)"] },
+      { "id": "other", "label": "other (by value)", "kind": "concrete", "col": 2, "row": 0, "members": ["1. built by copy ctor", "3. dies with a's old data"] },
+      { "id": "Guarantee", "label": "strong guarantee", "kind": "note", "col": 2, "row": 1, "members": ["if step 1 throws,", "a is never touched"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "a", "type": "uses", "label": "operator=" },
+      { "from": "b", "to": "other", "type": "creates", "label": "1. copy" },
+      { "from": "a", "to": "other", "type": "uses", "label": "2. swap (noexcept)" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Make sure the class has a correct copy constructor and destructor: the copy constructor allocates and copies, the destructor frees.",
+      "Write `friend void swap(T& a, T& b) noexcept` that swaps every member, using `using std::swap;` followed by unqualified `swap(a.x, b.x);` calls.",
+      "Declare assignment as `T& operator=(T other) noexcept` — taking the parameter by value moves the copy to the call site.",
+      "In the body write `swap(*this, other); return *this;` — the old state leaves with `other` and is destroyed when the function returns.",
+      "Add a `noexcept` move constructor that starts from default member initializers and swaps with its source; the by-value `operator=` now covers move assignment too."
+    ],
+    "fa": [
+      "مطمئن شوید کلاس یک سازندهٔ کپی و مخرب درست دارد: سازندهٔ کپی تخصیص می‌دهد و کپی می‌کند، مخرب آزاد می‌کند.",
+      "تابع `friend void swap(T& a, T& b) noexcept` را بنویسید که همهٔ اعضا را جابه‌جا کند؛ با `using std::swap;` و بعد فراخوانی‌های بدون پیشوند `swap(a.x, b.x);`.",
+      "انتساب را به شکل `T& operator=(T other) noexcept` تعریف کنید؛ گرفتن پارامتر به‌صورت by value، کپی را به محل فراخوانی منتقل می‌کند.",
+      "در بدنه بنویسید `swap(*this, other); return *this;`؛ وضعیت قدیمی همراه `other` خارج می‌شود و هنگام بازگشت تابع نابود می‌شود.",
+      "یک سازندهٔ انتقال `noexcept` اضافه کنید که از مقداردهی پیش‌فرض اعضا شروع کند و با منبعش swap کند؛ حالا `operator=` که by value است انتساب انتقال را هم پوشش می‌دهد."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Your class directly manages a resource (raw memory, a file descriptor, a C library handle) and must implement the Rule of Three/Five by hand.",
+      "Assignment must give the strong exception guarantee: after a failed assignment the target must be exactly as it was.",
+      "You want one short, obviously correct assignment operator instead of separate copy and move versions with self-assignment checks.",
+      "The class is a handle to a large internal object (e.g. a pimpl), so swapping is just exchanging pointers."
+    ],
+    "fa": [
+      "کلاس شما مستقیماً یک منبع را مدیریت می‌کند (حافظهٔ خام، file descriptor، handle یک کتابخانهٔ C) و باید قانون سه/پنج (Rule of Three/Five) را دستی پیاده کند.",
+      "انتساب باید ضمانت قوی استثنا بدهد: بعد از یک انتساب ناموفق، مقصد باید دقیقاً مثل قبل باشد.",
+      "یک عملگر انتساب کوتاه و به‌وضوح درست می‌خواهید، نه نسخه‌های جداگانهٔ کپی و انتقال همراه با بررسی انتساب به خود.",
+      "کلاس یک handle به یک شیء داخلی بزرگ است (مثلاً pimpl)، پس swap کردن فقط جابه‌جا کردن اشاره‌گرهاست."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Strong exception guarantee: if the copy fails, the target is unchanged.",
+      "Self-assignment is handled automatically — no `if (this == &other)` needed.",
+      "No duplicated logic: assignment reuses the copy constructor and the destructor.",
+      "A single by-value `operator=` serves as both copy and move assignment.",
+      "The `noexcept` `swap` is useful on its own, e.g. for `std::sort` and other algorithms."
+    ],
+    "fa": [
+      "ضمانت قوی استثنا: اگر کپی شکست بخورد، مقصد تغییری نمی‌کند.",
+      "انتساب به خود به‌طور خودکار مدیریت می‌شود و نیازی به `if (this == &other)` نیست.",
+      "بدون منطق تکراری: انتساب از سازندهٔ کپی و مخرب دوباره استفاده می‌کند.",
+      "یک `operator=` واحد که by value است، هم نقش انتساب کپی را دارد و هم انتساب انتقال.",
+      "خود `swap` با `noexcept` هم به‌تنهایی مفید است؛ مثلاً برای `std::sort` و الگوریتم‌های دیگر."
+    ]
+  },
+  "cons": {
+    "en": [
+      "It always builds a full copy, even when `*this` already has enough capacity to reuse its buffer — the reason `std::vector` doesn't use it.",
+      "Move assignment through the by-value operator costs an extra move construction plus a swap — slightly slower than a dedicated move assignment.",
+      "Only worth it for classes that manage resources by hand; with `std::vector` or `std::unique_ptr` members, the Rule of Zero makes it unnecessary."
+    ],
+    "fa": [
+      "همیشه یک کپی کامل می‌سازد، حتی وقتی `*this` ظرفیت کافی برای استفادهٔ دوباره از بافرش دارد؛ به همین دلیل `std::vector` از آن استفاده نمی‌کند.",
+      "انتساب انتقال از طریق عملگر by value یک ساخت انتقالی اضافه به‌علاوهٔ یک swap هزینه دارد؛ کمی کندتر از یک انتساب انتقال اختصاصی.",
+      "فقط برای کلاس‌هایی ارزش دارد که منابع را دستی مدیریت می‌کنند؛ با اعضایی مثل `std::vector` یا `std::unique_ptr`، قانون صفر (Rule of Zero) آن را غیرضروری می‌کند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Mark `swap` and the move constructor `noexcept`: `std::vector` only moves elements during reallocation when the move constructor can't throw; otherwise it copies them.",
+      "Define `swap` as a hidden friend inside the class and call it unqualified after `using std::swap;`, so ADL picks the best overload for every member.",
+      "Taking the parameter by value is the key: the copy happens in the caller before the function starts, so the operator itself can be `noexcept`.",
+      "`T(T&& o) noexcept { swap(*this, o); }` relies on default member initializers (`= nullptr`, `= 0`) so that `*this` is a valid empty object before the swap.",
+      "Never implement your `swap` as `std::swap(*this, other)`: the generic `std::swap` uses move assignment, which is your `operator=` — infinite recursion.",
+      "Prefer the Rule of Zero: if a `std::vector<short>` can hold the samples, you need none of this. Reach for copy-and-swap when you truly own a raw resource."
+    ],
+    "fa": [
+      "`swap` و سازندهٔ انتقال را `noexcept` کنید: `std::vector` فقط وقتی هنگام تخصیص دوباره عناصر را منتقل (move) می‌کند که سازندهٔ انتقال نتواند استثنا پرتاب کند؛ وگرنه آن‌ها را کپی می‌کند.",
+      "`swap` را به شکل hidden friend داخل کلاس تعریف کنید و بعد از `using std::swap;` بدون پیشوند صدایش بزنید تا ADL برای هر عضو بهترین overload را انتخاب کند.",
+      "کلید ماجرا گرفتن پارامتر به‌صورت by value است: کپی قبل از شروع تابع و در سمت فراخوان انجام می‌شود، پس خود عملگر می‌تواند `noexcept` باشد.",
+      "`T(T&& o) noexcept { swap(*this, o); }` به مقداردهی پیش‌فرض اعضا (`= nullptr`، `= 0`) تکیه دارد تا `*this` قبل از swap یک شیء خالی و معتبر باشد.",
+      "هیچ‌وقت `swap` خودتان را با `std::swap(*this, other)` پیاده نکنید: `std::swap` عمومی از انتساب انتقال استفاده می‌کند که همان `operator=` شماست؛ نتیجه: بازگشت بی‌پایان.",
+      "قانون صفر را ترجیح دهید: اگر یک `std::vector<short>` می‌تواند نمونه‌ها را نگه دارد، به هیچ‌کدام از این‌ها نیاز ندارید. copy-and-swap را وقتی به کار ببرید که واقعاً مالک یک منبع خام هستید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "The idiom was popularized by Herb Sutter's \"Exceptional C++\" and is the standard way to implement the Rule of Three/Five by hand.",
+      "The standard specifies copy assignment of `std::function`, `std::any` and `std::shared_ptr` as if by `T(other).swap(*this)` — copy-and-swap.",
+      "Pimpl-based value classes (many Qt classes, for example) implement assignment by swapping their implementation pointer."
+    ],
+    "fa": [
+      "این ایدیوم با کتاب «Exceptional C++» نوشتهٔ Herb Sutter مشهور شد و روش استاندارد پیاده‌سازی دستی قانون سه/پنج است.",
+      "استاندارد، انتساب کپی `std::function`، `std::any` و `std::shared_ptr` را معادل `T(other).swap(*this)` تعریف می‌کند؛ یعنی همان copy-and-swap.",
+      "کلاس‌های مقداری مبتنی بر pimpl (مثلاً بسیاری از کلاس‌های Qt) انتساب را با swap کردن اشاره‌گر پیاده‌سازی (implementation pointer) انجام می‌دهند."
+    ]
+  },
+  "related": [
+    {
+      "id": "raii",
+      "note": {
+        "en": "Copy-and-swap builds on RAII: the destructor of the swapped-out temporary is what releases the old resource, so the class needs correct RAII first.",
+        "fa": "copy-and-swap روی RAII بنا شده است: مخرب شیء موقتی که swap شده، منبع قدیمی را آزاد می‌کند؛ پس کلاس اول باید RAII درستی داشته باشد."
+      }
+    },
+    {
+      "id": "pimpl",
+      "note": {
+        "en": "A pimpl class swaps in constant time by exchanging its implementation pointer, which makes copy-and-swap a natural fit for its assignment.",
+        "fa": "یک کلاس pimpl فقط با جابه‌جا کردن اشاره‌گر پیاده‌سازی و در زمان ثابت swap می‌شود، پس copy-and-swap انتخاب طبیعی برای انتساب آن است."
+      }
+    },
+    {
+      "id": "type-erasure",
+      "note": {
+        "en": "Type-erased wrappers use the same trick: `Sensor& operator=(const Sensor& o) { return *this = Sensor(o); }` copies first, then commits with a `noexcept` move.",
+        "fa": "پوشاننده‌های type-erased هم از همین ترفند استفاده می‌کنند: `Sensor& operator=(const Sensor& o) { return *this = Sensor(o); }` اول کپی می‌کند و بعد با یک انتقال `noexcept` تغییر را نهایی می‌کند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Assigning audio clips safely", "fa": "انتساب امن کلیپ‌های صوتی" },
+    "description": {
+      "en": "`AudioClip` owns a raw `short[]` buffer. The demo assigns clips normally, assigns a clip to itself, and then simulates running out of memory: the assignment fails, yet `drums` keeps its samples. Moving still works, because it only swaps pointers.",
+      "fa": "`AudioClip` مالک یک بافر خام `short[]` است. این برنامه اول کلیپ‌ها را به‌طور عادی انتساب می‌دهد، بعد یک کلیپ را به خودش انتساب می‌دهد و در آخر تمام شدن حافظه را شبیه‌سازی می‌کند: انتساب شکست می‌خورد، اما `drums` نمونه‌هایش را حفظ می‌کند. انتقال همچنان کار می‌کند، چون فقط اشاره‌گرها را جابه‌جا می‌کند."
+    },
+    "output": "drums [3 1 4], vocals [9 2]\nvocals = drums  -> vocals [3 1 4]\nvocals = vocals -> vocals [3 1 4]\ndrums = bass    -> failed: out of memory\ndrums is intact: [3 1 4]\nmoved bass: [5 5 5 5]",
+    "highlights": [
+      {
+        "lines": [22, 27],
+        "note": {
+          "en": "The RAII foundation: the destructor frees the buffer, and the copy constructor does all the risky work — allocating and copying — on a brand-new object.",
+          "fa": "پایهٔ RAII: مخرب بافر را آزاد می‌کند و سازندهٔ کپی همهٔ کارهای پرخطر (تخصیص و کپی) را روی یک شیء کاملاً تازه انجام می‌دهد."
+        }
+      },
+      {
+        "lines": [28, 36],
+        "note": {
+          "en": "The non-throwing building blocks: `swap` exchanges a size and a pointer, and the move constructor starts empty and swaps, so it never allocates.",
+          "fa": "قطعه‌های بدون استثنا: `swap` یک اندازه و یک اشاره‌گر را جابه‌جا می‌کند و سازندهٔ انتقال از یک شیء خالی شروع می‌کند و swap می‌کند، پس هرگز حافظه تخصیص نمی‌دهد."
+        }
+      },
+      {
+        "lines": [38, 43],
+        "note": {
+          "en": "The idiom itself. The parameter is the copy, made before the body runs; the body only swaps, and the parameter's destructor frees the old buffer.",
+          "fa": "خود ایدیوم. پارامتر همان کپی است که قبل از اجرای بدنه ساخته می‌شود؛ بدنه فقط swap می‌کند و مخرب پارامتر بافر قدیمی را آزاد می‌کند."
+        }
+      },
+      {
+        "lines": [61, 65],
+        "note": {
+          "en": "Normal assignment and self-assignment. Self-assignment makes one unnecessary copy, but it is correct without any special check.",
+          "fa": "انتساب عادی و انتساب به خود. انتساب به خود یک کپی غیرضروری می‌سازد، اما بدون هیچ بررسی خاصی درست کار می‌کند."
+        }
+      },
+      {
+        "lines": [67, 77],
+        "note": {
+          "en": "The strong guarantee in action: building the copy of `bass` throws, `operator=` never starts, and `drums` is intact. Moving still succeeds because it never allocates.",
+          "fa": "ضمانت قوی در عمل: ساختن کپی `bass` استثنا پرتاب می‌کند، `operator=` اصلاً شروع نمی‌شود و `drums` سالم می‌ماند. انتقال همچنان موفق است، چون هیچ‌وقت حافظه تخصیص نمی‌دهد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Which guarantee does copy-and-swap give the assignment operator?",
+        "fa": "copy-and-swap چه ضمانتی به عملگر انتساب می‌دهد؟"
+      },
+      "options": {
+        "en": [
+          "The no-throw guarantee: assignment can never throw",
+          "The basic guarantee: after an exception the object is valid, but its value is unspecified",
+          "The strong guarantee: if assignment throws, the target keeps its old value",
+          "No guarantee at all — it only prevents memory leaks"
+        ],
+        "fa": [
+          "ضمانت عدم پرتاب (no-throw): انتساب هرگز استثنا پرتاب نمی‌کند",
+          "ضمانت پایه (basic): بعد از استثنا شیء معتبر است، اما مقدارش نامشخص است",
+          "ضمانت قوی (strong): اگر انتساب استثنا پرتاب کند، مقصد مقدار قبلی‌اش را حفظ می‌کند",
+          "هیچ ضمانتی نمی‌دهد و فقط جلوی نشت حافظه را می‌گیرد"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Everything that can fail happens while the by-value parameter is built, before `*this` is touched; the only step that modifies `*this` is `swap`, which can't throw. So either the whole assignment happens or nothing does. It is not no-throw: the copy itself may still throw.",
+        "fa": "هر چیزی که ممکن است شکست بخورد هنگام ساختن پارامتر by value و قبل از دست زدن به `*this` اتفاق می‌افتد؛ تنها مرحله‌ای که `*this` را تغییر می‌دهد `swap` است که نمی‌تواند استثنا پرتاب کند. پس یا کل انتساب انجام می‌شود یا هیچ چیز. البته no-throw نیست: خود کپی هنوز ممکن است استثنا پرتاب کند."
+      }
+    },
+    {
+      "question": {
+        "en": "Why does `operator=` take its parameter by value (`AudioClip other`) instead of as `const AudioClip&`?",
+        "fa": "چرا `operator=` پارامترش را by value (`AudioClip other`) می‌گیرد و نه به شکل `const AudioClip&`؟"
+      },
+      "options": {
+        "en": [
+          "Because references can't be swapped",
+          "So the copy (or, for rvalues, a move) is made before the body runs; the body just swaps, and one operator serves both copy and move assignment",
+          "Because passing by value is always faster than passing by reference",
+          "To stop callers from assigning temporaries"
+        ],
+        "fa": [
+          "چون مرجع‌ها را نمی‌توان swap کرد",
+          "تا کپی (یا برای rvalueها یک انتقال) قبل از اجرای بدنه ساخته شود؛ بدنه فقط swap می‌کند و یک عملگر هم برای انتساب کپی کافی است و هم برای انتساب انتقال",
+          "چون ارسال by value همیشه از ارسال با مرجع سریع‌تر است",
+          "تا جلوی انتساب شیء موقت توسط فراخوان گرفته شود"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "The by-value parameter is the copy. For an lvalue argument it is copy-constructed; for an rvalue it is move-constructed, which is cheap. Either way any exception happens at the call site, and the `noexcept` body only swaps.",
+        "fa": "پارامتر by value خودش همان کپی است. برای آرگومان lvalue با سازندهٔ کپی ساخته می‌شود و برای rvalue با سازندهٔ انتقال که ارزان است. در هر دو حالت هر استثنایی در محل فراخوانی رخ می‌دهد و بدنهٔ `noexcept` فقط swap می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "Why doesn't `std::vector` implement its copy assignment with copy-and-swap?",
+        "fa": "چرا `std::vector` انتساب کپی‌اش را با copy-and-swap پیاده‌سازی نمی‌کند؟"
+      },
+      "options": {
+        "en": [
+          "It would always allocate a new buffer, even when the target could reuse its existing capacity — so `vector` chooses speed and gives only the basic guarantee there",
+          "Because `std::vector` has no `swap` member function",
+          "Because copy-and-swap doesn't work with class templates",
+          "Because copy-and-swap leaks memory when the copy throws"
+        ],
+        "fa": [
+          "چون همیشه یک بافر جدید تخصیص می‌داد، حتی وقتی مقصد می‌توانست از ظرفیت فعلی‌اش دوباره استفاده کند؛ پس `vector` سرعت را انتخاب می‌کند و آن‌جا فقط ضمانت پایه می‌دهد",
+          "چون `std::vector` تابع عضو `swap` ندارد",
+          "چون copy-and-swap با class templateها کار نمی‌کند",
+          "چون copy-and-swap وقتی کپی استثنا پرتاب کند حافظه را نشت می‌دهد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Copy-and-swap trades performance for safety: it always builds a complete new copy. `std::vector` can often copy element by element into storage it already has, so the standard accepts the basic guarantee for speed. If you need the strong guarantee, write `std::vector<T>(other).swap(v);` yourself.",
+        "fa": "copy-and-swap کارایی را فدای امنیت می‌کند: همیشه یک کپی کامل و تازه می‌سازد. `std::vector` اغلب می‌تواند عنصر به عنصر در همان حافظه‌ای که دارد کپی کند، پس استاندارد به‌خاطر سرعت به ضمانت پایه رضایت می‌دهد. اگر ضمانت قوی لازم دارید، خودتان بنویسید `std::vector<T>(other).swap(v);`."
+      }
+    },
+    {
+      "question": {
+        "en": "How does copy-and-swap relate to RAII?",
+        "fa": "copy-and-swap چه رابطه‌ای با RAII دارد؟"
+      },
+      "options": {
+        "en": [
+          "They are alternatives: a class uses one or the other",
+          "RAII is only about files, copy-and-swap only about memory",
+          "Copy-and-swap removes the need for a destructor",
+          "It builds on RAII: the copy constructor acquires, and the destructor of the swapped-out temporary releases the old resource"
+        ],
+        "fa": [
+          "جایگزین هم‌اند: هر کلاس یا از این استفاده می‌کند یا از آن",
+          "RAII فقط مربوط به فایل‌هاست و copy-and-swap فقط مربوط به حافظه",
+          "copy-and-swap نیاز به مخرب را از بین می‌برد",
+          "روی RAII بنا شده است: سازندهٔ کپی منبع را می‌گیرد و مخرب شیء موقتیِ swapشده، منبع قدیمی را آزاد می‌کند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Copy-and-swap has no cleanup code of its own. It relies on the class's RAII members: the copy constructor acquires the new resource, and when the by-value parameter dies, its destructor releases the old one. Without a correct destructor the idiom would leak.",
+        "fa": "copy-and-swap هیچ کد پاک‌سازی مخصوص خودش ندارد. به اعضای RAII کلاس تکیه می‌کند: سازندهٔ کپی منبع جدید را می‌گیرد و وقتی پارامتر by value از بین می‌رود، مخربش منبع قدیمی را آزاد می‌کند. بدون یک مخرب درست، این ایدیوم نشت حافظه خواهد داشت."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Your hand-written `Matrix` class owns a raw `double*`. The team requires that a failed `a = b` — for example when memory runs out — leaves `a` exactly as it was, and that `a = a` is safe too.",
+      "fa": "کلاس `Matrix` که خودتان نوشته‌اید مالک یک `double*` خام است. تیم الزام کرده که یک `a = b` ناموفق (مثلاً وقتی حافظه تمام می‌شود) `a` را دقیقاً همان‌طور که بود باقی بگذارد و `a = a` هم امن باشد."
+    },
+    {
+      "en": "You are implementing the Rule of Five for a wrapper around a C library's image handle and want a single assignment operator that is exception-safe for both lvalues and temporaries, without duplicating the constructor and destructor logic.",
+      "fa": "دارید قانون پنج را برای یک پوشانندهٔ handle تصویر از یک کتابخانهٔ C پیاده می‌کنید و یک عملگر انتساب واحد می‌خواهید که هم برای lvalueها و هم برای اشیای موقت در برابر استثنا امن باشد، بدون این‌که منطق سازنده و مخرب را تکرار کنید."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Don't lose the route", "fa": "مسیر را گم نکنید" },
+    "task": {
+      "en": "The navigation app's `Route` owns a raw `int*` array of stop IDs. Its hand-written assignment operator deletes the old stops before allocating the new ones, so when the phone runs out of memory during a reroute, the driver is left with an empty route. Rewrite it with copy-and-swap: add a `noexcept` friend `swap`, turn `operator=` into the by-value version, and add a `noexcept` move constructor so handing the route to voice guidance works even without free memory.",
+      "fa": "کلاس `Route` در اپلیکیشن مسیریابی مالک یک آرایهٔ خام `int*` از شناسه‌های ایستگاه‌هاست. عملگر انتساب دست‌نویس آن قبل از تخصیص ایستگاه‌های جدید، ایستگاه‌های قبلی را delete می‌کند؛ پس وقتی حافظهٔ گوشی وسط مسیریابی دوباره تمام می‌شود، راننده با یک مسیر خالی تنها می‌ماند. آن را با copy-and-swap بازنویسی کنید: یک `swap` از نوع friend و `noexcept` اضافه کنید، `operator=` را به نسخهٔ by value تبدیل کنید و یک سازندهٔ انتقال `noexcept` بنویسید تا تحویل مسیر به راهنمای صوتی حتی بدون حافظهٔ آزاد هم انجام شود."
+    },
+    "hints": {
+      "en": [
+        "Keep the copy constructor and destructor as they are — copy-and-swap reuses them. Remove the old `operator=` entirely, self-assignment check included.",
+        "The swap itself: `friend void swap(Route& a, Route& b) noexcept { using std::swap; swap(a.count_, b.count_); swap(a.stops_, b.stops_); }`",
+        "`Route& operator=(Route other) noexcept { swap(*this, other); return *this; }` and `Route(Route&& other) noexcept { swap(*this, other); }` — the default member initializers make `*this` a valid empty route before the swap."
+      ],
+      "fa": [
+        "سازندهٔ کپی و مخرب را همان‌طور که هستند نگه دارید؛ copy-and-swap از آن‌ها دوباره استفاده می‌کند. `operator=` قدیمی را همراه با بررسی انتساب به خود کامل حذف کنید.",
+        "خود تابع swap این شکلی است: `friend void swap(Route& a, Route& b) noexcept { using std::swap; swap(a.count_, b.count_); swap(a.stops_, b.stops_); }`",
+        "`Route& operator=(Route other) noexcept { swap(*this, other); return *this; }` و `Route(Route&& other) noexcept { swap(*this, other); }`؛ مقداردهی پیش‌فرض اعضا باعث می‌شود `*this` قبل از swap یک مسیر خالی و معتبر باشد."
+      ]
+    },
+    "expectedOutput": "current:  [12 7 30]\nrerouted: [12 44 45 30]\nreroute failed: out of memory\nstill navigating: [12 44 45 30]\nvoice guidance got: [12 44 45 30]"
+  }
+}

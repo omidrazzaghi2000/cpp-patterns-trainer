@@ -1,0 +1,463 @@
+{
+  "id": "interpreter",
+  "category": "behavioral",
+  "order": 3,
+  "difficulty": 3,
+  "icon": "square-function",
+  "name": {
+    "en": "Interpreter",
+    "fa": "اینترپرتر (مفسر)"
+  },
+  "tagline": {
+    "en": "Each grammar rule a class; each sentence a tree that evaluates itself.",
+    "fa": "هر قاعدهٔ گرامر یک کلاس؛ هر جمله درختی که خودش را ارزیابی می‌کند."
+  },
+  "intent": {
+    "en": "Given a language, define a representation for its grammar along with an interpreter that uses the representation to interpret sentences in the language.",
+    "fa": "برای یک زبان، نمایشی از گرامرش تعریف می‌کند و مفسری که با استفاده از همین نمایش، جمله‌های آن زبان را تفسیر می‌کند."
+  },
+  "problem": {
+    "en": "Product managers want to switch features on for specific users with rules like `beta AND (premium OR NOT trial)`, and they change those rules every week. Hard-coding each rule as a C++ `if` means a rebuild and a deployment for every tweak. The rules need to become data — data that can still be evaluated for each user, printed for review and combined into bigger rules.",
+    "fa": "مدیران محصول می‌خواهند قابلیت‌ها را با قواعدی مثل `beta AND (premium OR NOT trial)` برای کاربران خاصی فعال کنند و این قواعد را هر هفته عوض می‌کنند. اگر هر قاعده را به شکل یک `if` در کد C++ بنویسید، هر تغییر کوچک یعنی یک build و یک استقرار (deploy) جدید. قواعد باید به داده تبدیل شوند؛ داده‌ای که همچنان بتوان آن را برای هر کاربر ارزیابی کرد، برای بازبینی چاپ کرد و در قالب قواعد بزرگ‌تر با هم ترکیب کرد."
+  },
+  "solution": {
+    "en": "Define a small grammar and map each rule to a class implementing a common `Expr` interface. **Terminal** expressions (like `Trait`) evaluate directly against a context; **nonterminal** expressions (`And`, `Or`, `Not`) hold child expressions and interpret them recursively. A sentence of the language becomes an abstract syntax tree (AST) of these objects — built by a parser or by helper functions — and calling `interpret(context)` on the root evaluates the whole sentence.",
+    "fa": "یک گرامر کوچک تعریف کنید و هر قاعدهٔ آن را به کلاسی نگاشت کنید که رابط مشترک `Expr` را پیاده‌سازی می‌کند. عبارت‌های **پایانی** (terminal) مثل `Trait` مستقیماً روی context ارزیابی می‌شوند؛ عبارت‌های **غیرپایانی** (nonterminal) مثل `And`، `Or` و `Not` زیرعبارت‌ها را نگه می‌دارند و به‌صورت بازگشتی تفسیرشان می‌کنند. هر جملهٔ زبان به یک درخت نحو انتزاعی (AST) از همین اشیا تبدیل می‌شود که یک parser یا چند تابع کمکی آن را می‌سازند، و صدا زدن `interpret(context)` روی ریشه، کل جمله را ارزیابی می‌کند."
+  },
+  "analogy": {
+    "en": "Sheet music. The notation is a small language: notes are terminals, while measures, chords and repeat signs combine them. A musician — the interpreter — walks the score with a context (tempo, key, current bar) and turns the same page into sound every time it is played.",
+    "fa": "نت موسیقی. نت‌نویسی یک زبان کوچک است: نت‌ها نمادهای پایانی‌اند و میزان‌ها، آکوردها و علامت‌های تکرار آن‌ها را با هم ترکیب می‌کنند. نوازنده (مفسر) با یک context (تمپو، گام، میزان فعلی) روی پارتیتور پیش می‌رود و هر بار همان صفحه را به صدا تبدیل می‌کند."
+  },
+  "participants": [
+    {
+      "name": "AbstractExpression",
+      "role": {
+        "en": "Declares `interpret(context)` for every node of the syntax tree (`Expr`).",
+        "fa": "متد `interpret(context)` را برای همهٔ گره‌های درخت نحو تعریف می‌کند (`Expr`)."
+      }
+    },
+    {
+      "name": "TerminalExpression",
+      "role": {
+        "en": "Interprets a basic symbol of the grammar; a leaf of the tree (`Trait`).",
+        "fa": "یک نماد پایه از گرامر را تفسیر می‌کند؛ برگی از درخت است (`Trait`)."
+      }
+    },
+    {
+      "name": "NonterminalExpression",
+      "role": {
+        "en": "One class per composite rule; owns its sub-expressions and interprets them recursively (`And`, `Or`, `Not`).",
+        "fa": "برای هر قاعدهٔ ترکیبی یک کلاس؛ مالک زیرعبارت‌هایش است و آن‌ها را به‌صورت بازگشتی تفسیر می‌کند (`And`، `Or`، `Not`)."
+      }
+    },
+    {
+      "name": "Context",
+      "role": {
+        "en": "The information expressions read (or update) while being interpreted (`User`).",
+        "fa": "اطلاعاتی که عبارت‌ها هنگام تفسیر می‌خوانند یا تغییر می‌دهند (`User`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Builds the syntax tree — or gets it from a parser — and calls `interpret()` on its root (`main()`).",
+        "fa": "درخت نحو را می‌سازد (یا از یک parser می‌گیرد) و `interpret()` را روی ریشهٔ آن صدا می‌زند (`main()`)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 0
+      },
+      {
+        "id": "AbstractExpression",
+        "kind": "interface",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "+ interpret(ctx) : bool"
+        ]
+      },
+      {
+        "id": "Context",
+        "kind": "concrete",
+        "col": 0,
+        "row": 1,
+        "members": [
+          "+ traits : set<string>"
+        ]
+      },
+      {
+        "id": "TerminalExpression",
+        "kind": "concrete",
+        "col": 1,
+        "row": 1,
+        "members": [
+          "- name_ : string",
+          "+ interpret(ctx) : bool"
+        ]
+      },
+      {
+        "id": "NonterminalExpression",
+        "kind": "concrete",
+        "col": 3,
+        "row": 1,
+        "members": [
+          "- children : Expr[]",
+          "+ interpret(ctx) : bool"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "Client",
+        "to": "AbstractExpression",
+        "type": "uses",
+        "label": "interpret(ctx)"
+      },
+      {
+        "from": "Client",
+        "to": "Context",
+        "type": "creates"
+      },
+      {
+        "from": "TerminalExpression",
+        "to": "AbstractExpression",
+        "type": "implements"
+      },
+      {
+        "from": "NonterminalExpression",
+        "to": "AbstractExpression",
+        "type": "implements"
+      },
+      {
+        "from": "NonterminalExpression",
+        "to": "AbstractExpression",
+        "type": "owns",
+        "label": "children"
+      },
+      {
+        "from": "TerminalExpression",
+        "to": "Context",
+        "type": "uses",
+        "label": "reads"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Write down the grammar, e.g. `expr := trait | expr AND expr | expr OR expr | NOT expr`.",
+      "Create an abstract `Expr` with `interpret(const Context&)` — plus any other operation you need, such as `text()`.",
+      "Add one terminal class per basic symbol; it evaluates directly against the context.",
+      "Add one nonterminal class per composite rule; it owns its children (`std::unique_ptr<Expr>`) and combines their results recursively.",
+      "Build the syntax tree — with a parser for text input, or with small factory helpers — and call `interpret()` on the root for each context."
+    ],
+    "fa": [
+      "گرامر را بنویسید، مثلاً `expr := trait | expr AND expr | expr OR expr | NOT expr`.",
+      "یک کلاس انتزاعی `Expr` با `interpret(const Context&)` بسازید؛ به‌علاوهٔ هر عملیات دیگری که لازم دارید، مثل `text()`.",
+      "برای هر نماد پایه یک کلاس پایانی اضافه کنید که مستقیماً روی context ارزیابی می‌شود.",
+      "برای هر قاعدهٔ ترکیبی یک کلاس غیرپایانی اضافه کنید که مالک فرزندانش (`std::unique_ptr<Expr>`) است و نتیجهٔ آن‌ها را به‌صورت بازگشتی ترکیب می‌کند.",
+      "درخت نحو را بسازید (با یک parser برای ورودی متنی یا با چند تابع کمکی کوچک) و برای هر context، `interpret()` را روی ریشه صدا بزنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A simple language whose sentences change more often than the code: business rules, feature flags, filters, formulas.",
+      "The grammar is small and stable, and raw speed is not critical.",
+      "The same expression must be evaluated against many contexts (users, rows, parcels).",
+      "You need several operations over the same tree (evaluate, print, validate) — often combined with Visitor."
+    ],
+    "fa": [
+      "زبانی ساده که جمله‌هایش بیشتر از خود کد تغییر می‌کنند: قواعد کسب‌وکار، feature flagها، فیلترها و فرمول‌ها.",
+      "گرامر کوچک و پایدار است و سرعت خام اهمیت حیاتی ندارد.",
+      "یک عبارت باید روی contextهای زیادی (کاربران، سطرها، مرسوله‌ها) ارزیابی شود.",
+      "روی یک درخت به چند عملیات نیاز دارید (ارزیابی، چاپ، اعتبارسنجی)؛ معمولاً همراه با الگوی Visitor."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Easy to change and extend the grammar: each rule is one small class.",
+      "Rules become data: they can be stored, loaded, combined and shown to users.",
+      "Straightforward to implement: classes map one-to-one onto grammar rules."
+    ],
+    "fa": [
+      "تغییر و گسترش گرامر آسان است: هر قاعده یک کلاس کوچک است.",
+      "قواعد به داده تبدیل می‌شوند: می‌توان آن‌ها را ذخیره، بارگذاری، ترکیب و به کاربر نمایش داد.",
+      "پیاده‌سازی سرراست است: کلاس‌ها یک‌به‌یک با قواعد گرامر متناظرند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Complex grammars explode into many classes and become hard to maintain; use a parser generator or a real engine instead.",
+      "Walking a tree of virtual calls is slow compared with compiled code or bytecode.",
+      "The pattern does not cover parsing — turning text into the tree is a separate job."
+    ],
+    "fa": [
+      "گرامرهای پیچیده به تعداد زیادی کلاس منجر می‌شوند و نگه‌داری‌شان سخت می‌شود؛ در این حالت از parser generator یا یک موتور واقعی استفاده کنید.",
+      "پیمایش درختی از فراخوانی‌های virtual در مقایسه با کد کامپایل‌شده یا bytecode سرعت پایین‌تری دارد.",
+      "این الگو تجزیهٔ متن (parsing) را پوشش نمی‌دهد؛ تبدیل متن به درخت کار جداگانه‌ای است."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Own children with `std::unique_ptr<Expr>`: the tree is a strict hierarchy, and destroying the root frees every node.",
+      "Make `interpret()` `const` and take the context by `const&` for pure expressions; take it by non-const reference when statements change state (like a robot's position).",
+      "Build trees with small factory functions (`both(...)`, `is(...)`) rather than by overloading `operator&&` / `operator||` — overloaded versions lose short-circuit evaluation and surprise readers.",
+      "A `std::unique_ptr` cannot be copied out of a `std::initializer_list`, so fill child vectors with `push_back(std::move(...))` — or a variadic helper using a fold expression.",
+      "If you need many operations over the tree, consider `std::variant` nodes with `std::visit`, or the Visitor pattern, instead of adding a virtual function for every operation."
+    ],
+    "fa": [
+      "مالکیت فرزندان را با `std::unique_ptr<Expr>` نگه دارید: درخت یک سلسله‌مراتب سخت‌گیرانه است و نابود شدن ریشه همهٔ گره‌ها را آزاد می‌کند.",
+      "برای عبارت‌های خالص، `interpret()` را `const` کنید و context را با `const&` بگیرید؛ وقتی دستورها وضعیت را تغییر می‌دهند (مثل موقعیت یک ربات)، آن را با مرجع غیر const بگیرید.",
+      "درخت را با چند تابع factory کوچک (`both(...)`، `is(...)`) بسازید، نه با سربارگذاری `operator&&` یا `operator||`؛ نسخه‌های سربارگذاری‌شده ارزیابی کوتاه‌مدار (short-circuit) را از دست می‌دهند و خواننده را غافلگیر می‌کنند.",
+      "`std::unique_ptr` را نمی‌توان از یک `std::initializer_list` کپی کرد، پس vector فرزندان را با `push_back(std::move(...))` یا یک تابع کمکی variadic همراه با fold expression پر کنید.",
+      "اگر روی درخت به عملیات زیادی نیاز دارید، به‌جای افزودن یک تابع virtual برای هر عملیات، گره‌هایی از نوع `std::variant` همراه با `std::visit` یا الگوی Visitor را در نظر بگیرید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::regex` compiles a pattern into an internal state machine that is then interpreted against the input text.",
+      "SQL `WHERE` clauses, spreadsheet formulas and template engines evaluate small expression trees against rows, cells or data.",
+      "Feature-flag, firewall and access-policy engines evaluate user-written rules as expression trees.",
+      "Boost.Proto and expression-template libraries such as Eigen build expression trees at compile time and evaluate them."
+    ],
+    "fa": [
+      "`std::regex` یک الگو را به یک ماشین حالت داخلی کامپایل می‌کند که بعد روی متن ورودی تفسیر می‌شود.",
+      "عبارت‌های `WHERE` در SQL، فرمول‌های صفحه‌گسترده و موتورهای template درخت‌های عبارت کوچکی را روی سطرها، سلول‌ها یا داده‌ها ارزیابی می‌کنند.",
+      "موتورهای feature flag، فایروال و سیاست‌های دسترسی، قواعدی را که کاربران نوشته‌اند به شکل درخت عبارت ارزیابی می‌کنند.",
+      "Boost.Proto و کتابخانه‌های expression template مثل Eigen درخت عبارت را در زمان کامپایل می‌سازند و ارزیابی می‌کنند."
+    ]
+  },
+  "related": [
+    {
+      "id": "composite",
+      "note": {
+        "en": "The syntax tree **is** a composite: nonterminal expressions contain child expressions behind the same interface.",
+        "fa": "درخت نحو **خودش** یک کامپوزیت است: عبارت‌های غیرپایانی، زیرعبارت‌هایی با همان رابط را در خود دارند."
+      }
+    },
+    {
+      "id": "visitor",
+      "note": {
+        "en": "Move operations such as printing, type-checking or optimizing into visitors, so expression classes don't grow a method per operation.",
+        "fa": "عملیاتی مثل چاپ، بررسی نوع یا بهینه‌سازی را به visitorها منتقل کنید تا کلاس‌های عبارت برای هر عملیات یک متد تازه نگیرند."
+      }
+    },
+    {
+      "id": "iterator",
+      "note": {
+        "en": "An iterator can walk the syntax tree, e.g. to collect every trait or variable a rule uses.",
+        "fa": "یک ایتریتور می‌تواند درخت نحو را پیمایش کند؛ مثلاً برای جمع کردن همهٔ traitها یا متغیرهایی که یک قاعده استفاده می‌کند."
+      }
+    },
+    {
+      "id": "flyweight",
+      "note": {
+        "en": "Terminal symbols that repeat (the same variable name, the same constant) can be shared as flyweights in large trees.",
+        "fa": "نمادهای پایانی تکراری (نام متغیر یا ثابت یکسان) را می‌توان در درخت‌های بزرگ به شکل فلای‌ویت به اشتراک گذاشت."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "Feature-flag targeting rules",
+      "fa": "قواعد هدف‌گیری برای feature flagها"
+    },
+    "description": {
+      "en": "The rule `beta AND (premium OR NOT trial)` is an object tree built from `Trait`, `And`, `Or` and `Not`. The same tree is interpreted against four different users (contexts), and it can also print itself with `text()`.",
+      "fa": "قاعدهٔ `beta AND (premium OR NOT trial)` درختی از اشیای `Trait`، `And`، `Or` و `Not` است. همین درخت روی چهار کاربر مختلف (چهار context) تفسیر می‌شود و با `text()` می‌تواند خودش را هم چاپ کند."
+    },
+    "output": "rule: (beta AND (premium OR NOT trial))\nsara: ON\nreza: off\nmina: off\nkian: ON",
+    "highlights": [
+      {
+        "lines": [
+          15,
+          22
+        ],
+        "note": {
+          "en": "The AbstractExpression: every node of the tree can interpret itself against a context — and here also print itself.",
+          "fa": "رابط AbstractExpression (یعنی `Expr`): هر گرهٔ درخت می‌تواند خودش را روی یک context تفسیر کند و در اینجا خودش را چاپ هم بکند."
+        }
+      },
+      {
+        "lines": [
+          24,
+          32
+        ],
+        "note": {
+          "en": "A terminal expression: a leaf that answers by looking directly into the context.",
+          "fa": "عبارت پایانی: برگی که با نگاه مستقیم به context جواب می‌دهد."
+        }
+      },
+      {
+        "lines": [
+          34,
+          44
+        ],
+        "note": {
+          "en": "A nonterminal expression owns its children and interprets them recursively; the built-in `&&` even skips the right subtree when the left one is false.",
+          "fa": "عبارت غیرپایانی مالک فرزندانش است و آن‌ها را به‌صورت بازگشتی تفسیر می‌کند؛ عملگر داخلی `&&` حتی وقتی سمت چپ false باشد، زیردرخت سمت راست را ارزیابی نمی‌کند."
+        }
+      },
+      {
+        "lines": [
+          76,
+          80
+        ],
+        "note": {
+          "en": "The client builds the syntax tree. In a real system a parser would create it from rule text stored in a config file or database.",
+          "fa": "کلاینت درخت نحو را می‌سازد. در یک سیستم واقعی، یک parser آن را از متن قاعده می‌سازد که در فایل پیکربندی یا پایگاه داده ذخیره شده است."
+        }
+      },
+      {
+        "lines": [
+          86,
+          88
+        ],
+        "note": {
+          "en": "One tree, many contexts: the same rule object is interpreted for every user.",
+          "fa": "یک درخت، چندین context: همان شیء قاعده برای هر کاربر تفسیر می‌شود."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the core idea of the Interpreter pattern?",
+        "fa": "ایدهٔ اصلی الگوی اینترپرتر چیست؟"
+      },
+      "options": {
+        "en": [
+          "Compile the language to machine code at runtime",
+          "Represent each grammar rule as a class, so a sentence becomes a tree of objects that can evaluate itself",
+          "Translate one class interface into another",
+          "Parse text using regular expressions only"
+        ],
+        "fa": [
+          "زبان را در زمان اجرا به کد ماشین کامپایل کن",
+          "هر قاعدهٔ گرامر را با یک کلاس نمایش بده تا هر جمله به درختی از اشیا تبدیل شود که می‌تواند خودش را ارزیابی کند",
+          "رابط یک کلاس را به رابط دیگری ترجمه کن",
+          "متن را فقط با عبارت‌های منظم (regex) تجزیه کن"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Each rule maps to a class and each sentence to an AST of those objects; `interpret()` on the root evaluates it recursively. Compiling to machine code is a compiler's job, and translating interfaces is Adapter.",
+        "fa": "هر قاعده به یک کلاس و هر جمله به یک AST از همان اشیا نگاشت می‌شود؛ صدا زدن `interpret()` روی ریشه آن را به‌صورت بازگشتی ارزیابی می‌کند. کامپایل به کد ماشین کار کامپایلر است و ترجمهٔ رابط‌ها کار آداپتر."
+      }
+    },
+    {
+      "question": {
+        "en": "In `And::interpret`, what does `l_->interpret(u) && r_->interpret(u)` guarantee?",
+        "fa": "در `And::interpret`، عبارت `l_->interpret(u) && r_->interpret(u)` چه چیزی را تضمین می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Both children are always interpreted",
+          "The right child is interpreted first",
+          "It only compiles if `interpret` returns `int`",
+          "The right subtree is not interpreted when the left one is false"
+        ],
+        "fa": [
+          "هر دو فرزند همیشه تفسیر می‌شوند",
+          "فرزند سمت راست اول تفسیر می‌شود",
+          "فقط وقتی کامپایل می‌شود که `interpret` مقدار `int` برگرداند",
+          "وقتی سمت چپ false باشد، زیردرخت سمت راست تفسیر نمی‌شود"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The built-in `&&` evaluates left to right and short-circuits, so the interpreter inherits the language's semantics for free. It is also why you should not build trees by overloading `operator&&`: user-defined overloads always evaluate both operands (and before C++17 did not even guarantee left-to-right order).",
+        "fa": "عملگر داخلی `&&` از چپ به راست ارزیابی می‌کند و short-circuit دارد، پس مفسر این معنا را مجانی به ارث می‌برد. به همین دلیل هم نباید درخت را با سربارگذاری `operator&&` بسازید: نسخه‌های سربارگذاری‌شده همیشه هر دو عملوند را ارزیابی می‌کنند (و پیش از C++17 حتی ترتیب چپ به راست هم تضمین نمی‌شد)."
+      }
+    },
+    {
+      "question": {
+        "en": "Your team wants a full SQL dialect with joins, sub-queries and a query optimizer. Is a hand-written Interpreter pattern a good fit?",
+        "fa": "تیم شما یک گویش کامل SQL با join، زیرپرس‌وجو و بهینه‌ساز پرس‌وجو می‌خواهد. آیا پیاده‌سازی دستی الگوی اینترپرتر انتخاب خوبی است؟"
+      },
+      "options": {
+        "en": [
+          "Yes — Interpreter scales to any grammar size at no cost",
+          "Yes, because the pattern also generates the parser automatically",
+          "Probably not — large grammars explode into many classes and tree-walking is slow; use a parser generator or a dedicated engine",
+          "No, because Interpreter cannot handle recursive grammars"
+        ],
+        "fa": [
+          "بله؛ اینترپرتر بدون هیچ هزینه‌ای برای گرامری با هر اندازه مقیاس‌پذیر است",
+          "بله، چون این الگو parser را هم به‌طور خودکار تولید می‌کند",
+          "احتمالاً نه؛ گرامرهای بزرگ به انبوهی از کلاس‌ها می‌رسند و پیمایش درخت سرعت پایینی دارد؛ از parser generator یا یک موتور اختصاصی استفاده کنید",
+          "نه، چون اینترپرتر نمی‌تواند گرامرهای بازگشتی را مدیریت کند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "The pattern shines for small, stable grammars. A full SQL dialect needs a real parser, an optimizer and efficient execution — far beyond one class per rule. Recursion, by the way, is the pattern's strength, not a limitation.",
+        "fa": "این الگو برای گرامرهای کوچک و پایدار می‌درخشد. یک گویش کامل SQL به parser واقعی، بهینه‌ساز و اجرای کارآمد نیاز دارد که خیلی فراتر از «یک کلاس برای هر قاعده» است. ضمناً بازگشت نقطهٔ قوت این الگوست، نه محدودیتش."
+      }
+    },
+    {
+      "question": {
+        "en": "How does Interpreter relate to Composite?",
+        "fa": "رابطهٔ اینترپرتر با کامپوزیت چیست؟"
+      },
+      "options": {
+        "en": [
+          "The syntax tree is a Composite: nonterminal expressions contain child expressions behind the same interface",
+          "They are unrelated; Composite is only for GUIs",
+          "Composite removes the need for a context object",
+          "Interpreter forbids nesting, while Composite requires it"
+        ],
+        "fa": [
+          "درخت نحو یک کامپوزیت است: عبارت‌های غیرپایانی، زیرعبارت‌هایی با همان رابط را در خود دارند",
+          "ربطی به هم ندارند؛ کامپوزیت فقط برای رابط گرافیکی است",
+          "کامپوزیت نیاز به شیء context را از بین می‌برد",
+          "اینترپرتر تودرتو بودن را ممنوع می‌کند، ولی کامپوزیت آن را الزامی می‌داند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Structurally, Interpreter is a Composite with a specific purpose: `And` and `Or` are composites, `Trait` is a leaf, and `interpret()` is the operation applied recursively over the whole tree.",
+        "fa": "از نظر ساختار، اینترپرتر یک کامپوزیت با هدفی مشخص است: `And` و `Or` نقش composite را دارند، `Trait` برگ است و `interpret()` عملیاتی است که به‌صورت بازگشتی روی کل درخت اعمال می‌شود."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Marketing staff write discount rules such as `cart_total > 100 AND (vip OR first_order)` in an admin panel, and the shop must evaluate them at every checkout without a new release.",
+      "fa": "کارمندان بخش بازاریابی قواعد تخفیفی مثل `cart_total > 100 AND (vip OR first_order)` را در پنل مدیریت می‌نویسند و فروشگاه باید بدون انتشار نسخهٔ جدید، این قواعد را در هر پرداخت ارزیابی کند."
+    },
+    {
+      "en": "A monitoring tool lets users write alert conditions like `cpu > 90 or (mem > 80 and disk < 5)`; they are stored as text and checked against every new metrics sample.",
+      "fa": "یک ابزار مانیتورینگ به کاربران اجازه می‌دهد شرط‌های هشدار مثل `cpu > 90 or (mem > 80 and disk < 5)` بنویسند؛ این شرط‌ها به‌صورت متن ذخیره می‌شوند و روی هر نمونهٔ جدید از معیارها بررسی می‌شوند."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "A script language for warehouse robots",
+      "fa": "زبان اسکریپت ربات انبار"
+    },
+    "task": {
+      "en": "The robot language has two terminals (`drive n`, `right`) and two nonterminals (`{ ... }` blocks and `repeat n { ... }`). The terminals work, but `Block` only runs its first statement and `Repeat` runs its body once, so the patrol stops after `drive 3`. Complete both nonterminals so the program `repeat 2 { drive 3; right; drive 2; right }` drives the full rectangle and returns to the dock at (0, 0), facing north.",
+      "fa": "زبان ربات دو نماد پایانی (`drive n` و `right`) و دو قاعدهٔ غیرپایانی (بلوک `{ ... }` و `repeat n { ... }`) دارد. نمادهای پایانی درست کار می‌کنند، اما `Block` فقط اولین دستورش را اجرا می‌کند و `Repeat` بدنه‌اش را فقط یک بار اجرا می‌کند؛ برای همین گشت ربات بعد از `drive 3` متوقف می‌شود. هر دو کلاس غیرپایانی را کامل کنید تا برنامهٔ `repeat 2 { drive 3; right; drive 2; right }` کل مستطیل را طی کند و ربات رو به شمال به ایستگاه (0, 0) برگردد."
+    },
+    "hints": {
+      "en": [
+        "Nonterminals do no work themselves — they interpret their children with the same `Robot` context.",
+        "`Block::interpret`: loop over `body_` and call `interpret(r)` on every statement.",
+        "`Repeat::interpret`: `for (int i = 0; i < times_; ++i) body_->interpret(r);` — the same subtree runs several times."
+      ],
+      "fa": [
+        "کلاس‌های غیرپایانی خودشان کاری انجام نمی‌دهند؛ فقط فرزندانشان را با همان context یعنی `Robot` تفسیر می‌کنند.",
+        "در `Block::interpret` روی `body_` حلقه بزنید و `interpret(r)` را برای تک‌تک دستورها صدا بزنید.",
+        "در `Repeat::interpret` بنویسید `for (int i = 0; i < times_; ++i) body_->interpret(r);`؛ یک زیردرخت چند بار اجرا می‌شود."
+      ]
+    },
+    "expectedOutput": "  drive 3 -> (0, 3)\n  drive 2 -> (2, 3)\n  drive 3 -> (2, 0)\n  drive 2 -> (0, 0)\nfinal: (0, 0) facing N"
+  }
+}

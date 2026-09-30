@@ -1,0 +1,367 @@
+{
+  "id": "strategy",
+  "category": "behavioral",
+  "order": 9,
+  "difficulty": 1,
+  "icon": "route",
+  "name": { "en": "Strategy", "fa": "استراتژی (راهبرد)" },
+  "aka": { "en": "Policy", "fa": "Policy (سیاست)" },
+  "tagline": {
+    "en": "Swap the algorithm, keep the code that uses it.",
+    "fa": "الگوریتم را عوض کنید، کدی که از آن استفاده می‌کند دست‌نخورده می‌ماند."
+  },
+  "intent": {
+    "en": "Define a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from the clients that use it.",
+    "fa": "خانواده‌ای از الگوریتم‌ها تعریف می‌کند، هر کدام را کپسوله می‌کند و آن‌ها را قابل‌تعویض می‌سازد. استراتژی اجازه می‌دهد الگوریتم مستقل از کلاینت‌هایی که از آن استفاده می‌کنند تغییر کند."
+  },
+  "problem": {
+    "en": "A navigation app started with car routes only. Then came buses, bikes, walking, scooters… If `Navigator::navigate()` handles every mode in a growing `if/else` or `switch`, the class bloats with unrelated maths, each new mode risks breaking the others, no algorithm can be tested on its own, and the teams working on different modes keep colliding in the same file.",
+    "fa": "یک اپلیکیشن مسیریابی فقط با مسیر خودرو شروع شد. بعد اتوبوس، دوچرخه، پیاده‌روی، اسکوتر و… هم اضافه شدند. اگر `Navigator::navigate()` همهٔ این حالت‌ها را در یک `if/else` یا `switch` مدام بزرگ‌شونده مدیریت کند، کلاس پر از محاسبات نامرتبط می‌شود، هر حالت جدید ممکن است بقیه را خراب کند، هیچ الگوریتمی را نمی‌توان جداگانه تست کرد و تیم‌هایی که روی حالت‌های مختلف کار می‌کنند مدام در یک فایل با هم تداخل پیدا می‌کنند."
+  },
+  "solution": {
+    "en": "Extract each algorithm into its own class behind a common interface (`RouteStrategy::plan()`). The **context** (`Navigator`) stores one strategy and delegates the work to it without knowing which concrete class it is. The client picks the strategy — at construction or later through `setStrategy()` — so modes can be switched at runtime and new ones added without touching `Navigator`. In C++ a strategy can also be a `std::function` or a template parameter when you do not need a class hierarchy.",
+    "fa": "هر الگوریتم را به کلاس جداگانه‌ای پشت یک اینترفیس مشترک (`RouteStrategy::plan()`) منتقل کنید. **context** (`Navigator`) یک استراتژی نگه می‌دارد و کار را به آن می‌سپارد، بدون این‌که بداند کلاس مشخص آن چیست. کلاینت استراتژی را انتخاب می‌کند (هنگام ساخت یا بعداً با `setStrategy()`)، پس می‌توان حالت‌ها را در زمان اجرا عوض کرد و بدون دست زدن به `Navigator` حالت جدید اضافه کرد. در C++ اگر به سلسله‌مراتب کلاس نیاز ندارید، استراتژی می‌تواند یک `std::function` یا یک پارامتر template هم باشد."
+  },
+  "analogy": {
+    "en": "Getting to the airport: you can take a taxi, catch the bus or ride your bike. The goal is always the same, and you can decide at the last minute based on budget, time or weather. Your travel plan (the context) only says \"get me there\"; the chosen mode of transport (the strategy) decides how.",
+    "fa": "رفتن به فرودگاه: می‌توانید تاکسی بگیرید، با اتوبوس بروید یا دوچرخه‌سواری کنید. هدف همیشه یکی است و می‌توانید در آخرین لحظه بر اساس بودجه، زمان یا آب‌وهوا تصمیم بگیرید. برنامهٔ سفر شما (context) فقط می‌گوید «مرا به آنجا برسان»؛ وسیلهٔ نقلیه‌ای که انتخاب کرده‌اید (استراتژی) تعیین می‌کند چطور."
+  },
+  "participants": [
+    {
+      "name": "Strategy",
+      "role": {
+        "en": "The common interface for all variants of the algorithm (`RouteStrategy`).",
+        "fa": "اینترفیس مشترک برای همهٔ نسخه‌های الگوریتم (`RouteStrategy`)."
+      }
+    },
+    {
+      "name": "ConcreteStrategy",
+      "role": {
+        "en": "Implements one variant of the algorithm (`DrivingRoute`, `TransitRoute`, `CyclingRoute`).",
+        "fa": "یک نسخه از الگوریتم را پیاده‌سازی می‌کند (`DrivingRoute`، `TransitRoute`، `CyclingRoute`)."
+      }
+    },
+    {
+      "name": "Context",
+      "role": {
+        "en": "Holds a strategy, delegates to it and offers a way to replace it; it never depends on a concrete strategy (`Navigator`).",
+        "fa": "یک استراتژی نگه می‌دارد، کار را به آن می‌سپارد و راهی برای تعویضش فراهم می‌کند؛ هیچ‌وقت به یک استراتژی مشخص وابسته نیست (`Navigator`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Chooses the concrete strategy (from user input, settings, a factory…) and hands it to the context (`main`).",
+        "fa": "استراتژی مشخص را انتخاب می‌کند (بر اساس ورودی کاربر، تنظیمات، یک factory و…) و آن را به context می‌دهد (`main`)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Navigator", "kind": "concrete", "col": 1, "row": 0, "members": ["- strategy_ : unique_ptr<...>", "+ setStrategy(s)", "+ navigate(dest, km)"] },
+      { "id": "RouteStrategy", "kind": "interface", "col": 3, "row": 0, "members": ["+ mode() : string_view", "+ plan(km) : Route"] },
+      { "id": "DrivingRoute", "kind": "concrete", "col": 1, "row": 1, "members": ["+ plan(km) : Route"] },
+      { "id": "TransitRoute", "kind": "concrete", "col": 2, "row": 1, "members": ["+ plan(km) : Route"] },
+      { "id": "CyclingRoute", "kind": "concrete", "col": 3, "row": 1, "members": ["+ plan(km) : Route"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Navigator", "type": "uses", "label": "picks strategy" },
+      { "from": "Navigator", "to": "RouteStrategy", "type": "owns", "label": "delegates to" },
+      { "from": "DrivingRoute", "to": "RouteStrategy", "type": "implements" },
+      { "from": "TransitRoute", "to": "RouteStrategy", "type": "implements" },
+      { "from": "CyclingRoute", "to": "RouteStrategy", "type": "implements" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Find the algorithm that varies inside a class — often a big conditional that picks between variants. That class becomes the context.",
+      "Declare the strategy interface with the method(s) the context needs, e.g. `Route plan(int km) const`.",
+      "Move each variant into its own class implementing the interface.",
+      "Give the context a `std::unique_ptr<Strategy>` member, a constructor that takes one and a `setStrategy()` for runtime swaps; replace the conditional with a call to the strategy.",
+      "Let the client choose the strategy (user settings, configuration, a small factory) and pass it to the context."
+    ],
+    "fa": [
+      "الگوریتمی را که داخل یک کلاس تغییر می‌کند پیدا کنید؛ اغلب یک شرط بزرگ که بین نسخه‌های مختلف انتخاب می‌کند. آن کلاس، context می‌شود.",
+      "اینترفیس استراتژی را با متد یا متدهایی که context لازم دارد تعریف کنید، مثلاً `Route plan(int km) const`.",
+      "هر نسخه را به کلاس جداگانه‌ای منتقل کنید که این اینترفیس را پیاده‌سازی می‌کند.",
+      "به context یک عضو `std::unique_ptr<Strategy>`، سازنده‌ای که یک استراتژی می‌گیرد و متد `setStrategy()` برای تعویض در زمان اجرا بدهید؛ و شرط بزرگ را با فراخوانی استراتژی جایگزین کنید.",
+      "بگذارید کلاینت استراتژی را انتخاب کند (تنظیمات کاربر، پیکربندی، یک factory کوچک) و آن را به context بدهد."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You have several variants of an algorithm and want to pick one at runtime.",
+      "A class is dominated by a conditional that chooses between behaviours of the same kind.",
+      "You want to isolate — and unit-test — the details of the algorithms apart from the business logic that uses them.",
+      "Many related classes differ only in behaviour; configure one class with different strategies instead."
+    ],
+    "fa": [
+      "چند نسخه از یک الگوریتم دارید و می‌خواهید در زمان اجرا یکی را انتخاب کنید.",
+      "بخش اصلی یک کلاس را شرطی گرفته که بین رفتارهای هم‌نوع انتخاب می‌کند.",
+      "می‌خواهید جزئیات الگوریتم‌ها را جدا از منطق تجاری‌ای که از آن‌ها استفاده می‌کند نگه دارید و جداگانه تست کنید.",
+      "کلاس‌های مرتبط زیادی دارید که فقط در رفتار با هم فرق دارند؛ به‌جای آن‌ها یک کلاس را با استراتژی‌های مختلف پیکربندی کنید."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Algorithms can be swapped at runtime.",
+      "Open/Closed: new strategies are added without changing the context.",
+      "Each algorithm is isolated and easy to unit-test.",
+      "Replaces variation through inheritance with composition."
+    ],
+    "fa": [
+      "الگوریتم‌ها را می‌توان در زمان اجرا عوض کرد.",
+      "اصل باز/بسته: استراتژی‌های جدید بدون تغییر context اضافه می‌شوند.",
+      "هر الگوریتم جداست و تست واحد آن آسان است.",
+      "به‌جای ایجاد تنوع از طریق وراثت، از ترکیب (composition) استفاده می‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Overkill when there are only a couple of algorithms that rarely change.",
+      "Clients must understand how the strategies differ in order to pick the right one.",
+      "The classic form costs a virtual call and a heap allocation per strategy — usually negligible, and templates avoid both when the choice is known at compile time."
+    ],
+    "fa": [
+      "وقتی فقط چند الگوریتم دارید که به‌ندرت تغییر می‌کنند، زیاده‌روی است.",
+      "کلاینت‌ها باید تفاوت استراتژی‌ها را بدانند تا بتوانند درست انتخاب کنند.",
+      "شکل کلاسیک برای هر استراتژی یک فراخوانی virtual و یک تخصیص حافظه روی heap دارد؛ معمولاً ناچیز است و اگر انتخاب در زمان کامپایل مشخص باشد، templateها هر دو را حذف می‌کنند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Classic form: an abstract base with a `virtual` destructor, concrete strategies marked `override`, and a context that owns its strategy through `std::unique_ptr` (or borrows a `const Strategy&` when someone else owns it). Stateless strategies should have `const` methods.",
+      "`std::function` is the lightweight runtime alternative: any lambda, free function or functor becomes a strategy with no class hierarchy, e.g. `std::function<int(int)> minutesFor = [](int km) { return km * 12; };`.",
+      "Compile-time strategy (policy-based design): `template <class Planner> class Navigator` has zero overhead and can be inlined, but the choice is fixed at compile time and every instantiation is a different type.",
+      "The standard library is full of strategies passed as template arguments: the comparator of `std::sort` (`std::sort(v.begin(), v.end(), std::greater{})`), the hash and allocator of containers, the deleter of `std::unique_ptr`.",
+      "Pass the data a strategy needs as parameters (or a small struct) instead of giving it a back-pointer to the context; that keeps strategies reusable and easy to test."
+    ],
+    "fa": [
+      "شکل کلاسیک: یک کلاس پایهٔ انتزاعی با destructor از نوع `virtual`، استراتژی‌های مشخص با `override` و یک context که مالکیت استراتژی را با `std::unique_ptr` در دست دارد (یا اگر مالک کس دیگری است، یک `const Strategy&` قرض می‌گیرد). متدهای استراتژی‌های بدون داده باید `const` باشند.",
+      "`std::function` جایگزین سبک در زمان اجراست: هر lambda، تابع آزاد یا functor بدون هیچ سلسله‌مراتب کلاسی به یک استراتژی تبدیل می‌شود؛ مثلاً `std::function<int(int)> minutesFor = [](int km) { return km * 12; };`.",
+      "استراتژی زمان کامپایل (policy-based design): `template <class Planner> class Navigator` هیچ سرباری ندارد و قابل inline شدن است، اما انتخاب در زمان کامپایل ثابت می‌شود و هر نمونه‌سازی یک نوع متفاوت است.",
+      "کتابخانهٔ استاندارد پر از استراتژی‌هایی است که به شکل آرگومان template پاس داده می‌شوند: مقایسه‌گر `std::sort` (`std::sort(v.begin(), v.end(), std::greater{})`)، تابع hash و allocator کانتینرها و deleter در `std::unique_ptr`.",
+      "داده‌هایی را که استراتژی لازم دارد به‌صورت پارامتر (یا یک struct کوچک) پاس بدهید، نه با دادن اشاره‌گری به context؛ این کار استراتژی‌ها را قابل‌استفادهٔ مجدد و تست‌پذیر نگه می‌دارد."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Comparators in `std::sort`, `std::set` and `std::priority_queue`, and the `Hash` / `Allocator` parameters of standard containers.",
+      "Pluggable codecs and compression back-ends (zlib, zstd, lz4) selected by configuration in archivers and network libraries.",
+      "Route planners in map apps, payment providers in online shops and difficulty levels (AI behaviours) in games."
+    ],
+    "fa": [
+      "مقایسه‌گرها در `std::sort`، `std::set` و `std::priority_queue`، و پارامترهای `Hash` و `Allocator` در کانتینرهای استاندارد.",
+      "codecها و موتورهای فشرده‌سازی قابل‌تعویض (zlib، zstd، lz4) که در برنامه‌های آرشیو و کتابخانه‌های شبکه بر اساس پیکربندی انتخاب می‌شوند.",
+      "مسیریاب‌ها در اپلیکیشن‌های نقشه، درگاه‌های پرداخت در فروشگاه‌های آنلاین و سطوح سختی (رفتار هوش مصنوعی) در بازی‌ها."
+    ]
+  },
+  "related": [
+    {
+      "id": "state",
+      "note": {
+        "en": "Almost the same structure, different intent: the client chooses a strategy and strategies are independent, whereas states replace themselves and know their successors.",
+        "fa": "ساختار تقریباً یکسان و هدف متفاوت: کلاینت استراتژی را انتخاب می‌کند و استراتژی‌ها از هم مستقل‌اند، در حالی که وضعیت‌ها خودشان جایگزین می‌شوند و وضعیت‌های بعدی را می‌شناسند."
+      }
+    },
+    {
+      "id": "template-method",
+      "note": {
+        "en": "Template Method varies steps of an algorithm through inheritance (fixed per class); Strategy replaces the whole algorithm through composition (per object, even at runtime).",
+        "fa": "تمپلیت متد مراحلی از یک الگوریتم را از طریق وراثت تغییر می‌دهد (ثابت برای هر کلاس)؛ استراتژی کل الگوریتم را از طریق ترکیب عوض می‌کند (برای هر شیء و حتی در زمان اجرا)."
+      }
+    },
+    {
+      "id": "policy-based-design",
+      "note": {
+        "en": "The compile-time counterpart: strategies are passed as template parameters and resolved with zero runtime overhead.",
+        "fa": "نسخهٔ زمان کامپایل همین ایده: استراتژی‌ها به شکل پارامتر template پاس داده می‌شوند و بدون هیچ سربار زمان اجرا انتخاب می‌شوند."
+      }
+    },
+    {
+      "id": "decorator",
+      "note": {
+        "en": "A decorator changes an object's skin (wraps it with extra behaviour); a strategy changes its guts (replaces the algorithm inside).",
+        "fa": "دکوراتور پوستهٔ شیء را تغییر می‌دهد (آن را با رفتار اضافه می‌پوشاند)؛ استراتژی درون آن را عوض می‌کند (الگوریتم داخلی را جایگزین می‌کند)."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Route planning in a navigation app", "fa": "مسیریابی در یک اپلیکیشن ناوبری" },
+    "description": {
+      "en": "`Navigator` only knows the `RouteStrategy` interface. Each travel mode computes the trip with its own logic (parking time for the car, walking and waiting for the bus), and `main` swaps the strategy at runtime — the same `navigate()` call gives a different answer each time, and the last choice sticks for the next trip.",
+      "fa": "`Navigator` فقط اینترفیس `RouteStrategy` را می‌شناسد. هر وسیلهٔ سفر مسیر را با منطق خودش محاسبه می‌کند (زمان پارک برای خودرو، پیاده‌روی تا ایستگاه و انتظار برای اتوبوس) و `main` استراتژی را در زمان اجرا عوض می‌کند؛ همان فراخوانی `navigate()` هر بار پاسخ متفاوتی می‌دهد و آخرین انتخاب برای سفر بعدی هم باقی می‌ماند."
+    },
+    "output": "Old Town (6 km) by car: 14 min via ring road\nOld Town (6 km) by bus: 25 min via bus line 7\nOld Town (6 km) by bike: 24 min via bike lanes\nHarbour (3 km) by bike: 12 min via bike lanes",
+    "highlights": [
+      {
+        "lines": [13, 19],
+        "note": {
+          "en": "The strategy interface. Every travel mode answers the same question — how long, and which way? — through `plan()`.",
+          "fa": "اینترفیس استراتژی. هر وسیلهٔ سفر از طریق `plan()` به یک سؤال یکسان پاسخ می‌دهد: چقدر طول می‌کشد و از کدام مسیر؟"
+        }
+      },
+      {
+        "lines": [21, 44],
+        "note": {
+          "en": "Concrete strategies with genuinely different logic. Adding a scooter mode means adding one more class here — nothing else changes.",
+          "fa": "استراتژی‌های مشخص با منطق واقعاً متفاوت. اضافه کردن حالت اسکوتر یعنی فقط یک کلاس دیگر در همین‌جا؛ هیچ چیز دیگری تغییر نمی‌کند."
+        }
+      },
+      {
+        "lines": [46, 54],
+        "note": {
+          "en": "The context owns its strategy through `std::unique_ptr` and exposes `setStrategy()`, so the algorithm can be replaced at any time.",
+          "fa": "context مالک استراتژی‌اش از طریق `std::unique_ptr` است و `setStrategy()` را در اختیار می‌گذارد؛ پس الگوریتم هر زمان قابل تعویض است."
+        }
+      },
+      {
+        "lines": [56, 60],
+        "note": {
+          "en": "Delegation: no `if` or `switch` on the travel mode — `navigate()` simply asks the current strategy.",
+          "fa": "واگذاری: هیچ دستور `if` یا `switch` روی نوع سفر وجود ندارد؛ `navigate()` فقط از استراتژی فعلی می‌پرسد."
+        }
+      },
+      {
+        "lines": [66, 76],
+        "note": {
+          "en": "The client picks and swaps strategies at runtime, e.g. when the user taps a different travel-mode icon.",
+          "fa": "کلاینت در زمان اجرا استراتژی را انتخاب و عوض می‌کند؛ مثلاً وقتی کاربر روی آیکون وسیلهٔ سفر دیگری می‌زند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the main goal of the Strategy pattern?",
+        "fa": "هدف اصلی الگوی استراتژی چیست؟"
+      },
+      "options": {
+        "en": [
+          "Guarantee that a class has only one instance",
+          "Encapsulate interchangeable algorithms behind a common interface so they can be selected and swapped at runtime",
+          "Let an object change its behaviour automatically when its internal state changes",
+          "Build a complex object step by step"
+        ],
+        "fa": [
+          "تضمین این‌که یک کلاس فقط یک نمونه داشته باشد",
+          "کپسوله کردن الگوریتم‌های قابل‌تعویض پشت یک اینترفیس مشترک تا بتوان آن‌ها را در زمان اجرا انتخاب و عوض کرد",
+          "این‌که شیء با تغییر وضعیت درونی‌اش خودبه‌خود رفتارش را تغییر دهد",
+          "ساختن یک شیء پیچیده به‌صورت گام‌به‌گام"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Strategy separates what the context does from how one part of it is computed, and makes the \"how\" pluggable. Automatic behaviour change driven by internal state is the State pattern — there the object switches itself, here the client chooses.",
+        "fa": "استراتژی «چه کاری» context انجام می‌دهد را از «چگونه» محاسبه شدن بخشی از آن جدا می‌کند و این «چگونه» را قابل‌تعویض می‌سازد. تغییر خودکار رفتار بر اساس وضعیت درونی، الگوی استیت است؛ آنجا شیء خودش تغییر می‌کند و اینجا کلاینت انتخاب می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "A leaderboard's sort order is known at compile time and sorting is performance-critical. Which way of expressing the strategy fits best?",
+        "fa": "ترتیب مرتب‌سازی یک جدول امتیازات در زمان کامپایل مشخص است و سرعت مرتب‌سازی حیاتی است. کدام روش پیاده‌سازی استراتژی مناسب‌تر است؟"
+      },
+      "options": {
+        "en": [
+          "A `std::unique_ptr` to a virtual `Comparator` interface, swapped at runtime",
+          "A `std::function<bool(int, int)>` member set once in the constructor",
+          "A global `enum` that is checked inside the comparison on every call",
+          "A template parameter, like the comparator of `std::sort`, which the compiler can inline"
+        ],
+        "fa": [
+          "یک `std::unique_ptr` به اینترفیس virtual به نام `Comparator` که در زمان اجرا عوض می‌شود",
+          "یک عضو `std::function<bool(int, int)>` که یک بار در سازنده مقداردهی می‌شود",
+          "یک `enum` سراسری که در هر فراخوانی مقایسه بررسی می‌شود",
+          "یک پارامتر template، مثل مقایسه‌گر `std::sort`، که کامپایلر می‌تواند آن را inline کند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "When the choice is fixed at compile time, a template parameter (policy) removes the virtual call or `std::function` indirection and lets the comparison be inlined — which matters inside a sort's hot loop. Use the runtime forms when the strategy really has to change while the program runs.",
+        "fa": "وقتی انتخاب در زمان کامپایل ثابت است، یک پارامتر template (policy) فراخوانی virtual یا غیرمستقیم بودن `std::function` را حذف می‌کند و اجازه می‌دهد مقایسه inline شود؛ چیزی که در حلقهٔ داغ مرتب‌سازی اهمیت دارد. شکل‌های زمان اجرا را وقتی به کار ببرید که استراتژی واقعاً باید در حین اجرای برنامه عوض شود."
+      }
+    },
+    {
+      "question": {
+        "en": "When is introducing the Strategy pattern probably not worth it?",
+        "fa": "چه زمانی احتمالاً استفاده از الگوی استراتژی ارزشش را ندارد؟"
+      },
+      "options": {
+        "en": [
+          "When there are only two simple algorithms that will practically never change",
+          "When the algorithm has to be chosen at runtime",
+          "When each algorithm must be unit-tested on its own",
+          "When new algorithms are added regularly"
+        ],
+        "fa": [
+          "وقتی فقط دو الگوریتم ساده دارید که عملاً هیچ‌وقت تغییر نمی‌کنند",
+          "وقتی الگوریتم باید در زمان اجرا انتخاب شود",
+          "وقتی هر الگوریتم باید جداگانه تست واحد شود",
+          "وقتی مرتباً الگوریتم‌های جدید اضافه می‌شوند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Every other option is a textbook reason to use the pattern. For two tiny, stable variants an `if` (or a lambda parameter) is simpler; the interface and extra classes would only add indirection.",
+        "fa": "همهٔ گزینه‌های دیگر دلایل کلاسیک استفاده از این الگو هستند. برای دو نسخهٔ کوچک و پایدار، یک `if` (یا یک پارامتر lambda) ساده‌تر است؛ اینترفیس و کلاس‌های اضافه فقط لایهٔ غیرمستقیم اضافه می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "How does Strategy differ from Template Method?",
+        "fa": "استراتژی چه تفاوتی با تمپلیت متد دارد؟"
+      },
+      "options": {
+        "en": [
+          "Strategy relies on inheritance, Template Method on composition",
+          "They are the same pattern under two names",
+          "Template Method varies steps of an algorithm by subclassing (fixed per class); Strategy replaces the whole algorithm via composition, even at runtime",
+          "Template Method can only be implemented with C++ templates"
+        ],
+        "fa": [
+          "استراتژی به وراثت متکی است و تمپلیت متد به ترکیب",
+          "هر دو یک الگو با دو اسم مختلف‌اند",
+          "تمپلیت متد مراحلی از الگوریتم را با زیرکلاس‌سازی تغییر می‌دهد (ثابت برای هر کلاس)؛ استراتژی کل الگوریتم را با ترکیب، حتی در زمان اجرا، عوض می‌کند",
+          "تمپلیت متد فقط با templateهای C++ پیاده‌سازی می‌شود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Template Method keeps the skeleton in a base class and lets subclasses override steps — the choice is made when you pick the class. Strategy moves the algorithm into a separate object, so one context can be reconfigured at any time. (The \"template\" in the name has nothing to do with C++ templates.)",
+        "fa": "تمپلیت متد اسکلت الگوریتم را در کلاس پایه نگه می‌دارد و به زیرکلاس‌ها اجازه می‌دهد مراحل را override کنند؛ انتخاب هنگام انتخاب کلاس انجام می‌شود. استراتژی الگوریتم را به یک شیء جداگانه منتقل می‌کند، پس یک context را می‌توان هر زمان دوباره پیکربندی کرد. (کلمهٔ «template» در نام این الگو ربطی به templateهای C++ ندارد.)"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "An online shop must compute shipping cost with a different formula for each carrier (post, courier, pickup point); the customer picks the carrier at checkout and new carriers are added every few months.",
+      "fa": "یک فروشگاه آنلاین باید هزینهٔ ارسال را برای هر شرکت حمل (پست، پیک، تحویل در نقطهٔ برداشت) با فرمول متفاوتی حساب کند؛ مشتری هنگام پرداخت شرکت حمل را انتخاب می‌کند و هر چند ماه یک شرکت جدید اضافه می‌شود."
+    },
+    {
+      "en": "An image-export feature must compress files as PNG, JPEG or WebP depending on the user's choice, while the export code itself stays exactly the same.",
+      "fa": "قابلیت خروجی گرفتن از تصویر باید بسته به انتخاب کاربر فایل را با PNG، JPEG یا WebP فشرده کند، در حالی که خود کد خروجی گرفتن دقیقاً همان می‌ماند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Cinema ticket pricing", "fa": "قیمت‌گذاری بلیت سینما" },
+    "task": {
+      "en": "`BoxOffice` delegates the ticket price to a `PricingStrategy`, but it is stuck with `RegularPricing` all day. Add a `StudentPricing` strategy (20% off), give `BoxOffice` a `setPricing()` method, and switch strategies in `main` so the second sale uses happy-hour prices and the third one the student discount.",
+      "fa": "`BoxOffice` محاسبهٔ قیمت بلیت را به یک `PricingStrategy` می‌سپارد، اما تمام روز در `RegularPricing` گیر کرده است. یک استراتژی `StudentPricing` (با ۲۰٪ تخفیف) اضافه کنید، به `BoxOffice` یک متد `setPricing()` بدهید و در `main` استراتژی را طوری عوض کنید که فروش دوم با قیمت happy hour و فروش سوم با تخفیف دانشجویی انجام شود."
+    },
+    "hints": {
+      "en": [
+        "A new strategy is just another class: derive from `PricingStrategy` and `override` both `label()` and `priceCents()`.",
+        "`setPricing` takes a `std::unique_ptr<PricingStrategy>` by value and does `pricing_ = std::move(pricing);` — the old strategy is destroyed automatically.",
+        "In `main`: `office.setPricing(std::make_unique<HappyHourPricing>());` before selling \"Up\", and `office.setPricing(std::make_unique<StudentPricing>());` before selling \"Heat\"."
+      ],
+      "fa": [
+        "استراتژی جدید فقط یک کلاس دیگر است: از `PricingStrategy` ارث ببرید و هر دو متد `label()` و `priceCents()` را `override` کنید.",
+        "`setPricing` یک `std::unique_ptr<PricingStrategy>` را به‌صورت مقداری می‌گیرد و `pricing_ = std::move(pricing);` را اجرا می‌کند؛ استراتژی قبلی به‌طور خودکار نابود می‌شود.",
+        "در `main`: قبل از فروش \"Up\" بنویسید `office.setPricing(std::make_unique<HappyHourPricing>());` و قبل از فروش \"Heat\" بنویسید `office.setPricing(std::make_unique<StudentPricing>());`."
+      ]
+    },
+    "expectedOutput": "2 x Dune [regular]: $24.00\n3 x Up [happy hour]: $18.00\n1 x Heat [student]: $9.60"
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "id": "chain-of-responsibility",
+  "category": "behavioral",
+  "order": 1,
+  "difficulty": 2,
+  "icon": "link",
+  "name": {
+    "en": "Chain of Responsibility",
+    "fa": "زنجیرهٔ مسئولیت"
+  },
+  "aka": {
+    "en": "CoR, Chain of Handlers",
+    "fa": "CoR، زنجیرهٔ هندلرها"
+  },
+  "tagline": {
+    "en": "Pass a request along a chain until one handler takes care of it.",
+    "fa": "درخواست در طول یک زنجیره دست‌به‌دست می‌شود تا یکی از هندلرها آن را انجام دهد."
+  },
+  "intent": {
+    "en": "Avoid coupling the sender of a request to its receiver by giving more than one object a chance to handle it. Chain the receiving objects and pass the request along until one of them handles it.",
+    "fa": "با دادن فرصت رسیدگی به بیش از یک شیء، فرستندهٔ درخواست را از گیرنده‌اش جدا می‌کند. اشیای گیرنده به شکل زنجیره به هم وصل می‌شوند و درخواست در طول زنجیره جلو می‌رود تا یکی از آن‌ها به آن رسیدگی کند."
+  },
+  "problem": {
+    "en": "A support desk receives tickets of every kind: password resets, billing questions, production outages, legal threats. If the intake code decides who handles what, it grows into a long `if/else` ladder that knows every team, their rules and their order — and adding a team or changing the escalation order means editing that central function. Worse, the rules overlap: a billing question may be trivial or severe, and the right receiver can only be found by asking each candidate in turn.",
+    "fa": "یک میز پشتیبانی انواع تیکت را دریافت می‌کند: بازیابی رمز عبور، سؤال مالی، قطعی سرویس و حتی تهدید حقوقی. اگر کد دریافت تیکت خودش تصمیم بگیرد چه کسی به چه چیزی رسیدگی کند، به یک نردبان طولانی `if/else` تبدیل می‌شود که همهٔ تیم‌ها، قواعد و ترتیبشان را می‌شناسد؛ و هر بار که تیمی اضافه شود یا ترتیب ارجاع عوض شود، باید همان تابع مرکزی را ویرایش کرد. بدتر این‌که قواعد با هم هم‌پوشانی دارند: یک سؤال مالی ممکن است ساده یا جدی باشد و گیرندهٔ درست را فقط با پرسیدن از تک‌تک گزینه‌ها، یکی پس از دیگری، می‌شود پیدا کرد."
+  },
+  "solution": {
+    "en": "Turn every potential receiver into a handler object with a common interface and a pointer to the **next** handler. Each handler looks at the request and either handles it — ending the journey — or forwards it to its successor. The sender only knows the head of the chain. Which handlers exist, and in what order, is decided when the chain is assembled, so it can change without touching the sender or the other handlers.",
+    "fa": "هر گیرندهٔ احتمالی را به یک شیء هندلر (handler) با رابط مشترک و یک اشاره‌گر به هندلر **بعدی** تبدیل کنید. هر هندلر درخواست را بررسی می‌کند و یا خودش به آن رسیدگی می‌کند (و سفر درخواست همان‌جا تمام می‌شود) یا آن را به هندلر بعدی می‌سپارد. فرستنده فقط سر زنجیره را می‌شناسد. این‌که چه هندلرهایی و با چه ترتیبی وجود داشته باشند هنگام ساختن زنجیره تعیین می‌شود؛ پس می‌توان آن را بدون دست زدن به فرستنده یا بقیهٔ هندلرها تغییر داد."
+  },
+  "analogy": {
+    "en": "Calling a company hotline: the automated menu tries to answer first, then a front-line agent, then a specialist, then a supervisor. You dial one number and never need to know who will finally solve your problem — each person either solves it or transfers you up the line.",
+    "fa": "تماس با مرکز تماس یک شرکت: اول منوی خودکار سعی می‌کند جواب بدهد، بعد کارشناس خط اول، بعد متخصص و در نهایت سرپرست. شما فقط یک شماره می‌گیرید و لازم نیست بدانید چه کسی مشکلتان را حل می‌کند؛ هر نفر یا مشکل را حل می‌کند یا تماس را به سطح بالاتر وصل می‌کند."
+  },
+  "participants": [
+    {
+      "name": "Handler",
+      "role": {
+        "en": "Declares the handling interface and stores the link to the next handler (`SupportHandler` with `next_` and `setNext()`). Its default `handle()` forwards the request.",
+        "fa": "رابط رسیدگی را تعریف می‌کند و پیوند به هندلر بعدی را نگه می‌دارد (`SupportHandler` با `next_` و `setNext()`). پیاده‌سازی پیش‌فرض `handle()` درخواست را به هندلر بعدی می‌فرستد."
+      }
+    },
+    {
+      "name": "ConcreteHandler",
+      "role": {
+        "en": "Handles the requests it is responsible for and forwards everything else (`FaqBot`, `HelpDesk`, `OnCallEngineer`).",
+        "fa": "به درخواست‌هایی که مسئولشان است رسیدگی می‌کند و بقیه را جلو می‌فرستد (`FaqBot`، `HelpDesk`، `OnCallEngineer`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Assembles the chain (or receives it ready-made) and sends every request to its first link.",
+        "fa": "زنجیره را می‌سازد (یا آماده تحویل می‌گیرد) و هر درخواست را به اولین حلقهٔ آن می‌فرستد."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 0
+      },
+      {
+        "id": "Handler",
+        "kind": "abstract",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "- next_ : unique_ptr<Handler>",
+          "+ setNext(h) : Handler&",
+          "+ handle(req)"
+        ]
+      },
+      {
+        "id": "ConcreteHandlerA",
+        "kind": "concrete",
+        "col": 1,
+        "row": 1,
+        "members": [
+          "+ handle(req)"
+        ]
+      },
+      {
+        "id": "ConcreteHandlerB",
+        "kind": "concrete",
+        "col": 3,
+        "row": 1,
+        "members": [
+          "+ handle(req)"
+        ]
+      },
+      {
+        "id": "handle(req)",
+        "kind": "note",
+        "col": 2,
+        "row": 2,
+        "members": [
+          "if I can: process, stop",
+          "else: Handler::handle(req)",
+          "base: next_->handle(req)"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "Client",
+        "to": "Handler",
+        "type": "uses",
+        "label": "handle(req)"
+      },
+      {
+        "from": "ConcreteHandlerA",
+        "to": "Handler",
+        "type": "inherits"
+      },
+      {
+        "from": "ConcreteHandlerB",
+        "to": "Handler",
+        "type": "inherits"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Declare the handler interface with a `handle(request)` method and a link to the next handler.",
+      "Put the forwarding logic in the base class: if there is a next handler, pass the request on; otherwise perform the \"end of chain\" action (ignore, log or report failure).",
+      "In each concrete handler decide first: can I handle this? If yes, handle it and stop; if not, call the base implementation to forward it.",
+      "Let the client — or a factory or configuration — assemble the chain; a `setNext()` that returns the new link turns this into one expression.",
+      "Send every request to the head of the chain only, and decide explicitly what happens when nobody handles it."
+    ],
+    "fa": [
+      "رابط هندلر را با متد `handle(request)` و یک پیوند به هندلر بعدی تعریف کنید.",
+      "منطق ارسال به بعدی را در کلاس پایه بگذارید: اگر هندلر بعدی وجود دارد درخواست را به آن بدهید؛ وگرنه کار «پایان زنجیره» را انجام دهید (نادیده گرفتن، لاگ کردن یا گزارش شکست).",
+      "در هر هندلر مشخص اول تصمیم بگیرید: آیا می‌توانم به این رسیدگی کنم؟ اگر بله، رسیدگی کنید و متوقف شوید؛ اگر نه، پیاده‌سازی کلاس پایه را صدا بزنید تا درخواست جلو برود.",
+      "بگذارید کلاینت (یا یک factory یا فایل پیکربندی) زنجیره را بسازد؛ اگر `setNext()` حلقهٔ جدید را برگرداند، این کار در یک عبارت انجام می‌شود.",
+      "هر درخواست را فقط به سر زنجیره بفرستید و صریحاً تعیین کنید اگر هیچ هندلری به آن رسیدگی نکرد چه اتفاقی بیفتد."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "More than one object may handle a request, and the right one is only known at runtime from the request's content.",
+      "You want to issue a request without naming its receiver explicitly.",
+      "The set of handlers and their order must be configurable at runtime (middleware pipelines, event bubbling).",
+      "A request must pass a sequence of checks, any of which may stop it (authentication, validation, rate limiting)."
+    ],
+    "fa": [
+      "بیش از یک شیء ممکن است به درخواست رسیدگی کند و شیء مناسب فقط در زمان اجرا و از روی محتوای درخواست مشخص می‌شود.",
+      "می‌خواهید درخواستی بفرستید بدون این‌که گیرنده‌اش را صریحاً مشخص کنید.",
+      "مجموعهٔ هندلرها و ترتیبشان باید در زمان اجرا قابل پیکربندی باشد (خط لولهٔ middleware، انتشار رویداد به والدها).",
+      "درخواست باید از یک سری بررسی عبور کند که هر کدام می‌تواند متوقفش کند (احراز هویت، اعتبارسنجی، محدودیت نرخ درخواست)."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Decouples the sender from the receivers: it only knows the first link.",
+      "Single Responsibility: each handler contains one rule and nothing else.",
+      "Open/Closed: add, remove or reorder handlers without touching the others or the client.",
+      "The chain can be built and changed at runtime, e.g. from a configuration file."
+    ],
+    "fa": [
+      "فرستنده را از گیرنده‌ها جدا می‌کند: فرستنده فقط اولین حلقه را می‌شناسد.",
+      "اصل تک‌مسئولیتی: هر هندلر فقط یک قاعده دارد و نه بیشتر.",
+      "اصل باز/بسته: می‌توانید هندلرها را اضافه، حذف یا جابه‌جا کنید بدون این‌که به بقیه یا به کلاینت دست بزنید.",
+      "زنجیره را می‌توان در زمان اجرا ساخت و تغییر داد، مثلاً از روی یک فایل پیکربندی."
+    ]
+  },
+  "cons": {
+    "en": [
+      "No guarantee of handling: a request can fall off the end of the chain unnoticed unless you handle that case.",
+      "Harder to trace and debug: what happens depends on how the chain was assembled at runtime.",
+      "Long chains add latency: a request may walk every link before it is handled."
+    ],
+    "fa": [
+      "هیچ تضمینی برای رسیدگی وجود ندارد: اگر حالت پایان زنجیره را مدیریت نکنید، درخواست ممکن است بی‌صدا از انتهای زنجیره بیرون بیفتد.",
+      "ردیابی و اشکال‌زدایی سخت‌تر است: رفتار برنامه به این بستگی دارد که زنجیره در زمان اجرا چطور ساخته شده است.",
+      "زنجیره‌های طولانی تأخیر اضافه می‌کنند: ممکن است درخواست پیش از رسیدگی از همهٔ حلقه‌ها عبور کند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Let each link own its successor with `std::unique_ptr<Handler> next_`: destroying the head destroys the whole chain. (For very long chains that recursive destruction can overflow the stack — unlink iteratively there.)",
+      "Have `setNext()` return a reference to the new link so a chain can be built fluently: `head->setNext(a).setNext(b)`.",
+      "Put the forwarding in the base class and let overrides call `Handler::handle(req)` explicitly — then only one place decides what happens at the end of the chain.",
+      "If handlers are plain functions, a `std::vector<std::function<bool(const Request&)>>` walked until one returns `true` is a lightweight chain.",
+      "Pass the request by `const&` when handlers only inspect it; use a non-const reference if links may enrich it, as middleware often does."
+    ],
+    "fa": [
+      "بگذارید هر حلقه با `std::unique_ptr<Handler> next_` مالک حلقهٔ بعدی باشد؛ با نابود شدن سر زنجیره، کل زنجیره نابود می‌شود. (در زنجیره‌های خیلی طولانی این نابودسازی بازگشتی ممکن است پشته را سرریز کند؛ آنجا حلقه‌ها را با یک حلقهٔ تکرار جدا کنید.)",
+      "کاری کنید که `setNext()` مرجعی به حلقهٔ جدید برگرداند تا بتوان زنجیره را پشت‌سرهم و روان ساخت: `head->setNext(a).setNext(b)`.",
+      "ارسال به بعدی را در کلاس پایه بگذارید و در نسخه‌های override شده صریحاً `Handler::handle(req)` را صدا بزنید؛ آن‌وقت فقط یک جا تصمیم می‌گیرد در پایان زنجیره چه اتفاقی بیفتد.",
+      "اگر هندلرها تابع‌های ساده‌ای هستند، یک `std::vector<std::function<bool(const Request&)>>` که تا وقتی یکی `true` برگرداند پیمایش شود، زنجیره‌ای سبک و کافی است.",
+      "اگر هندلرها فقط درخواست را بررسی می‌کنند آن را با `const&` پاس بدهید؛ اگر حلقه‌ها ممکن است چیزی به آن اضافه کنند (مثل بیشتر middlewareها) از مرجع غیر const استفاده کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "HTTP middleware pipelines in web frameworks (Drogon filters, ASP.NET Core middleware, Express.js): each step may answer early or call the next one.",
+      "GUI event propagation: in Qt an ignored key or mouse event is passed on to the parent widget.",
+      "C++ exception handling: a thrown exception travels up the call stack until a matching `catch` handles it."
+    ],
+    "fa": [
+      "خط لولهٔ middleware در فریم‌ورک‌های وب (فیلترهای Drogon، middleware در ASP.NET Core و Express.js): هر مرحله می‌تواند زودتر پاسخ بدهد یا مرحلهٔ بعدی را صدا بزند.",
+      "انتشار رویداد در رابط گرافیکی: در Qt رویداد کیبورد یا ماوسی که ignore شود به ویجت والد منتقل می‌شود.",
+      "مدیریت استثنا در C++: استثنای پرتاب‌شده در پشتهٔ فراخوانی بالا می‌رود تا یک `catch` مناسب به آن رسیدگی کند."
+    ]
+  },
+  "related": [
+    {
+      "id": "command",
+      "note": {
+        "en": "Requests travelling along a chain are often command objects, and handlers themselves are frequently implemented as commands.",
+        "fa": "درخواست‌هایی که در زنجیره جابه‌جا می‌شوند اغلب اشیای کامند هستند و خود هندلرها هم معمولاً به شکل کامند پیاده‌سازی می‌شوند."
+      }
+    },
+    {
+      "id": "decorator",
+      "note": {
+        "en": "Same shape — each object holds the next one — but a decorator always forwards and adds behaviour around the call, while a chain link may stop the request completely.",
+        "fa": "ساختار مشابهی دارند (هر شیء بعدی را نگه می‌دارد)، اما دکوراتور همیشه فراخوانی را جلو می‌فرستد و رفتاری دور آن اضافه می‌کند، در حالی که یک حلقهٔ زنجیره ممکن است درخواست را کاملاً متوقف کند."
+      }
+    },
+    {
+      "id": "composite",
+      "note": {
+        "en": "In a composite tree the chain is often the parent pointer: an event a child cannot handle bubbles up to its parent.",
+        "fa": "در درخت کامپوزیت، زنجیره اغلب همان اشاره‌گر به والد است: رویدادی که فرزند نتواند به آن رسیدگی کند به والدش منتقل می‌شود."
+      }
+    },
+    {
+      "id": "observer",
+      "note": {
+        "en": "Observer delivers a notification to **every** subscriber; a chain carries a request only until **one** handler takes it.",
+        "fa": "آبزرور یک اعلان را به **همهٔ** مشترکان می‌رساند؛ زنجیرهٔ مسئولیت درخواست را فقط تا جایی جلو می‌برد که **یک** هندلر آن را بپذیرد."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "A support desk that escalates tickets",
+      "fa": "میز پشتیبانی که تیکت‌ها را به سطح بالاتر ارجاع می‌دهد"
+    },
+    "description": {
+      "en": "Four tickets enter the same `FaqBot`, yet each one ends up somewhere else. Notice that `main()` only talks to the head of the chain, and that the `lawsuit` ticket walks every link and falls off the end, where it is logged for manual review.",
+      "fa": "هر چهار تیکت وارد همان `FaqBot` می‌شوند، اما هر کدام جای دیگری به مقصد می‌رسد. دقت کنید که `main()` فقط با سر زنجیره صحبت می‌کند و تیکت `lawsuit` از همهٔ حلقه‌ها عبور می‌کند و از انتهای زنجیره بیرون می‌افتد و برای بررسی دستی ثبت می‌شود."
+    },
+    "output": "ticket 'password' (severity 1)\n  FaqBot: sent the reset-password guide\nticket 'billing' (severity 2)\n  FaqBot: not in my FAQ\n  HelpDesk: solved the billing issue\nticket 'outage' (severity 5)\n  FaqBot: not in my FAQ\n  HelpDesk: too severe for me\n  Engineer: paged, restoring service\nticket 'lawsuit' (severity 4)\n  FaqBot: not in my FAQ\n  HelpDesk: too severe for me\n  Engineer: not a technical problem\n  (end of chain) logged for manual review",
+    "highlights": [
+      {
+        "lines": [
+          13,
+          22
+        ],
+        "note": {
+          "en": "The Handler owns the next link. `setNext()` returns that new link, so the whole chain can be built in one expression.",
+          "fa": "کلاس Handler مالک حلقهٔ بعدی است. `setNext()` همان حلقهٔ جدید را برمی‌گرداند تا بتوان کل زنجیره را در یک عبارت ساخت."
+        }
+      },
+      {
+        "lines": [
+          24,
+          31
+        ],
+        "note": {
+          "en": "The default `handle()` only forwards — and it is the single place that decides what happens when the chain runs out.",
+          "fa": "پیاده‌سازی پیش‌فرض `handle()` فقط درخواست را جلو می‌فرستد و تنها جایی است که تعیین می‌کند وقتی زنجیره تمام شد چه اتفاقی بیفتد."
+        }
+      },
+      {
+        "lines": [
+          40,
+          47
+        ],
+        "note": {
+          "en": "A concrete handler makes the key decision: handle it and `return`, or call `SupportHandler::handle(t)` to pass the ticket on.",
+          "fa": "هر هندلر مشخص تصمیم اصلی را می‌گیرد: یا رسیدگی می‌کند و `return` می‌کند، یا با صدا زدن `SupportHandler::handle(t)` تیکت را جلو می‌فرستد."
+        }
+      },
+      {
+        "lines": [
+          75,
+          78
+        ],
+        "note": {
+          "en": "The chain is assembled at runtime. Inserting or reordering a handler touches only these lines.",
+          "fa": "زنجیره در زمان اجرا ساخته می‌شود. اضافه کردن یا جابه‌جا کردن یک هندلر فقط همین چند خط را تغییر می‌دهد."
+        }
+      },
+      {
+        "lines": [
+          82,
+          85
+        ],
+        "note": {
+          "en": "The client sends every ticket to the head and never learns who finally resolved it.",
+          "fa": "کلاینت هر تیکت را به سر زنجیره می‌فرستد و هیچ‌وقت نمی‌فهمد در نهایت چه کسی آن را حل کرد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the main benefit of Chain of Responsibility?",
+        "fa": "مزیت اصلی زنجیرهٔ مسئولیت چیست؟"
+      },
+      "options": {
+        "en": [
+          "It guarantees that every request is handled exactly once",
+          "It lets all handlers process the same request in parallel",
+          "It removes the need for virtual functions",
+          "The sender doesn't need to know which object will handle the request"
+        ],
+        "fa": [
+          "تضمین می‌کند که به هر درخواست دقیقاً یک بار رسیدگی شود",
+          "اجازه می‌دهد همهٔ هندلرها یک درخواست را به‌صورت موازی پردازش کنند",
+          "نیاز به توابع virtual را از بین می‌برد",
+          "فرستنده لازم نیست بداند کدام شیء به درخواست رسیدگی خواهد کرد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Decoupling sender and receiver is the point: the sender talks to the head only. Note that handling is **not** guaranteed — a request can reach the end unhandled, which is why the base class needs an end-of-chain policy.",
+        "fa": "هدف اصلی جدا کردن فرستنده از گیرنده است: فرستنده فقط با سر زنجیره حرف می‌زند. دقت کنید که رسیدگی **تضمین نمی‌شود**؛ درخواست ممکن است بدون رسیدگی به انتها برسد و به همین دلیل کلاس پایه به یک سیاست مشخص برای پایان زنجیره نیاز دارد."
+      }
+    },
+    {
+      "question": {
+        "en": "In the example, what happens if `HelpDesk::handle()` forgets to call `SupportHandler::handle(t)` for tickets it cannot solve?",
+        "fa": "در مثال، اگر `HelpDesk::handle()` فراموش کند برای تیکت‌هایی که نمی‌تواند حل کند `SupportHandler::handle(t)` را صدا بزند، چه می‌شود؟"
+      },
+      "options": {
+        "en": [
+          "The compiler reports an error because the base method is virtual",
+          "Those tickets silently stop at the help desk; later handlers never see them",
+          "The base class forwards them automatically after the override returns",
+          "The program crashes with a null-pointer dereference"
+        ],
+        "fa": [
+          "کامپایلر خطا می‌دهد، چون متد کلاس پایه virtual است",
+          "آن تیکت‌ها بی‌صدا در HelpDesk متوقف می‌شوند و هندلرهای بعدی هرگز آن‌ها را نمی‌بینند",
+          "کلاس پایه بعد از برگشتن نسخهٔ override شده، خودکار آن‌ها را جلو می‌فرستد",
+          "برنامه به‌خاطر dereference یک اشاره‌گر null کرش می‌کند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Forwarding is an explicit decision inside each handler. An override replaces the base behaviour entirely, so if it neither handles nor forwards, the request simply disappears — a classic bug in this pattern.",
+        "fa": "جلو فرستادن، تصمیمی صریح در داخل هر هندلر است. نسخهٔ override شده رفتار کلاس پایه را کاملاً جایگزین می‌کند؛ پس اگر نه رسیدگی کند و نه جلو بفرستد، درخواست به‌سادگی گم می‌شود. این یک باگ کلاسیک در این الگوست."
+      }
+    },
+    {
+      "question": {
+        "en": "Which risk of this pattern must you explicitly design for?",
+        "fa": "برای کدام خطر این الگو باید صریحاً چاره‌اندیشی کنید؟"
+      },
+      "options": {
+        "en": [
+          "A request may reach the end of the chain without being handled",
+          "Handlers cannot be added at runtime",
+          "The sender becomes tightly coupled to every handler",
+          "Each handler must know the complete list of handlers"
+        ],
+        "fa": [
+          "درخواست ممکن است بدون رسیدگی به انتهای زنجیره برسد",
+          "هندلرها را نمی‌توان در زمان اجرا اضافه کرد",
+          "فرستنده به همهٔ هندلرها وابستگی شدید پیدا می‌کند",
+          "هر هندلر باید فهرست کامل هندلرها را بداند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Because no single place knows all receivers, nothing guarantees that one of them accepts the request. Add a catch-all last handler or an explicit end-of-chain action (log, error, default response). The other options are the opposite of what the pattern gives you.",
+        "fa": "چون هیچ نقطه‌ای همهٔ گیرنده‌ها را نمی‌شناسد، هیچ چیز تضمین نمی‌کند یکی از آن‌ها درخواست را بپذیرد. یک هندلر نهایی که همه چیز را بپذیرد یا یک رفتار صریح برای پایان زنجیره (لاگ، خطا، پاسخ پیش‌فرض) اضافه کنید. گزینه‌های دیگر درست برعکس چیزی هستند که این الگو به شما می‌دهد."
+      }
+    },
+    {
+      "question": {
+        "en": "A Decorator also holds the next object and forwards calls to it. How does a chain link differ?",
+        "fa": "دکوراتور هم شیء بعدی را نگه می‌دارد و فراخوانی را به آن می‌فرستد. یک حلقهٔ زنجیره چه فرقی با آن دارد؟"
+      },
+      "options": {
+        "en": [
+          "A chain link must change the request's type",
+          "A chain link cannot hold a pointer to another object",
+          "A chain link may stop the request and not forward it at all; a decorator normally always forwards and adds behaviour around the call",
+          "There is no difference; they are two names for one pattern"
+        ],
+        "fa": [
+          "حلقهٔ زنجیره باید نوع درخواست را تغییر دهد",
+          "حلقهٔ زنجیره نمی‌تواند اشاره‌گری به شیء دیگر نگه دارد",
+          "حلقهٔ زنجیره ممکن است درخواست را متوقف کند و اصلاً جلو نفرستد؛ دکوراتور معمولاً همیشه جلو می‌فرستد و رفتاری دور فراخوانی اضافه می‌کند",
+          "هیچ فرقی ندارند؛ دو نام برای یک الگو هستند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "The structures are nearly identical (a linked list of wrappers), but the intent differs: every decorator runs and enriches the result, whereas in a chain typically one link claims the request and the rest never see it.",
+        "fa": "ساختارها تقریباً یکسان‌اند (یک لیست پیوندی از پوشاننده‌ها)، اما هدف فرق دارد: همهٔ دکوراتورها اجرا می‌شوند و نتیجه را غنی‌تر می‌کنند، در حالی که در زنجیره معمولاً یک حلقه درخواست را برمی‌دارد و بقیه اصلاً آن را نمی‌بینند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A web server runs every incoming request through authentication, rate limiting and a response cache; any step may reject or answer the request early, and operators reorder the steps in a config file.",
+      "fa": "یک وب‌سرور هر درخواست ورودی را از مراحل احراز هویت، محدودیت نرخ و کش پاسخ عبور می‌دهد؛ هر مرحله ممکن است درخواست را زودتر رد کند یا جوابش را بدهد و مدیران سیستم ترتیب مراحل را در یک فایل پیکربندی عوض می‌کنند."
+    },
+    {
+      "en": "A click on a button inside a panel inside a window is offered to the button first; if the button ignores it, the panel gets a chance, and then the window.",
+      "fa": "کلیک روی دکمه‌ای که داخل یک پنل است و آن پنل هم داخل یک پنجره، اول به دکمه داده می‌شود؛ اگر دکمه آن را نادیده بگیرد، نوبت پنل است و بعد پنجره."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "An approval chain for purchases",
+      "fa": "زنجیرهٔ تأیید خرید"
+    },
+    "task": {
+      "en": "Right now the `TeamLead` approves every purchase — even a $900,000 warehouse. Turn `Approver` into a real chain: an approver approves only amounts within its `limit_`, otherwise it passes the request to `next_`; if nobody is left, the purchase is rejected. Then link a `Manager` (limit 10,000) and a `CFO` (limit 50,000) after the team lead.",
+      "fa": "در حال حاضر `TeamLead` هر خریدی را تأیید می‌کند، حتی یک انبار ۹۰۰ هزار دلاری را. `Approver` را به یک زنجیرهٔ واقعی تبدیل کنید: هر تأییدکننده فقط مبلغی را که در محدودهٔ `limit_` خودش باشد تأیید می‌کند و در غیر این صورت درخواست را به `next_` می‌سپارد؛ اگر کسی باقی نمانده باشد، خرید رد می‌شود. سپس یک `Manager` (سقف ۱۰٬۰۰۰) و بعد یک `CFO` (سقف ۵۰٬۰۰۰) را پس از TeamLead به زنجیره وصل کنید."
+    },
+    "hints": {
+      "en": [
+        "`review()` needs three branches: within my limit → approve; else if `next_` exists → forward; else → reject.",
+        "Forwarding is just `next_->review(p);` — the next approver runs the same logic with its own limit.",
+        "Build the chain with `chain->then(std::make_unique<Approver>(\"Manager\", 10'000)).then(...)` — `then()` returns the link you just added."
+      ],
+      "fa": [
+        "`review()` سه شاخه لازم دارد: اگر مبلغ در محدودهٔ سقف من بود، تأیید؛ اگر نبود و `next_` وجود داشت، ارسال به بعدی؛ در غیر این صورت، رد.",
+        "ارسال به بعدی فقط `next_->review(p);` است؛ تأییدکنندهٔ بعدی همین منطق را با سقف خودش اجرا می‌کند.",
+        "زنجیره را با `chain->then(std::make_unique<Approver>(\"Manager\", 10'000)).then(...)` بسازید؛ `then()` همان حلقه‌ای را برمی‌گرداند که تازه اضافه کردید."
+      ]
+    },
+    "expectedOutput": "TeamLead approved keyboard ($120)\nManager approved laptop ($2400)\nCFO approved servers ($36000)\nwarehouse ($900000) rejected: over every limit"
+  }
+}

@@ -1,0 +1,361 @@
+{
+  "id": "mediator",
+  "category": "behavioral",
+  "order": 5,
+  "difficulty": 2,
+  "icon": "tower-control",
+  "name": { "en": "Mediator", "fa": "مدیاتور (میانجی)" },
+  "aka": { "en": "Intermediary, Controller", "fa": "واسطه، کنترلر (Controller)" },
+  "tagline": {
+    "en": "Objects stop talking to each other and talk to one coordinator instead.",
+    "fa": "اشیا به‌جای حرف زدن با یکدیگر، فقط با یک هماهنگ‌کننده حرف می‌زنند."
+  },
+  "intent": {
+    "en": "Define an object that encapsulates how a set of objects interact. It keeps the objects from referring to each other directly, so you can change their interaction without changing them.",
+    "fa": "شیئی تعریف می‌کند که نحوهٔ تعامل مجموعه‌ای از اشیا را در خود کپسوله می‌کند. این شیء جلوی ارجاع مستقیم اشیا به یکدیگر را می‌گیرد تا بتوانید نحوهٔ تعامل آن‌ها را بدون تغییر خودشان عوض کنید."
+  },
+  "problem": {
+    "en": "A sign-up form has an email field, a \"terms\" checkbox and a submit button. The button may only be enabled when the email is valid and the terms are accepted, a hint must say what is missing, and clicking the button needs the email text. If every widget calls the others directly, the checkbox must know the button, the text field must know the checkbox and the button, and so on — with n widgets you approach n·(n−1) links. None of the widgets can be reused in another form, and every new rule means editing several classes.",
+    "fa": "یک فرم ثبت‌نام را در نظر بگیرید که یک فیلد ایمیل، یک چک‌باکس «پذیرش قوانین» و یک دکمهٔ ارسال دارد. دکمه فقط وقتی باید فعال شود که ایمیل معتبر باشد و قوانین پذیرفته شده باشند، یک پیغام راهنما باید بگوید چه چیزی کم است و کلیک روی دکمه به متن ایمیل نیاز دارد. اگر هر ویجت مستقیماً بقیه را صدا بزند، چک‌باکس باید دکمه را بشناسد، فیلد متن باید چک‌باکس و دکمه را بشناسد و الی آخر؛ با n ویجت به نزدیک n·(n−1) ارتباط می‌رسید. دیگر نمی‌توان هیچ‌کدام از این ویجت‌ها را در فرم دیگری استفاده کرد و هر قانون جدید یعنی دست بردن در چند کلاس."
+  },
+  "solution": {
+    "en": "Introduce a mediator that every component knows only through a tiny interface such as `widgetChanged(sender)`. A component that changes simply reports it; it never calls a sibling. The concrete mediator holds references to (usually owns) all components and keeps every interaction rule in one place: it looks at who sent the notification and tells the right components what to do. Components become small and reusable, and many-to-many relations collapse into one-to-many.",
+    "fa": "یک میانجی معرفی کنید که همهٔ اجزا فقط از طریق یک اینترفیس کوچک مثل `widgetChanged(sender)` آن را می‌شناسند. جزئی که تغییر می‌کند فقط این تغییر را گزارش می‌دهد و هرگز مستقیماً اجزای هم‌سطح خودش را صدا نمی‌زند. میانجیِ مشخص (concrete) به همهٔ اجزا ارجاع دارد (و معمولاً مالک آن‌هاست) و همهٔ قوانین تعامل را در یک جا نگه می‌دارد: بررسی می‌کند اعلان را چه کسی فرستاده و به اجزای مربوط می‌گوید چه کنند. اجزا کوچک و قابل‌استفادهٔ مجدد می‌شوند و روابط چند‌به‌چند به روابط یک‌به‌چند تبدیل می‌شوند."
+  },
+  "analogy": {
+    "en": "Pilots approaching an airport never negotiate the runway with each other. Each one talks only to the control tower, which knows where every aircraft is and decides who lands, who holds and who takes off. Without the tower, every pilot would have to coordinate with every other pilot.",
+    "fa": "خلبان‌هایی که به فرودگاه نزدیک می‌شوند هیچ‌وقت برای استفاده از باند با یکدیگر مذاکره نمی‌کنند. هر خلبان فقط با برج مراقبت صحبت می‌کند؛ برج می‌داند هر هواپیما کجاست و تصمیم می‌گیرد چه کسی فرود بیاید، چه کسی در انتظار بماند و چه کسی بلند شود. بدون برج، هر خلبان باید با تک‌تک خلبان‌های دیگر هماهنگ می‌کرد."
+  },
+  "participants": [
+    {
+      "name": "Mediator",
+      "role": {
+        "en": "The interface colleagues use to report events (`Dialog::widgetChanged`).",
+        "fa": "اینترفیسی که همکاران (colleagues) رویدادهایشان را از طریق آن گزارش می‌کنند (`Dialog::widgetChanged`)."
+      }
+    },
+    {
+      "name": "ConcreteMediator",
+      "role": {
+        "en": "Knows (and usually owns) all colleagues and implements the coordination rules (`SignUpDialog`).",
+        "fa": "همهٔ همکاران را می‌شناسد (و معمولاً مالک آن‌هاست) و قوانین هماهنگی را پیاده‌سازی می‌کند (`SignUpDialog`)."
+      }
+    },
+    {
+      "name": "Colleague",
+      "role": {
+        "en": "Base class holding a reference to the mediator; it reports its changes instead of calling siblings (`Widget`).",
+        "fa": "کلاس پایه‌ای که ارجاعی به میانجی دارد و به‌جای صدا زدن اجزای دیگر، تغییراتش را گزارش می‌کند (`Widget`)."
+      }
+    },
+    {
+      "name": "ConcreteColleague",
+      "role": {
+        "en": "A specific component such as `TextField`, `CheckBox` or `Button`; it manages only its own state.",
+        "fa": "یک جزء مشخص مثل `TextField`، `CheckBox` یا `Button` که فقط وضعیت خودش را مدیریت می‌کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Dialog", "kind": "interface", "col": 0, "row": 0, "members": ["+ widgetChanged(sender)"] },
+      { "id": "Widget", "kind": "abstract", "col": 2, "row": 0, "members": ["- dialog_ : Dialog&", "# changed()"] },
+      { "id": "TextField", "kind": "concrete", "col": 1, "row": 1, "members": ["+ type(text)", "+ text() : string"] },
+      { "id": "CheckBox", "kind": "concrete", "col": 2, "row": 1, "members": ["+ toggle()", "+ checked() : bool"] },
+      { "id": "Button", "kind": "concrete", "col": 3, "row": 1, "members": ["+ setEnabled(bool)", "+ click()"] },
+      { "id": "SignUpDialog", "kind": "concrete", "col": 0, "row": 2, "members": ["+ email, terms, submit", "+ widgetChanged(sender)"] }
+    ],
+    "edges": [
+      { "from": "SignUpDialog", "to": "Dialog", "type": "implements" },
+      { "from": "Widget", "to": "Dialog", "type": "refs", "label": "reports to" },
+      { "from": "TextField", "to": "Widget", "type": "inherits" },
+      { "from": "CheckBox", "to": "Widget", "type": "inherits" },
+      { "from": "Button", "to": "Widget", "type": "inherits" },
+      { "from": "SignUpDialog", "to": "TextField", "type": "owns" },
+      { "from": "SignUpDialog", "to": "CheckBox", "type": "owns" },
+      { "from": "SignUpDialog", "to": "Button", "type": "owns" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Identify a group of tightly coupled classes whose interactions you want to centralise; they become the colleagues.",
+      "Declare a mediator interface with a notification method, e.g. `notify(const Colleague& sender, event)`.",
+      "Give every colleague a reference to the mediator (usually through a common base class) and replace each direct call to a sibling with a notification.",
+      "Implement a concrete mediator that holds (or owns) all colleagues and puts every interaction rule in its notification handler.",
+      "Let the client create the concrete mediator together with its colleagues and then use the colleagues as usual."
+    ],
+    "fa": [
+      "گروهی از کلاس‌های به‌شدت وابسته را که می‌خواهید تعاملشان را متمرکز کنید پیدا کنید؛ این‌ها «همکاران» (colleagues) می‌شوند.",
+      "یک اینترفیس میانجی با یک متد اعلان تعریف کنید، مثلاً `notify(const Colleague& sender, event)`.",
+      "به هر همکار ارجاعی به میانجی بدهید (معمولاً از طریق یک کلاس پایهٔ مشترک) و هر فراخوانی مستقیم به اجزای دیگر را با یک اعلان به میانجی جایگزین کنید.",
+      "یک میانجی مشخص بنویسید که همهٔ همکاران را در اختیار دارد (یا مالک آن‌هاست) و همهٔ قوانین تعامل را در متد اعلانش قرار می‌دهد.",
+      "بگذارید کلاینت میانجی مشخص را همراه با همکارانش بسازد و بعد مثل همیشه با همکاران کار کند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Several objects interact in complex but well-defined ways and the resulting web of references is hard to follow.",
+      "You want to reuse a component elsewhere, but it is hard-wired to its current neighbours.",
+      "The interaction rules change more often than the components themselves (form validation, game rules, home automation)."
+    ],
+    "fa": [
+      "چند شیء به شکلی پیچیده اما مشخص با هم تعامل دارند و شبکهٔ ارجاع‌های حاصل به‌سختی قابل دنبال کردن است.",
+      "می‌خواهید یک جزء را جای دیگری استفاده کنید، اما به همسایه‌های فعلی‌اش گره خورده است.",
+      "قوانین تعامل بیشتر از خود اجزا تغییر می‌کنند (اعتبارسنجی فرم، قوانین بازی، اتوماسیون خانگی)."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Colleagues are decoupled: each depends only on the small mediator interface.",
+      "All interaction logic lives in one place, so it is easy to read, change and test.",
+      "Many-to-many relations become one-to-many, which are far easier to reason about.",
+      "Colleagues can be reused in a different context simply by pairing them with a different mediator."
+    ],
+    "fa": [
+      "همکاران از هم جدا می‌شوند: هر کدام فقط به اینترفیس کوچک میانجی وابسته است.",
+      "کل منطق تعامل در یک جا قرار دارد، پس خواندن، تغییر دادن و تست کردنش آسان است.",
+      "روابط چند‌به‌چند به روابط یک‌به‌چند تبدیل می‌شوند که درکشان بسیار ساده‌تر است.",
+      "می‌توان همکاران را فقط با جفت کردنشان با یک میانجی دیگر، در زمینهٔ دیگری دوباره استفاده کرد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "The mediator can grow into a \"god object\" that knows too much and becomes hard to maintain.",
+      "Control flow is less direct: to learn what a click does you have to read the mediator, not the widget.",
+      "A concrete mediator is tied to its specific colleagues and is rarely reusable itself."
+    ],
+    "fa": [
+      "میانجی ممکن است به یک «god object» تبدیل شود که بیش از حد می‌داند و نگهداری‌اش سخت می‌شود.",
+      "جریان کنترل غیرمستقیم‌تر است: برای فهمیدن این‌که یک کلیک چه می‌کند باید کد میانجی را بخوانید، نه کد ویجت را.",
+      "میانجیِ مشخص به همکاران خاص خودش گره خورده و خودش به‌ندرت قابل‌استفادهٔ مجدد است."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Let the mediator own its colleagues (as members or `std::unique_ptr`s) while each colleague keeps a non-owning `Mediator&`. The mediator then always outlives its colleagues, so the back-reference can never dangle.",
+      "Make colleagues non-copyable: a copied `SignUpDialog` would contain widgets still pointing at the original dialog. Deleting `Widget`'s copy constructor makes the whole dialog non-copyable automatically.",
+      "Identify the sender by address (`&sender == &submit`) or with an event enum; avoid chains of `dynamic_cast`, which grow with every new colleague type.",
+      "Passing `*this` to members in their initializers is fine for storing a reference, but colleagues must not call the mediator from their constructors — the mediator is not fully constructed yet.",
+      "A lightweight variant: colleagues expose `std::function` callbacks (like Qt signals) and the mediator wires them to its own member functions, so no colleague base class is needed."
+    ],
+    "fa": [
+      "بگذارید میانجی مالک همکارانش باشد (به‌صورت عضو یا `std::unique_ptr`) و هر همکار فقط یک ارجاع غیرمالک `Mediator&` نگه دارد. در این صورت میانجی همیشه بیشتر از همکارانش عمر می‌کند و ارجاع برگشتی هیچ‌وقت آویزان (dangling) نمی‌شود.",
+      "همکاران را غیرقابل‌کپی کنید: یک `SignUpDialog` کپی‌شده ویجت‌هایی خواهد داشت که هنوز به دیالوگ اصلی اشاره می‌کنند. با delete کردن سازندهٔ کپی `Widget`، کل دیالوگ به‌طور خودکار غیرقابل‌کپی می‌شود.",
+      "فرستنده را با مقایسهٔ آدرس (`&sender == &submit`) یا با یک enum رویداد تشخیص دهید؛ از زنجیره‌های `dynamic_cast` که با هر نوع همکار جدید طولانی‌تر می‌شوند پرهیز کنید.",
+      "پاس دادن `*this` به اعضا در مقداردهی اولیه‌شان برای ذخیرهٔ یک ارجاع مشکلی ندارد، اما همکاران نباید در سازندهٔ خود میانجی را صدا بزنند؛ چون میانجی هنوز کامل ساخته نشده است.",
+      "یک نسخهٔ سبک‌تر: همکاران callbackهایی از نوع `std::function` در اختیار می‌گذارند (مثل signalهای Qt) و میانجی آن‌ها را به متدهای خودش وصل می‌کند؛ به این ترتیب به کلاس پایهٔ مشترک برای همکاران نیازی نیست."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt dialogs: child widgets emit signals and the dialog connects them to its own slots, which update the other widgets.",
+      "Chat servers and multiplayer lobbies: clients send messages to the server, which routes them to the other participants.",
+      "Game-engine event dispatchers and MVC controllers that coordinate views and models without letting them reference each other."
+    ],
+    "fa": [
+      "دیالوگ‌های Qt: ویجت‌های فرزند signal منتشر می‌کنند و دیالوگ آن‌ها را به slotهای خودش وصل می‌کند که ویجت‌های دیگر را به‌روز می‌کنند.",
+      "سرورهای چت و لابی‌های بازی چندنفره: کلاینت‌ها پیام را به سرور می‌فرستند و سرور آن را به شرکت‌کنندگان دیگر می‌رساند.",
+      "توزیع‌کننده‌های رویداد (event dispatcher) در موتورهای بازی و کنترلرهای MVC که viewها و modelها را بدون ارجاع مستقیم به هم هماهنگ می‌کنند."
+    ]
+  },
+  "related": [
+    {
+      "id": "observer",
+      "note": {
+        "en": "Observer lets any number of subscribers react to a subject without the subject knowing what they do; a mediator knows its colleagues and decides what each should do. Colleagues often notify the mediator through an observer-style mechanism.",
+        "fa": "در آبزرور هر تعداد مشترک به تغییرات یک subject واکنش نشان می‌دهند بی‌آن‌که subject بداند آن‌ها چه می‌کنند؛ اما میانجی همکارانش را می‌شناسد و تصمیم می‌گیرد هر کدام چه کند. همکاران اغلب از طریق سازوکاری شبیه آبزرور به میانجی خبر می‌دهند."
+      }
+    },
+    {
+      "id": "facade",
+      "note": {
+        "en": "Both sit between groups of objects, but a facade only simplifies access to a subsystem that is unaware of it (one-way), while colleagues actively talk to their mediator (two-way).",
+        "fa": "هر دو بین گروهی از اشیا قرار می‌گیرند، اما فاساد فقط دسترسی به زیرسیستمی را ساده می‌کند که از وجود فاساد خبر ندارد (یک‌طرفه)، در حالی که همکاران به‌طور فعال با میانجی خود ارتباط دارند (دوطرفه)."
+      }
+    },
+    {
+      "id": "chain-of-responsibility",
+      "note": {
+        "en": "Both decouple senders from receivers: a chain passes a request along a line of handlers until one takes it, whereas a mediator routes every message through one central object.",
+        "fa": "هر دو فرستنده را از گیرنده جدا می‌کنند: زنجیره درخواست را در امتداد صفی از handlerها می‌فرستد تا یکی آن را بپذیرد، اما میانجی همهٔ پیام‌ها را از یک شیء مرکزی عبور می‌دهد."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A sign-up dialog that coordinates its widgets", "fa": "دیالوگ ثبت‌نامی که ویجت‌هایش را هماهنگ می‌کند" },
+    "description": {
+      "en": "The text field, checkbox and button only call `changed()`; none of them knows the others exist. `SignUpDialog::widgetChanged` holds every rule: it re-validates the form, enables or disables the button, prints a hint and handles the final click. Notice that the first click is ignored because the dialog has not enabled the button yet.",
+      "fa": "فیلد متن، چک‌باکس و دکمه فقط `changed()` را صدا می‌زنند و هیچ‌کدام از وجود بقیه خبر ندارند. همهٔ قوانین در `SignUpDialog::widgetChanged` است: فرم را دوباره اعتبارسنجی می‌کند، دکمه را فعال یا غیرفعال می‌کند، پیغام راهنما چاپ می‌کند و کلیک نهایی را انجام می‌دهد. دقت کنید که اولین کلیک نادیده گرفته می‌شود، چون دیالوگ هنوز دکمه را فعال نکرده است."
+    },
+    "output": "[email] typed \"sara\"\n  dialog: hint -> enter a valid email\n[email] typed \"sara@mail.com\"\n  dialog: hint -> accept the terms\n[submit] clicked (disabled, ignored)\n[terms] checked\n  dialog: submit enabled\n[submit] clicked\n  dialog: account created for sara@mail.com",
+    "highlights": [
+      {
+        "lines": [5, 11],
+        "note": {
+          "en": "The mediator interface is tiny: a widget can only say \"I changed\" and pass itself as the sender.",
+          "fa": "اینترفیس میانجی بسیار کوچک است: یک ویجت فقط می‌تواند بگوید «من تغییر کردم» و خودش را به‌عنوان فرستنده بفرستد."
+        }
+      },
+      {
+        "lines": [13, 23],
+        "note": {
+          "en": "The colleague base class holds the only outgoing link — a reference to the abstract `Dialog`. It is non-copyable because a copy would still point at the original dialog.",
+          "fa": "کلاس پایهٔ همکاران تنها ارتباط بیرونی را نگه می‌دارد: یک ارجاع به `Dialog` انتزاعی. غیرقابل‌کپی است، چون یک کپی همچنان به دیالوگ اصلی اشاره می‌کرد."
+        }
+      },
+      {
+        "lines": [41, 45],
+        "note": {
+          "en": "Toggling the checkbox does not touch the button. It updates its own state and reports; deciding the consequences is the dialog's job.",
+          "fa": "تیک زدن چک‌باکس هیچ کاری به دکمه ندارد. فقط وضعیت خودش را عوض می‌کند و گزارش می‌دهد؛ تصمیم دربارهٔ پیامدها کار دیالوگ است."
+        }
+      },
+      {
+        "lines": [63, 81],
+        "note": {
+          "en": "The concrete mediator owns the widgets and keeps all rules in one method. It recognises the sender by address and reacts: create the account on a click, otherwise re-validate and update the button and the hint.",
+          "fa": "میانجی مشخص مالک ویجت‌هاست و همهٔ قوانین را در یک متد نگه می‌دارد. فرستنده را از روی آدرسش تشخیص می‌دهد و واکنش نشان می‌دهد: با کلیک، حساب را می‌سازد و در غیر این صورت فرم را دوباره اعتبارسنجی و دکمه و پیغام راهنما را به‌روز می‌کند."
+        }
+      },
+      {
+        "lines": [83, 90],
+        "note": {
+          "en": "The client just uses the widgets. Every visible reaction (hints, enabling, account creation) comes from the dialog, not from the widget that was touched.",
+          "fa": "کلاینت فقط از ویجت‌ها استفاده می‌کند. هر واکنش قابل‌مشاهده (پیغام راهنما، فعال شدن دکمه، ساخت حساب) از دیالوگ می‌آید، نه از ویجتی که با آن کار شده است."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Which problem is the Mediator pattern primarily designed to solve?",
+        "fa": "الگوی مدیاتور در اصل برای حل کدام مشکل طراحی شده است؟"
+      },
+      "options": {
+        "en": [
+          "Creating families of related objects without naming their concrete classes",
+          "Letting many objects react when a single object changes, without the object knowing them",
+          "A tangled many-to-many web of direct references between cooperating objects",
+          "Traversing the elements of a collection without exposing its internal structure"
+        ],
+        "fa": [
+          "ساختن خانواده‌هایی از اشیای مرتبط بدون نام بردن از کلاس‌های مشخصشان",
+          "واکنش نشان دادن اشیای متعدد به تغییر یک شیء، بدون این‌که آن شیء آن‌ها را بشناسد",
+          "شبکهٔ درهم‌تنیدهٔ چند‌به‌چند از ارجاع‌های مستقیم بین اشیایی که با هم همکاری می‌کنند",
+          "پیمایش عناصر یک مجموعه بدون افشای ساختار درونی آن"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A mediator replaces up to n·(n−1) direct links with n links to one coordinator, so each colleague knows only the mediator. Broadcasting changes to anonymous receivers is Observer, which does not centralise any interaction rules.",
+        "fa": "میانجی تا n·(n−1) ارتباط مستقیم را با n ارتباط به یک هماهنگ‌کننده جایگزین می‌کند، پس هر همکار فقط میانجی را می‌شناسد. پخش تغییرات برای گیرنده‌های ناشناس کار آبزرور است که هیچ قانون تعاملی را متمرکز نمی‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "In a mediator-based dialog, why should a colleague such as `Widget` store a `Dialog&` (the mediator interface) rather than a `SignUpDialog&`?",
+        "fa": "در یک دیالوگ مبتنی بر مدیاتور، چرا همکاری مثل `Widget` باید یک `Dialog&` (اینترفیس میانجی) نگه دارد و نه یک `SignUpDialog&`؟"
+      },
+      "options": {
+        "en": [
+          "So widgets depend only on the abstract interface and can be reused with any dialog",
+          "Because a class may not store a reference to a derived class",
+          "Because it makes the widgets cheaper to copy",
+          "Because otherwise `SignUpDialog` would be constructed twice"
+        ],
+        "fa": [
+          "تا ویجت‌ها فقط به اینترفیس انتزاعی وابسته باشند و با هر دیالوگی قابل‌استفاده باشند",
+          "چون یک کلاس اجازه ندارد ارجاعی به کلاس مشتق‌شده نگه دارد",
+          "چون کپی کردن ویجت‌ها را ارزان‌تر می‌کند",
+          "چون در غیر این صورت `SignUpDialog` دو بار ساخته می‌شد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Depending on the abstraction is what keeps colleagues reusable: the same `CheckBox` can live in a login dialog or a settings page as long as that class implements `Dialog`. Storing a `SignUpDialog&` would couple every widget to one specific form.",
+        "fa": "وابستگی به انتزاع همان چیزی است که همکاران را قابل‌استفادهٔ مجدد نگه می‌دارد: همان `CheckBox` می‌تواند در دیالوگ ورود یا صفحهٔ تنظیمات هم باشد، به شرط آن‌که آن کلاس `Dialog` را پیاده‌سازی کند. نگه داشتن `SignUpDialog&` هر ویجت را به یک فرم خاص گره می‌زد."
+      }
+    },
+    {
+      "question": {
+        "en": "What is the main risk of the Mediator pattern as an application grows?",
+        "fa": "با بزرگ شدن برنامه، خطر اصلی الگوی مدیاتور چیست؟"
+      },
+      "options": {
+        "en": [
+          "The colleagues become tightly coupled to each other again",
+          "Every colleague has to become a singleton",
+          "The number of classes grows exponentially with each new widget",
+          "The concrete mediator turns into a huge \"god object\" that knows and does too much"
+        ],
+        "fa": [
+          "همکاران دوباره به‌شدت به یکدیگر وابسته می‌شوند",
+          "همهٔ همکاران باید سینگلتون شوند",
+          "تعداد کلاس‌ها با هر ویجت جدید به‌صورت نمایی زیاد می‌شود",
+          "میانجی مشخص به یک «god object» عظیم تبدیل می‌شود که بیش از حد می‌داند و کار می‌کند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The complexity removed from the colleagues does not disappear — it moves into the mediator. Keep it manageable by splitting large mediators (one per dialog section) or by extracting rules into helper objects.",
+        "fa": "پیچیدگی‌ای که از همکاران حذف می‌شود از بین نمی‌رود؛ به داخل میانجی منتقل می‌شود. با شکستن میانجی‌های بزرگ (مثلاً یکی برای هر بخش دیالوگ) یا بیرون کشیدن قوانین به اشیای کمکی، آن را قابل‌مدیریت نگه دارید."
+      }
+    },
+    {
+      "question": {
+        "en": "How does a Mediator differ from an Observer's subject?",
+        "fa": "مدیاتور چه تفاوتی با subject در الگوی آبزرور دارد؟"
+      },
+      "options": {
+        "en": [
+          "The subject contains the interaction rules; the mediator only forwards events blindly",
+          "The mediator knows its colleagues and decides what each one should do; the subject just broadcasts to subscribers it knows nothing about",
+          "They are the same thing under two different names",
+          "A mediator can only be used in GUI code, a subject anywhere"
+        ],
+        "fa": [
+          "subject قوانین تعامل را در خود دارد و میانجی فقط کورکورانه رویدادها را منتقل می‌کند",
+          "میانجی همکارانش را می‌شناسد و تصمیم می‌گیرد هر کدام چه کند؛ subject فقط برای مشترکانی که چیزی از آن‌ها نمی‌داند اعلان پخش می‌کند",
+          "هر دو یک چیزند با دو اسم متفاوت",
+          "میانجی فقط در کد رابط کاربری کاربرد دارد، اما subject همه‌جا"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Observer is about one-to-many notification with anonymous receivers; Mediator is about encapsulating cooperation between known participants. They combine well: widgets can emit signals (Observer) that the dialog (Mediator) listens to.",
+        "fa": "آبزرور دربارهٔ اعلان یک‌به‌چند به گیرنده‌های ناشناس است؛ مدیاتور دربارهٔ کپسوله کردن همکاری بین شرکت‌کنندگانی است که شناخته‌شده‌اند. این دو به‌خوبی با هم ترکیب می‌شوند: ویجت‌ها می‌توانند signal منتشر کنند (آبزرور) و دیالوگ (مدیاتور) به آن‌ها گوش بدهد."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "In a flight-search form, picking \"one-way\" must hide the return-date picker, changing the passenger count must re-check the seat selector, and the search button may only enable when everything is valid — yet each widget should stay reusable in other forms.",
+      "fa": "در فرم جست‌وجوی پرواز، انتخاب «یک‌طرفه» باید انتخابگر تاریخ برگشت را پنهان کند، تغییر تعداد مسافران باید انتخابگر صندلی را دوباره بررسی کند و دکمهٔ جست‌وجو فقط وقتی همه‌چیز معتبر است فعال شود؛ در عین حال هر ویجت باید در فرم‌های دیگر هم قابل‌استفاده بماند."
+    },
+    {
+      "en": "In a multiplayer game lobby, the player list, team picker, chat panel and \"Start\" button all affect one another, and you want those rules in a single class instead of every component holding pointers to every other one.",
+      "fa": "در لابی یک بازی چندنفره، فهرست بازیکنان، انتخابگر تیم، پنل چت و دکمهٔ «شروع» همه روی هم اثر می‌گذارند و می‌خواهید این قوانین در یک کلاس باشند، نه این‌که هر جزء به همهٔ اجزای دیگر اشاره‌گر داشته باشد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A smart-home hub", "fa": "هاب خانهٔ هوشمند" },
+    "task": {
+      "en": "The door sensor, night button, lights and alarm must never call each other — they only report to `SmartHub`. Right now the hub has no rules and the night button does not even report. Make the button report `\"pressed\"`, then add two rules to `SmartHub::notify`: an opened door turns the lights on (or rings the alarm if it is armed), and the night button turns the lights off and arms the alarm.",
+      "fa": "حسگر در، دکمهٔ شب، چراغ‌ها و دزدگیر هرگز نباید همدیگر را صدا بزنند؛ فقط به `SmartHub` گزارش می‌دهند. در حال حاضر هاب هیچ قانونی ندارد و دکمهٔ شب حتی گزارشی هم نمی‌دهد. کاری کنید دکمه رویداد `\"pressed\"` را گزارش دهد و بعد دو قانون به `SmartHub::notify` اضافه کنید: باز شدن در چراغ‌ها را روشن می‌کند (یا اگر دزدگیر فعال باشد آژیر را به صدا درمی‌آورد) و دکمهٔ شب چراغ‌ها را خاموش و دزدگیر را فعال می‌کند."
+    },
+    "hints": {
+      "en": [
+        "Colleagues talk to the mediator only through the protected `report()` helper of `Device`.",
+        "In `notify`, recognise the sender by address (`&sender == &door`) and compare `event` with a string literal (`event == \"opened\"`).",
+        "Use an `if / else if / else` chain: door + \"opened\" → `if (alarm.armed()) alarm.ring(); else lights.turnOn();`, nightButton + \"pressed\" → `lights.turnOff(); alarm.arm();`, else → the existing \"no rule\" line."
+      ],
+      "fa": [
+        "همکاران فقط از طریق تابع کمکی protected به نام `report()` در `Device` با میانجی حرف می‌زنند.",
+        "در `notify` فرستنده را از روی آدرسش تشخیص دهید (`&sender == &door`) و `event` را با یک رشتهٔ ثابت مقایسه کنید (`event == \"opened\"`).",
+        "از یک زنجیرهٔ `if / else if / else` استفاده کنید: در + \"opened\" ← `if (alarm.armed()) alarm.ring(); else lights.turnOn();`، دکمهٔ شب + \"pressed\" ← `lights.turnOff(); alarm.arm();` و در غیر این صورت ← همان خط «no rule» موجود."
+      ]
+    },
+    "expectedOutput": "door: opened\n  lights: on\nnight button: pressed\n  lights: off\n  alarm: armed\ndoor: opened\n  alarm: RINGING!"
+  }
+}

@@ -1,0 +1,360 @@
+{
+  "id": "observer",
+  "category": "behavioral",
+  "order": 7,
+  "difficulty": 2,
+  "icon": "eye",
+  "name": { "en": "Observer", "fa": "آبزرور (ناظر)" },
+  "aka": { "en": "Publish–Subscribe, Listener, Dependents", "fa": "Publish–Subscribe (انتشار–اشتراک)، Listener" },
+  "tagline": {
+    "en": "When one object changes, everyone who cares hears about it.",
+    "fa": "وقتی یک شیء تغییر می‌کند، هر کسی که برایش مهم است باخبر می‌شود."
+  },
+  "intent": {
+    "en": "Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.",
+    "fa": "یک وابستگی یک‌به‌چند بین اشیا تعریف می‌کند تا وقتی وضعیت یک شیء تغییر کرد، همهٔ وابستگانش به‌طور خودکار باخبر و به‌روز شوند."
+  },
+  "problem": {
+    "en": "A live-match service records goals, and the stadium scoreboard, the fan app and the TV highlights system all have to react. If `Match::goal()` calls `scoreboard.update()`, `app.push()` and `reel.save()` directly, the match depends on every consumer: adding a betting widget means editing `Match`, and consumers cannot join or leave while the game is running. Letting each consumer poll (\"has the score changed yet?\") is no better — it wastes work and adds delay.",
+    "fa": "یک سرویس پخش زندهٔ مسابقه گل‌ها را ثبت می‌کند و تابلوی امتیاز ورزشگاه، اپلیکیشن هواداران و سیستم خلاصهٔ تلویزیونی همه باید واکنش نشان دهند. اگر `Match::goal()` مستقیماً `scoreboard.update()`، `app.push()` و `reel.save()` را صدا بزند، مسابقه به همهٔ مصرف‌کننده‌ها وابسته می‌شود: اضافه کردن یک ویجت شرط‌بندی یعنی تغییر `Match`، و مصرف‌کننده‌ها نمی‌توانند وسط بازی اضافه یا حذف شوند. این‌که هر مصرف‌کننده مدام بپرسد «امتیاز عوض شد؟» (polling) هم بهتر نیست؛ هم کار بیهوده است و هم تأخیر ایجاد می‌کند."
+  },
+  "solution": {
+    "en": "Split the roles. The **subject** (`Match`) keeps a list of subscribers that implement a small **observer** interface (`onGoal(...)`) and offers `subscribe()` and `unsubscribe()`. Whenever its state changes, it loops over the list and calls the interface method on each entry. The subject no longer knows any concrete consumer type, and consumers can come and go at runtime. The data can travel with the call (push model), or observers can query the subject when notified (pull model).",
+    "fa": "نقش‌ها را از هم جدا کنید. **subject** (`Match`) فهرستی از مشترک‌ها را نگه می‌دارد که یک اینترفیس کوچک **observer** (`onGoal(...)`) را پیاده‌سازی می‌کنند و متدهای `subscribe()` و `unsubscribe()` را ارائه می‌دهد. هر بار وضعیتش تغییر کند، روی فهرست حلقه می‌زند و متد اینترفیس را برای تک‌تک اعضا صدا می‌زند. subject دیگر هیچ نوع مشخصی از مصرف‌کننده‌ها را نمی‌شناسد و مصرف‌کننده‌ها می‌توانند در زمان اجرا اضافه یا حذف شوند. داده‌ها می‌توانند همراه فراخوانی فرستاده شوند (مدل push) یا observerها پس از دریافت اعلان، خودشان از subject بپرسند (مدل pull)."
+  },
+  "analogy": {
+    "en": "A magazine subscription: you sign up once and every new issue lands in your mailbox. The publisher does not need to know anything about you except where to deliver, and you can cancel whenever you like — the magazine keeps being printed either way.",
+    "fa": "اشتراک یک مجله: یک بار ثبت‌نام می‌کنید و هر شمارهٔ جدید به صندوق پستی‌تان می‌رسد. ناشر جز نشانی تحویل چیزی دربارهٔ شما نمی‌داند و هر وقت بخواهید می‌توانید اشتراک را لغو کنید؛ مجله در هر صورت چاپ می‌شود."
+  },
+  "participants": [
+    {
+      "name": "Subject",
+      "role": {
+        "en": "Keeps the list of observers, offers `subscribe()` / `unsubscribe()` and notifies all of them when its state changes (`Match`).",
+        "fa": "فهرست observerها را نگه می‌دارد، `subscribe()` و `unsubscribe()` را ارائه می‌دهد و هنگام تغییر وضعیتش به همهٔ آن‌ها خبر می‌دهد (`Match`)."
+      }
+    },
+    {
+      "name": "Observer",
+      "role": {
+        "en": "The interface with the update method the subject calls (`MatchObserver::onGoal`).",
+        "fa": "اینترفیسی شامل متد به‌روزرسانی که subject آن را صدا می‌زند (`MatchObserver::onGoal`)."
+      }
+    },
+    {
+      "name": "ConcreteObserver",
+      "role": {
+        "en": "Implements the reaction and uses only the data it needs (`Scoreboard`, `FanApp`, `HighlightsReel`).",
+        "fa": "واکنش را پیاده‌سازی می‌کند و فقط از داده‌ای که لازم دارد استفاده می‌کند (`Scoreboard`، `FanApp`، `HighlightsReel`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Creates the subject and the observers and wires up (or removes) the subscriptions (`main`).",
+        "fa": "subject و observerها را می‌سازد و اشتراک‌ها را برقرار (یا حذف) می‌کند (`main`)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Match", "kind": "concrete", "col": 1, "row": 0, "members": ["- observers_ : vector<Obs*>", "+ subscribe(o)", "+ unsubscribe(o)", "+ goal(team, minute)"] },
+      { "id": "MatchObserver", "kind": "interface", "col": 3, "row": 0, "members": ["+ onGoal(team, minute, score)"] },
+      { "id": "Scoreboard", "kind": "concrete", "col": 1, "row": 1, "members": ["+ onGoal(...)"] },
+      { "id": "FanApp", "kind": "concrete", "col": 2, "row": 1, "members": ["+ onGoal(...)"] },
+      { "id": "HighlightsReel", "kind": "concrete", "col": 3, "row": 1, "members": ["+ onGoal(...)"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Match", "type": "uses", "label": "subscribe / goal" },
+      { "from": "Match", "to": "MatchObserver", "type": "has", "label": "notifies 0..*" },
+      { "from": "Scoreboard", "to": "MatchObserver", "type": "implements" },
+      { "from": "FanApp", "to": "MatchObserver", "type": "implements" },
+      { "from": "HighlightsReel", "to": "MatchObserver", "type": "implements" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Split the code into the subject (what changes) and the observers (what reacts).",
+      "Declare the observer interface with an update method, e.g. `onGoal(team, minute, score)`, and decide which data to push with it.",
+      "Give the subject a container of observers plus `subscribe()` and `unsubscribe()`.",
+      "Whenever the subject's state changes, loop over the container and call the update method on every observer.",
+      "Implement concrete observers and let the client subscribe them — and make sure every observer is unsubscribed (or ignored automatically) before it is destroyed."
+    ],
+    "fa": [
+      "کد را به subject (چیزی که تغییر می‌کند) و observerها (چیزهایی که واکنش نشان می‌دهند) تقسیم کنید.",
+      "اینترفیس observer را با یک متد به‌روزرسانی مثل `onGoal(team, minute, score)` تعریف کنید و تصمیم بگیرید چه داده‌ای همراه آن فرستاده شود.",
+      "به subject یک کانتینر از observerها به‌همراه متدهای `subscribe()` و `unsubscribe()` بدهید.",
+      "هر بار وضعیت subject تغییر کرد، روی کانتینر حلقه بزنید و متد به‌روزرسانی را برای همهٔ observerها صدا بزنید.",
+      "observerهای مشخص را پیاده‌سازی کنید و بگذارید کلاینت آن‌ها را مشترک کند؛ و مطمئن شوید هر observer پیش از نابود شدن لغو اشتراک می‌شود (یا به‌طور خودکار نادیده گرفته می‌شود)."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A change in one object must be reflected in others, and you do not know in advance which ones or how many.",
+      "Consumers must be able to start and stop listening at runtime (widgets, plugins, notification channels).",
+      "You want the core model to stay independent of the views that display it, as in MVC."
+    ],
+    "fa": [
+      "تغییر یک شیء باید در اشیای دیگر منعکس شود و از قبل نمی‌دانید کدام اشیا یا چند تا.",
+      "مصرف‌کننده‌ها باید بتوانند در زمان اجرا شروع یا توقف به گوش دادن کنند (ویجت‌ها، پلاگین‌ها، کانال‌های اعلان).",
+      "می‌خواهید مدل اصلی از viewهایی که آن را نمایش می‌دهند مستقل بماند؛ مثل معماری MVC."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Open/Closed: new observers can be added without touching the subject.",
+      "Loose coupling: the subject knows only the observer interface.",
+      "Subscriptions can change at runtime.",
+      "One state change reaches any number of receivers with a single loop."
+    ],
+    "fa": [
+      "اصل باز/بسته: بدون دست زدن به subject می‌توان observer جدید اضافه کرد.",
+      "وابستگی کم: subject فقط اینترفیس observer را می‌شناسد.",
+      "اشتراک‌ها در زمان اجرا قابل تغییرند.",
+      "یک تغییر وضعیت فقط با یک حلقه به هر تعداد گیرنده می‌رسد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Notification order is usually unspecified, so observers must not depend on it.",
+      "Lifetime bugs: an observer destroyed while still subscribed leaves a dangling pointer, and the next notification crashes.",
+      "Cascading updates (an observer that changes another subject) are hard to trace, and cycles can loop forever."
+    ],
+    "fa": [
+      "ترتیب اعلان‌ها معمولاً مشخص نیست، پس observerها نباید به آن وابسته باشند.",
+      "باگ‌های طول عمر: اگر یک observer پیش از لغو اشتراک نابود شود، یک اشاره‌گر آویزان (dangling) در فهرست می‌ماند و اعلان بعدی برنامه را از کار می‌اندازد.",
+      "به‌روزرسانی‌های زنجیره‌ای (وقتی یک observer خودش subject دیگری را تغییر می‌دهد) به‌سختی قابل ردیابی‌اند و حلقه‌های دوری ممکن است بی‌پایان تکرار شوند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "A list of raw `Observer*` is the classic source of dangling pointers. Either guarantee that observers outlive the subject (declare them first, as in the example) or unsubscribe in the observer's destructor.",
+      "When observers are owned by `std::shared_ptr`, store `std::weak_ptr<Observer>` in the subject. During notification call `lock()` and skip (and prune) expired entries, so a destroyed observer is simply ignored instead of crashing the program.",
+      "Unsubscribe tokens (RAII): let `subscribe()` return a move-only `Subscription` whose destructor unsubscribes. Keeping the token as a member ties the subscription to the observer's lifetime — the idea behind Boost.Signals2's `scoped_connection`.",
+      "If an observer may unsubscribe (or subscribe others) from inside its callback, iterate over a copy of the list: changing a `std::vector` while a range-for walks it invalidates the iterators.",
+      "`std::function<void(const Event&)>` callbacks are a lightweight alternative to an observer base class — any lambda can subscribe — but `std::function` objects cannot be compared, so return an ID or token for unsubscribing.",
+      "Notifications run synchronously on the thread that changed the subject. With several threads, guard the list with a mutex, but never call observers while holding it (deadlock risk): copy the list under the lock, then notify."
+    ],
+    "fa": [
+      "فهرستی از اشاره‌گرهای خام `Observer*` منبع کلاسیک اشاره‌گرهای آویزان است. یا تضمین کنید observerها بیشتر از subject عمر می‌کنند (مثل مثال، اول تعریفشان کنید) یا در destructor خود observer لغو اشتراک کنید.",
+      "وقتی مالکیت observerها با `std::shared_ptr` است، در subject از `std::weak_ptr<Observer>` استفاده کنید. هنگام اعلان `lock()` را صدا بزنید و ورودی‌های منقضی‌شده را رد کنید (و از فهرست پاک کنید)؛ به این ترتیب observer نابودشده به‌سادگی نادیده گرفته می‌شود و برنامه crash نمی‌کند.",
+      "توکن لغو اشتراک (RAII): کاری کنید `subscribe()` یک شیء move-only به نام `Subscription` برگرداند که destructor آن لغو اشتراک را انجام دهد. نگه داشتن این توکن به‌عنوان عضو observer، اشتراک را به طول عمر observer گره می‌زند؛ همان ایدهٔ `scoped_connection` در Boost.Signals2.",
+      "اگر ممکن است observer داخل callback خودش لغو اشتراک کند (یا دیگران را مشترک کند)، روی یک کپی از فهرست پیمایش کنید؛ تغییر یک `std::vector` در حین پیمایش با range-for، iteratorها را نامعتبر می‌کند.",
+      "callbackهایی از نوع `std::function<void(const Event&)>` جایگزین سبکی برای کلاس پایهٔ observer هستند (هر lambda می‌تواند مشترک شود)، اما اشیای `std::function` قابل مقایسه نیستند؛ پس برای لغو اشتراک یک شناسه یا توکن برگردانید.",
+      "اعلان‌ها به‌صورت هم‌زمان (synchronous) روی همان نخی اجرا می‌شوند که subject را تغییر داده است. در برنامه‌های چندنخی فهرست را با mutex محافظت کنید، اما هرگز در حالی که قفل را نگه داشته‌اید observerها را صدا نزنید (خطر deadlock)؛ فهرست را زیر قفل کپی کنید و بعد اعلان بدهید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt signals and slots (`QObject::connect`) and Boost.Signals2, which also manages connection lifetimes.",
+      "GUI event listeners in every toolkit: button-click handlers, the browser DOM's `addEventListener`.",
+      "Model/view frameworks and MVC, where views observe the model, and reactive libraries such as RxCpp."
+    ],
+    "fa": [
+      "signal و slot در Qt (`QObject::connect`) و Boost.Signals2 که طول عمر اتصال‌ها را هم مدیریت می‌کند.",
+      "event listenerها در همهٔ کتابخانه‌های رابط کاربری: handlerهای کلیک دکمه و `addEventListener` در DOM مرورگر.",
+      "چارچوب‌های model/view و معماری MVC که در آن viewها مدل را زیر نظر دارند، و کتابخانه‌های reactive مثل RxCpp."
+    ]
+  },
+  "related": [
+    {
+      "id": "mediator",
+      "note": {
+        "en": "A mediator knows its colleagues and encapsulates the rules between them; a subject broadcasts to observers it knows nothing about. Mediators are often built on observer-style notifications.",
+        "fa": "میانجی همکارانش را می‌شناسد و قوانین بین آن‌ها را کپسوله می‌کند؛ اما subject برای observerهایی که هیچ چیزی از آن‌ها نمی‌داند اعلان پخش می‌کند. میانجی‌ها اغلب روی اعلان‌هایی به سبک آبزرور ساخته می‌شوند."
+      }
+    },
+    {
+      "id": "chain-of-responsibility",
+      "note": {
+        "en": "In a chain, a request is handled by one receiver — the first that can; with Observer, every subscriber receives every notification.",
+        "fa": "در زنجیرهٔ مسئولیت، درخواست را فقط یک گیرنده رسیدگی می‌کند (اولین گیرنده‌ای که بتواند)؛ اما در آبزرور هر مشترک همهٔ اعلان‌ها را دریافت می‌کند."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "A central event bus or change manager that routes notifications between many subjects and observers is often implemented as a singleton.",
+        "fa": "یک event bus یا مدیر تغییرات مرکزی که اعلان‌ها را بین subjectها و observerهای زیادی جابه‌جا می‌کند اغلب به شکل سینگلتون پیاده‌سازی می‌شود."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Live match notifications", "fa": "اعلان‌های زندهٔ مسابقه" },
+    "description": {
+      "en": "`Match` knows its screens only through `MatchObserver`. Each goal is pushed to every subscriber, and each concrete observer uses just the part of the data it needs. At half-time the highlights reel subscribes and the fan app unsubscribes, so the second goal reaches a different set of observers — without any change to `Match`.",
+      "fa": "`Match` صفحه‌های نمایش را فقط از طریق `MatchObserver` می‌شناسد. هر گل برای همهٔ مشترک‌ها فرستاده می‌شود و هر observer مشخص فقط از بخشی از داده که لازم دارد استفاده می‌کند. در بین دو نیمه، سیستم خلاصهٔ بازی مشترک می‌شود و اپلیکیشن هواداران لغو اشتراک می‌کند؛ بنابراین گل دوم به مجموعهٔ دیگری از observerها می‌رسد، بدون هیچ تغییری در `Match`."
+    },
+    "output": "23' GOAL Reds -> 2 observers\n  scoreboard: 1 - 0\n  fan app: \"Reds scored in minute 23!\"\n-- half-time: highlights joins, fan app leaves --\n67' GOAL Blues -> 2 observers\n  scoreboard: 1 - 1\n  highlights: clip saved at 67'",
+    "highlights": [
+      {
+        "lines": [12, 17],
+        "note": {
+          "en": "The observer interface — the only type the subject depends on. Any class implementing `onGoal` can listen.",
+          "fa": "اینترفیس observer؛ تنها نوعی که subject به آن وابسته است. هر کلاسی که `onGoal` را پیاده‌سازی کند می‌تواند گوش بدهد."
+        }
+      },
+      {
+        "lines": [25, 26],
+        "note": {
+          "en": "Subscriptions are managed at runtime. `std::erase` (C++20) removes a pointer from the vector in one call.",
+          "fa": "اشتراک‌ها در زمان اجرا مدیریت می‌شوند. `std::erase` (از C++20) یک اشاره‌گر را با یک فراخوانی از vector حذف می‌کند."
+        }
+      },
+      {
+        "lines": [28, 34],
+        "note": {
+          "en": "The notification: update the state, then loop over the list and call the interface method on every observer (push model — the data travels with the call).",
+          "fa": "اعلان: ابتدا وضعیت به‌روز می‌شود، سپس روی فهرست حلقه زده و متد اینترفیس برای هر observer صدا زده می‌شود (مدل push؛ داده همراه فراخوانی فرستاده می‌شود)."
+        }
+      },
+      {
+        "lines": [40, 40],
+        "note": {
+          "en": "The list does not own the observers. This is the pattern's classic C++ pitfall: a destroyed observer left in the list becomes a dangling pointer.",
+          "fa": "این فهرست مالک observerها نیست. این همان دام کلاسیک این الگو در C++ است: observer نابودشده‌ای که در فهرست بماند به یک اشاره‌گر آویزان تبدیل می‌شود."
+        }
+      },
+      {
+        "lines": [65, 79],
+        "note": {
+          "en": "Observers are declared before the match, so they are destroyed after it and can never dangle. Between the two goals the set of listeners changes without touching `Match`.",
+          "fa": "observerها قبل از مسابقه تعریف شده‌اند، پس بعد از آن نابود می‌شوند و هیچ‌وقت آویزان نمی‌مانند. بین دو گل، مجموعهٔ شنونده‌ها بدون دست زدن به `Match` تغییر می‌کند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What kind of relationship does the Observer pattern set up?",
+        "fa": "الگوی آبزرور چه نوع رابطه‌ای برقرار می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "One-to-one: each subject has exactly one observer",
+          "Many-to-many, routed through a central coordinator that knows every participant",
+          "A chain in which each object may pass a request on to the next one",
+          "One-to-many: when the subject changes, all of its registered dependents are notified"
+        ],
+        "fa": [
+          "یک‌به‌یک: هر subject دقیقاً یک observer دارد",
+          "چند‌به‌چند، از طریق یک هماهنگ‌کنندهٔ مرکزی که همهٔ شرکت‌کنندگان را می‌شناسد",
+          "زنجیره‌ای که در آن هر شیء می‌تواند درخواست را به بعدی بدهد",
+          "یک‌به‌چند: وقتی subject تغییر می‌کند، به همهٔ وابستگان ثبت‌شده‌اش خبر داده می‌شود"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "One subject, any number of observers, all notified of each change. A central coordinator that knows every participant is Mediator; passing a request along to the next object is Chain of Responsibility.",
+        "fa": "یک subject و هر تعداد observer که از هر تغییر باخبر می‌شوند. هماهنگ‌کنندهٔ مرکزی‌ای که همهٔ شرکت‌کنندگان را می‌شناسد مدیاتور است و دست‌به‌دست کردن درخواست به شیء بعدی زنجیرهٔ مسئولیت."
+      }
+    },
+    {
+      "question": {
+        "en": "A subject stores `std::vector<Observer*>`. One observer is destroyed without unsubscribing. What happens on the next notification?",
+        "fa": "یک subject از `std::vector<Observer*>` استفاده می‌کند. یکی از observerها بدون لغو اشتراک نابود می‌شود. در اعلان بعدی چه اتفاقی می‌افتد؟"
+      },
+      "options": {
+        "en": [
+          "The vector removes the pointer automatically",
+          "Undefined behaviour: the subject calls a virtual function through a dangling pointer",
+          "The program fails to compile",
+          "The call is skipped, because the pointer has become `nullptr`"
+        ],
+        "fa": [
+          "vector به‌طور خودکار اشاره‌گر را حذف می‌کند",
+          "رفتار تعریف‌نشده (undefined behaviour): subject یک تابع virtual را از طریق اشاره‌گر آویزان صدا می‌زند",
+          "برنامه کامپایل نمی‌شود",
+          "فراخوانی رد می‌شود، چون اشاره‌گر `nullptr` شده است"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "A raw pointer knows nothing about the lifetime of its target — it neither becomes null nor disappears. Prevent this by unsubscribing in the destructor, by using RAII subscription tokens, or by storing `std::weak_ptr` and checking `lock()`.",
+        "fa": "اشاره‌گر خام هیچ اطلاعی از طول عمر هدفش ندارد؛ نه null می‌شود و نه ناپدید می‌شود. با لغو اشتراک در destructor، توکن‌های اشتراک RAII یا نگه داشتن `std::weak_ptr` و بررسی `lock()` از این مشکل جلوگیری کنید."
+      }
+    },
+    {
+      "question": {
+        "en": "Which of these is a genuine drawback of the Observer pattern?",
+        "fa": "کدام‌یک از این موارد یک عیب واقعی الگوی آبزرور است؟"
+      },
+      "options": {
+        "en": [
+          "Chains of updates can become hard to follow, and observers must not rely on notification order",
+          "The subject has to know every concrete observer class",
+          "Observers cannot be added while the program is running",
+          "It requires multiple inheritance in C++"
+        ],
+        "fa": [
+          "زنجیره‌های به‌روزرسانی ممکن است به‌سختی قابل دنبال کردن باشند و observerها نباید به ترتیب اعلان‌ها تکیه کنند",
+          "subject باید همهٔ کلاس‌های مشخص observer را بشناسد",
+          "در حین اجرای برنامه نمی‌توان observer اضافه کرد",
+          "در C++ به وراثت چندگانه نیاز دارد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "The loose coupling that makes Observer attractive also hides control flow: a single `goal()` call may trigger a cascade of updates across the program. The other options are the exact opposite of what the pattern provides.",
+        "fa": "همان وابستگی کمی که آبزرور را جذاب می‌کند، جریان کنترل را هم پنهان می‌کند: فقط یک فراخوانی `goal()` ممکن است زنجیره‌ای از به‌روزرسانی‌ها را در کل برنامه راه بیندازد. گزینه‌های دیگر دقیقاً برعکس چیزی هستند که این الگو فراهم می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "A support request must be handled by exactly one of several handlers, tried in order. Why is Observer a poor fit here?",
+        "fa": "یک درخواست پشتیبانی باید دقیقاً توسط یکی از چند handler، به‌ترتیب، رسیدگی شود. چرا آبزرور اینجا انتخاب مناسبی نیست؟"
+      },
+      "options": {
+        "en": [
+          "It is a fine fit — just let every handler process the request",
+          "Because Observer only works with GUI events",
+          "Observer delivers every notification to all subscribers; Chain of Responsibility passes the request along until one handler takes it",
+          "Because observers cannot receive any data with a notification"
+        ],
+        "fa": [
+          "انتخاب مناسبی است؛ کافی است بگذارید همهٔ handlerها درخواست را پردازش کنند",
+          "چون آبزرور فقط با رویدادهای رابط کاربری کار می‌کند",
+          "آبزرور هر اعلان را به همهٔ مشترک‌ها می‌رساند؛ اما زنجیرهٔ مسئولیت درخواست را دست‌به‌دست می‌کند تا یک handler آن را بپذیرد",
+          "چون observerها نمی‌توانند همراه اعلان هیچ داده‌ای دریافت کنند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Observer is broadcast: everyone hears everything and nobody \"consumes\" the event. When exactly one receiver should act, a chain (or a direct dispatch) expresses the intent correctly.",
+        "fa": "آبزرور یعنی پخش همگانی: همه همه‌چیز را می‌شنوند و هیچ‌کس رویداد را «مصرف» نمی‌کند. وقتی دقیقاً یک گیرنده باید اقدام کند، زنجیرهٔ مسئولیت (یا ارسال مستقیم) منظور را درست بیان می‌کند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "In a spreadsheet, a chart, a pivot table and a summary cell must refresh the moment any cell in their source range changes, and users can open or close charts at any time.",
+      "fa": "در یک صفحه‌گسترده، یک نمودار، یک جدول محوری (pivot) و یک خانهٔ خلاصه باید به محض تغییر هر خانه در محدودهٔ منبعشان به‌روز شوند و کاربر هر لحظه می‌تواند نمودارها را باز یا بسته کند."
+    },
+    {
+      "en": "A smart thermostat's readings must reach the heating controller, the phone app and a data logger, and new devices should be able to start or stop receiving readings without any change to the thermostat's code.",
+      "fa": "دمایی که یک ترموستات هوشمند اندازه می‌گیرد باید به کنترلر گرمایش، اپلیکیشن موبایل و یک ثبت‌کنندهٔ داده برسد و دستگاه‌های جدید باید بتوانند بدون هیچ تغییری در کد ترموستات، دریافت این داده‌ها را شروع یا متوقف کنند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Parcel tracking alerts", "fa": "اعلان‌های رهگیری مرسوله" },
+    "task": {
+      "en": "`Shipment` records its listeners but never tells them anything, `unsubscribe()` only prints a message, and the tracking page never joins. Notify every listener in `setStatus()`, make `unsubscribe()` really remove the listener, and subscribe `web` before the parcel goes out for delivery. After SMS is muted, only the email and the web page should react.",
+      "fa": "`Shipment` شنونده‌هایش را ثبت می‌کند اما هیچ‌وقت چیزی به آن‌ها نمی‌گوید، `unsubscribe()` فقط یک پیام چاپ می‌کند و صفحهٔ رهگیری هم هرگز مشترک نمی‌شود. در `setStatus()` به همهٔ شنونده‌ها خبر بدهید، کاری کنید `unsubscribe()` واقعاً شنونده را حذف کند و `web` را پیش از ارسال مرسوله برای تحویل مشترک کنید. بعد از قطع پیامک، فقط ایمیل و صفحهٔ وب باید واکنش نشان دهند."
+    },
+    "hints": {
+      "en": [
+        "Notifying is a range-for over `listeners_` that calls the interface method on each pointer.",
+        "`std::erase(listeners_, &listener);` removes every occurrence of that pointer (C++20, declared in `<vector>`).",
+        "In `main`, write `parcel.subscribe(web);` exactly where the TODO 3 comment is — before `unsubscribe(sms)` — so the output order matches."
+      ],
+      "fa": [
+        "خبر دادن یعنی یک حلقهٔ range-for روی `listeners_` که متد اینترفیس را برای هر اشاره‌گر صدا می‌زند.",
+        "`std::erase(listeners_, &listener);` همهٔ نمونه‌های آن اشاره‌گر را حذف می‌کند (از C++20، تعریف‌شده در `<vector>`).",
+        "در `main` دقیقاً جای کامنت TODO 3 (یعنی قبل از `unsubscribe(sms)`) بنویسید `parcel.subscribe(web);` تا ترتیب خروجی درست باشد."
+      ]
+    },
+    "expectedOutput": "sms subscribed\nemail subscribed\nstatus: shipped\n  sms: your parcel is shipped\n  email: status changed to \"shipped\"\nweb subscribed\nsms unsubscribed\nstatus: out for delivery\n  email: status changed to \"out for delivery\"\n  web: timeline event #1 (out for delivery)\nstatus: delivered\n  email: status changed to \"delivered\"\n  web: timeline event #2 (delivered)"
+  }
+}

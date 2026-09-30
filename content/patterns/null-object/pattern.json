@@ -1,0 +1,372 @@
+{
+  "id": "null-object",
+  "category": "idioms",
+  "order": 6,
+  "difficulty": 1,
+  "icon": "circle-off",
+  "name": { "en": "Null Object", "fa": "نال آبجکت (شیء تهی)" },
+  "aka": { "en": "Active Nothing, do-nothing object", "fa": "Active Nothing، شیء بی‌اثر" },
+  "tagline": {
+    "en": "Replace \"nothing\" with an object that safely does nothing.",
+    "fa": "«هیچ» را با شیئی عوض کنید که با خیال راحت هیچ کاری نمی‌کند."
+  },
+  "intent": {
+    "en": "Provide an object that implements the expected interface with neutral, do-nothing behaviour, so clients can treat \"no collaborator\" exactly like a real one instead of checking for null.",
+    "fa": "شیئی فراهم می‌کند که رابط مورد انتظار را با رفتاری خنثی و بی‌اثر پیاده‌سازی کرده است، تا کلاینت‌ها با «نبودِ همکار» دقیقاً مثل یک همکار واقعی رفتار کنند و نیازی به بررسی null نباشد."
+  },
+  "problem": {
+    "en": "A game talks to its audio service from dozens of places: jumps, coins, menus, cutscenes. On a headless test server or a machine without a sound card there is no audio device, so the service pointer is `nullptr` — and every call site must remember to write `if (audio) audio->playSound(...)`. Sooner or later someone forgets one check and the game crashes, but only on machines without sound. The checks also clutter gameplay code with decisions that have nothing to do with gameplay.",
+    "fa": "یک بازی از ده‌ها جا با سرویس صدا کار می‌کند: پرش، جمع کردن سکه، منوها و میان‌پرده‌ها. روی یک سرور تست بدون نمایشگر یا دستگاهی که کارت صدا ندارد، دستگاه صوتی وجود ندارد و اشاره‌گر سرویس `nullptr` است؛ پس هر محل فراخوانی باید یادش بماند که `if (audio) audio->playSound(...)` بنویسد. دیر یا زود کسی یکی از این بررسی‌ها را فراموش می‌کند و بازی کرش می‌کند، آن هم فقط روی دستگاه‌های بدون صدا. این بررسی‌ها کد گیم‌پلی را هم با تصمیم‌هایی شلوغ می‌کنند که هیچ ربطی به گیم‌پلی ندارند."
+  },
+  "solution": {
+    "en": "Create a class that implements the same interface as the real service, but whose methods do nothing and whose queries return safe, neutral values (`volume()` returns 0). Wherever there is no real collaborator, hand out this **Null Object** instead of `nullptr`. Clients call it unconditionally: the decision \"there is no audio\" is made once, where the object is created, not at every call site. Since there is always a valid object, clients can even hold it as a reference (`AudioService&`), making \"never null\" part of the type.",
+    "fa": "کلاسی بسازید که همان رابط سرویس واقعی را پیاده‌سازی می‌کند، اما متدهایش کاری انجام نمی‌دهند و پرس‌وجوهایش مقادیر امن و خنثی برمی‌گردانند (`volume()` صفر برمی‌گرداند). هر جا همکار واقعی وجود ندارد، به‌جای `nullptr` همین **Null Object** را تحویل دهید. کلاینت‌ها آن را بدون هیچ شرطی صدا می‌زنند: تصمیم «صدایی در کار نیست» فقط یک بار و در جایی که شیء ساخته می‌شود گرفته می‌شود، نه در تک‌تک محل‌های فراخوانی. چون همیشه یک شیء معتبر وجود دارد، کلاینت‌ها حتی می‌توانند آن را به شکل مرجع (`AudioService&`) نگه دارند تا «هرگز null نیست» بخشی از خود نوع شود."
+  },
+  "analogy": {
+    "en": "Muting a TV doesn't unplug the speakers or force every programme to ask \"is there sound?\" before each scene. The audio pipeline keeps running exactly as before — it just ends in silence. A Null Object is that mute button: the call still happens, it simply has no effect.",
+    "fa": "بی‌صدا کردن تلویزیون بلندگوها را از برق نمی‌کشد و هیچ برنامه‌ای را مجبور نمی‌کند قبل از هر صحنه بپرسد «صدا داریم یا نه؟». مسیر صدا دقیقاً مثل قبل کار می‌کند، فقط به سکوت ختم می‌شود. Null Object همان دکمهٔ mute است: فراخوانی همچنان انجام می‌شود، فقط اثری ندارد."
+  },
+  "participants": [
+    {
+      "name": "AbstractObject (AudioService)",
+      "role": {
+        "en": "The interface clients depend on. Both the real and the null implementation fulfil it.",
+        "fa": "رابطی که کلاینت‌ها به آن وابسته‌اند. هم پیاده‌سازی واقعی و هم پیاده‌سازی تهی آن را برآورده می‌کنند."
+      }
+    },
+    {
+      "name": "RealObject (SpeakerAudio)",
+      "role": {
+        "en": "A normal implementation with real behaviour and side effects.",
+        "fa": "یک پیاده‌سازی معمولی با رفتار واقعی و اثرات جانبی."
+      }
+    },
+    {
+      "name": "NullObject (SilentAudio)",
+      "role": {
+        "en": "Implements the same interface with empty methods and neutral return values; usually stateless.",
+        "fa": "همان رابط را با متدهای خالی و مقادیر بازگشتی خنثی پیاده‌سازی می‌کند؛ معمولاً بدون وضعیت است."
+      }
+    },
+    {
+      "name": "Factory (openAudio)",
+      "role": {
+        "en": "Decides once which object to hand out and never returns `nullptr`.",
+        "fa": "فقط یک بار تصمیم می‌گیرد کدام شیء را تحویل دهد و هرگز `nullptr` برنمی‌گرداند."
+      }
+    },
+    {
+      "name": "Client (Game)",
+      "role": {
+        "en": "Calls the interface unconditionally, without any null checks.",
+        "fa": "رابط را بدون هیچ شرط و بدون بررسی null صدا می‌زند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Game", "kind": "client", "col": 0, "row": 0, "members": ["- audio_ : AudioService&", "+ run()"] },
+      { "id": "AudioService", "kind": "interface", "col": 2, "row": 0, "members": ["+ playSound(file)", "+ setVolume(percent)", "+ volume() : int"] },
+      { "id": "SpeakerAudio", "kind": "concrete", "col": 1, "row": 1, "members": ["- volume_ : int", "+ playSound(file)", "+ volume() : int"] },
+      { "id": "SilentAudio", "kind": "concrete", "col": 3, "row": 1, "members": ["+ playSound(file) {}", "+ setVolume(percent) {}", "+ volume() : int { 0 }"] },
+      { "id": "AudioFactory", "label": "openAudio()", "kind": "concrete", "col": 2, "row": 2, "members": ["+ never returns nullptr"] }
+    ],
+    "edges": [
+      { "from": "Game", "to": "AudioService", "type": "refs", "label": "audio_" },
+      { "from": "SpeakerAudio", "to": "AudioService", "type": "implements" },
+      { "from": "SilentAudio", "to": "AudioService", "type": "implements" },
+      { "from": "AudioFactory", "to": "SpeakerAudio", "type": "creates", "label": "device found" },
+      { "from": "AudioFactory", "to": "SilentAudio", "type": "creates", "label": "no device" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Find a collaborator that is sometimes absent and the null checks that guard every use of it.",
+      "Make sure clients depend on an interface (`AudioService`) rather than on the concrete class.",
+      "Write the Null Object: implement every method without side effects and return neutral values from queries (0, an empty string, an empty list, `false`).",
+      "Hand out the Null Object wherever you used to return or store `nullptr`: in factories, default constructors and lookups.",
+      "Delete the null checks from client code and, where nullability is no longer needed, turn pointers into references."
+    ],
+    "fa": [
+      "همکاری را پیدا کنید که گاهی وجود ندارد، و بررسی‌های null را که از هر استفادهٔ آن محافظت می‌کنند.",
+      "مطمئن شوید کلاینت‌ها به یک رابط (`AudioService`) وابسته‌اند نه به کلاس مشخص.",
+      "Null Object را بنویسید: هر متد را بدون اثر جانبی پیاده کنید و از پرس‌وجوها مقادیر خنثی برگردانید (صفر، رشتهٔ خالی، لیست خالی، `false`).",
+      "هر جا قبلاً `nullptr` برمی‌گرداندید یا ذخیره می‌کردید، Null Object را تحویل دهید: در factoryها، سازنده‌های پیش‌فرض و جست‌وجوها.",
+      "بررسی‌های null را از کد کلاینت حذف کنید و هر جا دیگر نیازی به تهی‌پذیری نیست، اشاره‌گرها را به مرجع تبدیل کنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A collaborator is optional and \"doing nothing\" is a correct, sensible behaviour when it's missing (no sound, no logging, no notifications).",
+      "The same null check is repeated at many call sites, and forgetting a single one causes a crash.",
+      "You need a safe default for a dependency, e.g. the initial service in a service locator or a disabled feature.",
+      "Tests need a harmless stand-in that satisfies an interface without any side effects."
+    ],
+    "fa": [
+      "یک همکار اختیاری است و وقتی وجود ندارد «هیچ کاری نکردن» رفتاری درست و معقول است (بدون صدا، بدون لاگ، بدون اعلان).",
+      "یک بررسی null یکسان در محل‌های فراخوانی زیادی تکرار شده و فراموش کردن حتی یکی از آن‌ها باعث کرش می‌شود.",
+      "برای یک وابستگی به پیش‌فرض امنی نیاز دارید؛ مثلاً سرویس اولیه در یک service locator یا یک قابلیت غیرفعال.",
+      "تست‌ها به یک جایگزین بی‌خطر نیاز دارند که رابط را برآورده کند و هیچ اثر جانبی نداشته باشد."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Removes repetitive null checks — and the crashes that happen when one is forgotten.",
+      "Client code gets simpler and focuses on its real job; the \"absent\" decision is made once, at creation time.",
+      "Lets you use references instead of pointers, so \"never null\" is enforced by the type system.",
+      "A Null Object is usually stateless, so one shared instance can serve the whole program."
+    ],
+    "fa": [
+      "بررسی‌های تکراری null و کرش‌هایی را که با فراموش شدن یکی از آن‌ها پیش می‌آید حذف می‌کند.",
+      "کد کلاینت ساده‌تر می‌شود و روی کار اصلی خودش تمرکز می‌کند؛ تصمیم «وجود ندارد» فقط یک بار و هنگام ساخت گرفته می‌شود.",
+      "اجازه می‌دهد به‌جای اشاره‌گر از مرجع استفاده کنید، پس «هرگز null نیست» را سیستم نوع تضمین می‌کند.",
+      "Null Object معمولاً بدون وضعیت است، پس یک نمونهٔ مشترک برای کل برنامه کافی است."
+    ]
+  },
+  "cons": {
+    "en": [
+      "It can hide bugs: if absence is actually an error, silently doing nothing masks it.",
+      "Neutral return values must be chosen carefully; a wrong default (say, volume 100 or \"access granted\") can be worse than a crash.",
+      "Every method added to the interface needs a matching do-nothing version in the Null Object.",
+      "Code that truly must react to absence tends to grow `isNull()` checks again, which defeats the purpose."
+    ],
+    "fa": [
+      "می‌تواند باگ‌ها را پنهان کند: اگر نبودِ همکار در واقع یک خطا باشد، بی‌صدا هیچ کاری نکردن آن را می‌پوشاند.",
+      "مقادیر بازگشتی خنثی را باید با دقت انتخاب کرد؛ یک پیش‌فرض اشتباه (مثلاً صدای ۱۰۰ درصد یا «دسترسی مجاز است») می‌تواند از کرش بدتر باشد.",
+      "هر متدی که به رابط اضافه شود، به یک نسخهٔ بی‌اثر متناظر در Null Object نیاز دارد.",
+      "کدی که واقعاً باید به نبودِ همکار واکنش نشان دهد، کم‌کم دوباره بررسی‌های `isNull()` پیدا می‌کند و هدف الگو از بین می‌رود."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "A stateless Null Object can be one shared instance: `AudioService& silentAudio() { static SilentAudio s; return s; }` — no allocation, and references to it never dangle.",
+      "Leave unused parameters unnamed (`void playSound(std::string_view) override {}`): it documents the intent and keeps `-Wunused-parameter` quiet. Mark the class `final`.",
+      "Once a Null Object exists, hold collaborators by reference, or keep the invariant that a `std::unique_ptr` member is never empty.",
+      "Don't confuse it with `std::optional<T>` or `nullptr`: those force callers to handle absence explicitly, which is right when absence needs a decision rather than a no-op.",
+      "Make queries return values that let calling code do the right thing without special cases, e.g. an empty range so that loops simply don't run.",
+      "An empty `std::function` is not a null object — calling it throws `std::bad_function_call`. If \"do nothing\" is the right default, initialize it with a no-op lambda such as `[](int) {}`."
+    ],
+    "fa": [
+      "Null Object بدون وضعیت می‌تواند یک نمونهٔ مشترک باشد: `AudioService& silentAudio() { static SilentAudio s; return s; }`؛ بدون تخصیص حافظه، و مرجع‌هایی که به آن داده می‌شوند هیچ‌وقت نامعتبر (dangling) نمی‌شوند.",
+      "پارامترهای استفاده‌نشده را بی‌نام بگذارید (`void playSound(std::string_view) override {}`): هم نیت شما را مستند می‌کند و هم هشدار `-Wunused-parameter` را ساکت می‌کند. کلاس را هم `final` کنید.",
+      "وقتی Null Object دارید، همکارها را با مرجع نگه دارید یا این قانون را حفظ کنید که عضو `std::unique_ptr` هیچ‌وقت خالی نباشد.",
+      "آن را با `std::optional<T>` یا `nullptr` اشتباه نگیرید: آن‌ها فراخوان را مجبور می‌کنند نبودِ مقدار را صریحاً مدیریت کند، و این وقتی درست است که نبودِ همکار به تصمیم‌گیری نیاز دارد نه به یک عمل بی‌اثر.",
+      "پرس‌وجوها را طوری بنویسید که کد فراخوان بدون حالت خاص کار درست را انجام دهد؛ مثلاً یک بازهٔ خالی برگردانید تا حلقه‌ها اصلاً اجرا نشوند.",
+      "یک `std::function` خالی null object نیست؛ صدا زدنش `std::bad_function_call` پرتاب می‌کند. اگر «هیچ کاری نکردن» پیش‌فرض درستی است، آن را با یک lambda بی‌اثر مثل `[](int) {}` مقداردهی کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Unix's `/dev/null`: write as much as you like, nothing happens — the operating-system-level null object.",
+      "Logging libraries ship a null sink, e.g. spdlog's `null_sink_mt`, to switch logging off without touching any call site.",
+      "Game engines' service locators (as described in Robert Nystrom's \"Game Programming Patterns\") start with a null audio service until a real one is registered.",
+      "`std::pmr::null_memory_resource()` is a shared, stateless resource object — a variant that fails loudly, throwing `std::bad_alloc` on every allocation."
+    ],
+    "fa": [
+      "`/dev/null` در یونیکس: هر چقدر بخواهید در آن بنویسید، هیچ اتفاقی نمی‌افتد؛ یک null object در سطح سیستم‌عامل.",
+      "کتابخانه‌های لاگ یک sink تهی دارند، مثل `null_sink_mt` در spdlog، تا بدون دست زدن به محل‌های فراخوانی لاگ را خاموش کنند.",
+      "service locatorهای موتورهای بازی (همان‌طور که Robert Nystrom در کتاب «Game Programming Patterns» توضیح می‌دهد) تا وقتی سرویس واقعی ثبت نشده، با یک سرویس صدای تهی شروع می‌کنند.",
+      "`std::pmr::null_memory_resource()` یک شیء resource مشترک و بدون وضعیت است؛ نسخه‌ای که آشکارا شکست می‌خورد و در هر تخصیص `std::bad_alloc` پرتاب می‌کند."
+    ]
+  },
+  "related": [
+    {
+      "id": "strategy",
+      "note": {
+        "en": "A Null Object is often simply a do-nothing strategy (`NoDiscount`, `NoCompression`), so the context never has to check whether a strategy is set.",
+        "fa": "Null Object اغلب فقط یک استراتژی بی‌اثر است (`NoDiscount`، `NoCompression`) تا context هیچ‌وقت مجبور نباشد بررسی کند استراتژی‌ای تنظیم شده یا نه."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "Because a Null Object is usually stateless, one shared instance is enough; it is frequently exposed as a singleton.",
+        "fa": "چون Null Object معمولاً بدون وضعیت است، یک نمونهٔ مشترک کافی است و اغلب به شکل سینگلتون در دسترس قرار می‌گیرد."
+      }
+    },
+    {
+      "id": "chain-of-responsibility",
+      "note": {
+        "en": "A null handler at the end of a chain lets every handler forward unconditionally, without checking whether a successor exists.",
+        "fa": "یک handler تهی در انتهای زنجیره اجازه می‌دهد هر handler بدون بررسی وجود نفر بعدی، درخواست را بی‌قید و شرط جلو بفرستد."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Game audio without a sound card", "fa": "صدای بازی بدون کارت صدا" },
+    "description": {
+      "en": "The same `Game` code runs twice: with real speakers and on a headless test server. `openAudio()` never returns `nullptr`, so `Game` holds a plain reference and checks nothing; on the server the sounds simply don't play and the HUD shows a neutral 0%.",
+      "fa": "همان کد `Game` دو بار اجرا می‌شود: یک بار با بلندگوی واقعی و یک بار روی یک سرور تست بدون نمایشگر. `openAudio()` هرگز `nullptr` برنمی‌گرداند، پس `Game` فقط یک مرجع ساده نگه می‌دارد و هیچ چیزی را بررسی نمی‌کند؛ روی سرور صداها پخش نمی‌شوند و HUD مقدار خنثای 0% را نشان می‌دهد."
+    },
+    "output": "== gaming laptop ==\nplayer jumps\n  [speaker] jump.wav at 50%\ncoin collected\n  [speaker] coin.wav at 50%\nHUD volume: 50%\n== headless test server (no sound card) ==\nplayer jumps\ncoin collected\nHUD volume: 0%",
+    "highlights": [
+      {
+        "lines": [6, 12],
+        "note": {
+          "en": "The interface the game depends on. Both the real service and the null object implement it, so the game can't tell them apart.",
+          "fa": "رابطی که بازی به آن وابسته است. هم سرویس واقعی و هم null object آن را پیاده‌سازی می‌کنند، پس بازی نمی‌تواند آن‌ها را از هم تشخیص دهد."
+        }
+      },
+      {
+        "lines": [26, 32],
+        "note": {
+          "en": "The Null Object: a complete, legitimate implementation whose methods are intentionally empty and whose query returns a neutral 0.",
+          "fa": "Null Object: یک پیاده‌سازی کامل و مشروع که متدهایش عمداً خالی‌اند و پرس‌وجویش مقدار خنثای صفر را برمی‌گرداند."
+        }
+      },
+      {
+        "lines": [34, 38],
+        "note": {
+          "en": "The only place that knows whether a device exists. It returns a `SilentAudio` instead of `nullptr`, so absence is decided once.",
+          "fa": "تنها جایی که می‌داند دستگاه صوتی وجود دارد یا نه. به‌جای `nullptr` یک `SilentAudio` برمی‌گرداند، پس دربارهٔ نبودِ دستگاه فقط یک بار تصمیم گرفته می‌شود."
+        }
+      },
+      {
+        "lines": [40, 56],
+        "note": {
+          "en": "Gameplay code without a single `if`. Because an object always exists, `Game` can store a reference, which by definition can't be null.",
+          "fa": "کد گیم‌پلی بدون حتی یک `if`. چون همیشه شیئی وجود دارد، `Game` می‌تواند یک مرجع نگه دارد که ذاتاً نمی‌تواند null باشد."
+        }
+      },
+      {
+        "lines": [58, 66],
+        "note": {
+          "en": "Identical calls, different behaviour: on the server the sounds vanish silently and the program keeps working.",
+          "fa": "فراخوانی‌های یکسان، رفتار متفاوت: روی سرور صداها بی‌سروصدا حذف می‌شوند و برنامه به کارش ادامه می‌دهد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the main purpose of the Null Object pattern?",
+        "fa": "هدف اصلی الگوی Null Object چیست؟"
+      },
+      "options": {
+        "en": [
+          "To free memory automatically when an object is no longer used",
+          "To guarantee that a class has only one instance",
+          "To turn every null-pointer dereference into an exception",
+          "To replace \"no object\" with an object whose methods safely do nothing, so clients need no null checks"
+        ],
+        "fa": [
+          "آزاد کردن خودکار حافظه وقتی شیء دیگر استفاده نمی‌شود",
+          "تضمین این‌که کلاس فقط یک نمونه داشته باشد",
+          "تبدیل هر dereference کردن اشاره‌گر null به یک استثنا",
+          "جایگزین کردن «هیچ شیئی» با شیئی که متدهایش با خیال راحت هیچ کاری نمی‌کنند، تا کلاینت‌ها به بررسی null نیازی نداشته باشند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The pattern moves the \"is anything there?\" decision out of every call site and into one place — where the object is created. Clients then call through the interface unconditionally.",
+        "fa": "این الگو تصمیم «آیا چیزی وجود دارد؟» را از تک‌تک محل‌های فراخوانی بیرون می‌کشد و به یک جا منتقل می‌کند: جایی که شیء ساخته می‌شود. بعد از آن کلاینت‌ها بدون هیچ شرطی از طریق رابط فراخوانی می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Which is the best way to write the Null Object's `playSound` in C++?",
+        "fa": "بهترین روش نوشتن `playSound` در Null Object در C++ کدام است؟"
+      },
+      "options": {
+        "en": [
+          "`void playSound(std::string_view file) override { if (file.empty()) return; }`",
+          "`void playSound(std::string_view) override {}` — an empty body and an unnamed parameter",
+          "`void playSound(std::string_view) override { throw std::logic_error(\"no audio\"); }`",
+          "`void playSound(std::string_view file) override { assert(false); }`"
+        ],
+        "fa": [
+          "`void playSound(std::string_view file) override { if (file.empty()) return; }`",
+          "`void playSound(std::string_view) override {}`؛ بدنهٔ خالی و پارامتر بی‌نام",
+          "`void playSound(std::string_view) override { throw std::logic_error(\"no audio\"); }`",
+          "`void playSound(std::string_view file) override { assert(false); }`"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "The whole point is to do nothing, silently. An unnamed parameter documents that it is intentionally unused and keeps `-Wextra` quiet. Throwing or asserting would turn the null object back into an error path that every caller must handle.",
+        "fa": "کل هدف این است که بی‌صدا هیچ کاری نکند. پارامتر بی‌نام نشان می‌دهد که عمداً استفاده نشده و هشدار `-Wextra` را هم ساکت می‌کند. پرتاب استثنا یا assert کردن، null object را دوباره به مسیر خطایی تبدیل می‌کند که هر فراخوان باید مدیریتش کند."
+      }
+    },
+    {
+      "question": {
+        "en": "When should you NOT use a Null Object?",
+        "fa": "چه زمانی نباید از Null Object استفاده کرد؟"
+      },
+      "options": {
+        "en": [
+          "When the collaborator is optional and doing nothing is acceptable",
+          "When many call sites repeat the same null check",
+          "When a missing collaborator is a real error — e.g. a payment gateway — that must be noticed and handled",
+          "When you want to use references instead of pointers"
+        ],
+        "fa": [
+          "وقتی همکار اختیاری است و هیچ کاری نکردن قابل‌قبول است",
+          "وقتی محل‌های فراخوانی زیادی یک بررسی null یکسان را تکرار می‌کنند",
+          "وقتی نبودِ همکار یک خطای واقعی است (مثلاً درگاه پرداخت) که باید دیده و مدیریت شود",
+          "وقتی می‌خواهید به‌جای اشاره‌گر از مرجع استفاده کنید"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A Null Object makes absence invisible. That's perfect for sound or logging, but dangerous where absence means something went wrong: a payment that silently \"succeeds\" without charging hides a serious bug. There, fail loudly or make absence explicit with `std::optional` or an error.",
+        "fa": "Null Object نبودِ همکار را نامرئی می‌کند. این برای صدا یا لاگ عالی است، اما جایی که نبودِ همکار یعنی چیزی خراب شده خطرناک است: پرداختی که بدون کسر پول بی‌صدا «موفق» می‌شود یک باگ جدی را پنهان می‌کند. آن‌جا آشکارا شکست بخورید یا نبودِ مقدار را با `std::optional` یا یک خطا صریح کنید."
+      }
+    },
+    {
+      "question": {
+        "en": "How does a Null Object relate to the Strategy pattern?",
+        "fa": "Null Object چه رابطه‌ای با الگوی Strategy دارد؟"
+      },
+      "options": {
+        "en": [
+          "It is often a do-nothing strategy (like `NoDiscount`), so the context can always call its strategy without checking",
+          "It replaces Strategy entirely, so interfaces are no longer needed",
+          "Strategy objects must never be null objects",
+          "They are unrelated: Null Object only applies to containers"
+        ],
+        "fa": [
+          "اغلب یک استراتژی بی‌اثر است (مثل `NoDiscount`)، پس context همیشه می‌تواند بدون بررسی، استراتژی‌اش را صدا بزند",
+          "کاملاً جای Strategy را می‌گیرد و دیگر به رابط نیازی نیست",
+          "اشیای Strategy هرگز نباید null object باشند",
+          "ربطی به هم ندارند: Null Object فقط برای کانتینرها کاربرد دارد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Many strategy families have a natural no-op member — `NoDiscount`, `NoCompression`, `NoEncryption`. Making it the default strategy removes the \"is a strategy set?\" check from the context.",
+        "fa": "بسیاری از خانواده‌های استراتژی یک عضو طبیعی بی‌اثر دارند: `NoDiscount`، `NoCompression`، `NoEncryption`. پیش‌فرض قرار دادن آن، بررسی «آیا استراتژی‌ای تنظیم شده؟» را از context حذف می‌کند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A report generator accepts an optional progress listener. Batch jobs run without any UI, yet the generator calls `onProgress()` hundreds of times and you're tired of guarding every single call.",
+      "fa": "یک مولد گزارش یک listener اختیاری برای پیشرفت کار می‌گیرد. کارهای دسته‌ای بدون هیچ رابط کاربری اجرا می‌شوند، اما مولد صدها بار `onProgress()` را صدا می‌زند و از محافظت کردن تک‌تک این فراخوانی‌ها خسته شده‌اید."
+    },
+    {
+      "en": "Customers without a loyalty membership should flow through checkout exactly like members — just with no discount and no points earned — without special-casing them in every pricing function.",
+      "fa": "مشتری‌هایی که عضو باشگاه وفاداری نیستند باید دقیقاً مثل اعضا از فرایند پرداخت عبور کنند (فقط بدون تخفیف و بدون کسب امتیاز)، بدون این‌که در هر تابع قیمت‌گذاری حالت خاصی برایشان نوشته شود."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Respect the opt-out", "fa": "به انصراف مشتری احترام بگذارید" },
+    "task": {
+      "en": "The pizza app picks each customer's notification channel with `makeNotifier()`. Omid opted out (`\"none\"`), but the factory falls back to SMS, so he gets texted anyway. Write a `NullNotifier` whose `send()` does nothing and whose `channel()` returns `\"none\"`, and return it for `\"none\"` and any unknown preference. The loop in `main()` must stay free of null checks.",
+      "fa": "اپلیکیشن سفارش پیتزا کانال اعلان هر مشتری را با `makeNotifier()` انتخاب می‌کند. امید انصراف داده (`\"none\"`)، اما factory در این حالت سراغ پیامک می‌رود و در نتیجه باز هم برایش پیامک ارسال می‌شود. یک `NullNotifier` بنویسید که `send()` آن هیچ کاری نمی‌کند و `channel()` آن `\"none\"` برمی‌گرداند، و آن را برای `\"none\"` و هر ترجیح ناشناخته‌ای برگردانید. حلقهٔ `main()` باید همچنان بدون بررسی null بماند."
+    },
+    "hints": {
+      "en": [
+        "Leave `main()` alone: the fix belongs where the notifier is created, not where it is used.",
+        "`class NullNotifier final : public Notifier` needs two overrides: an empty `send(std::string_view, std::string_view) const` and a `channel()` that returns `\"none\"`.",
+        "Replace the fallback line in `makeNotifier()` with `return std::make_unique<NullNotifier>();`."
+      ],
+      "fa": [
+        "به `main()` دست نزنید: اصلاح باید جایی انجام شود که notifier ساخته می‌شود، نه جایی که استفاده می‌شود.",
+        "`class NullNotifier final : public Notifier` به دو override نیاز دارد: یک `send(std::string_view, std::string_view) const` خالی و یک `channel()` که `\"none\"` برمی‌گرداند.",
+        "خط آخر `makeNotifier()` را با `return std::make_unique<NullNotifier>();` جایگزین کنید."
+      ]
+    },
+    "expectedOutput": "Sara (push)\n  push to Sara: your pizza is on the way\nOmid (none)\nLena (sms)\n  SMS to Lena: your pizza is on the way"
+  }
+}

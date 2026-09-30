@@ -1,0 +1,365 @@
+{
+  "id": "singleton",
+  "category": "creational",
+  "order": 1,
+  "difficulty": 1,
+  "icon": "gem",
+  "name": {
+    "en": "Singleton",
+    "fa": "سینگلتون (تک‌نمونه)"
+  },
+  "aka": {
+    "en": "Meyers' Singleton (the C++ idiom)",
+    "fa": "Meyers' Singleton (پیاده‌سازی رایج در C++)"
+  },
+  "tagline": {
+    "en": "Exactly one instance, reachable from anywhere.",
+    "fa": "دقیقاً یک نمونه که از همه‌جا در دسترس است."
+  },
+  "intent": {
+    "en": "Ensure a class has only one instance and provide a global point of access to it.",
+    "fa": "تضمین می‌کند که یک کلاس فقط یک نمونه داشته باشد و یک نقطهٔ دسترسی سراسری به آن فراهم می‌کند."
+  },
+  "problem": {
+    "en": "Some things must exist exactly once: the application configuration, a hardware driver, a log file handle. If every module creates its own object you get conflicting settings, wasted resources or even corrupted files. A plain global variable gives easy access, but anyone can overwrite it and nothing prevents a second instance from being created.",
+    "fa": "بعضی چیزها باید دقیقاً یک بار وجود داشته باشند: تنظیمات برنامه، درایور یک سخت‌افزار یا دستگیرهٔ یک فایل لاگ. اگر هر ماژول شیء خودش را بسازد، به تنظیمات متناقض، هدر رفتن منابع یا حتی فایل‌های خراب می‌رسید. یک متغیر سراسری ساده دسترسی را آسان می‌کند، اما هر کسی می‌تواند آن را بازنویسی کند و هیچ چیز جلوی ساخته شدن نمونهٔ دوم را نمی‌گیرد."
+  },
+  "solution": {
+    "en": "Make the constructor `private` so no code outside the class can create an object. Add a static method `instance()` that creates the object on first use and returns the same reference on every later call. In modern C++ the cleanest form is a function-local `static` variable (**Meyers' Singleton**): it is created lazily, its initialization is thread-safe since C++11, and it is destroyed automatically when the program exits.",
+    "fa": "سازنده را `private` کنید تا هیچ کدی بیرون از کلاس نتواند شیء بسازد. یک متد استاتیک به نام `instance()` اضافه کنید که در اولین استفاده شیء را می‌سازد و در همهٔ فراخوانی‌های بعدی همان مرجع را برمی‌گرداند. در C++ مدرن تمیزترین شکل آن یک متغیر `static` محلی در تابع است (**Meyers' Singleton**): به‌صورت تنبل (lazy) ساخته می‌شود، مقداردهی اولیهٔ آن از C++11 به بعد thread-safe است و در پایان برنامه به‌طور خودکار نابود می‌شود."
+  },
+  "analogy": {
+    "en": "A country has one official government. Whoever you are, \"the government\" always refers to the same body, and you cannot simply create a second one — you reach it through a well-known, official channel.",
+    "fa": "هر کشور فقط یک دولت رسمی دارد. هر کسی که باشید، «دولت» همیشه به همان نهاد اشاره می‌کند و نمی‌توانید به‌سادگی یک دولت دوم بسازید؛ از طریق یک مسیر رسمی و شناخته‌شده به آن دسترسی پیدا می‌کنید."
+  },
+  "participants": [
+    {
+      "name": "Singleton",
+      "role": {
+        "en": "Declares the private constructor and the static `instance()` method, and owns the one and only object.",
+        "fa": "سازندهٔ private و متد استاتیک `instance()` را تعریف می‌کند و مالک تنها شیء موجود است."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Any code that needs the shared object; it calls `Singleton::instance()` instead of constructing one.",
+        "fa": "هر کدی که به شیء مشترک نیاز دارد؛ به‌جای ساختن شیء، `Singleton::instance()` را صدا می‌زند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 0
+      },
+      {
+        "id": "Singleton",
+        "kind": "concrete",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "- Singleton()",
+          "+ instance() : Singleton&",
+          "+ operation()"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "Client",
+        "to": "Singleton",
+        "type": "uses",
+        "label": "instance()"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Make the constructor `private` (or `protected`) so nobody can call it from outside.",
+      "Delete the copy and move operations so the instance cannot be duplicated.",
+      "Add `static Singleton& instance()` containing a local `static Singleton obj;` and return it.",
+      "Replace every direct construction in client code with calls to `Singleton::instance()`."
+    ],
+    "fa": [
+      "سازنده را `private` (یا `protected`) کنید تا کسی از بیرون نتواند آن را صدا بزند.",
+      "عملیات کپی و انتقال (move) را delete کنید تا نمونه قابل تکثیر نباشد.",
+      "متد `static Singleton& instance()` را با یک متغیر محلی `static Singleton obj;` بنویسید و آن را برگردانید.",
+      "در کد کلاینت هر جا مستقیم شیء ساخته شده، آن را با فراخوانی `Singleton::instance()` جایگزین کنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "There must be exactly one instance of a class and clients need a well-known access point to it.",
+      "The single instance is expensive or has side effects, so it should be created lazily on first use.",
+      "You need stricter control than a plain global variable (no reassignment, no second instance)."
+    ],
+    "fa": [
+      "باید دقیقاً یک نمونه از کلاس وجود داشته باشد و کلاینت‌ها به یک نقطهٔ دسترسی مشخص نیاز دارند.",
+      "ساختن آن نمونه پرهزینه است یا اثر جانبی دارد و بهتر است به‌صورت تنبل در اولین استفاده ساخته شود.",
+      "به کنترلی سخت‌گیرانه‌تر از یک متغیر سراسری ساده نیاز دارید (بدون مقداردهی دوباره و بدون نمونهٔ دوم)."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Guarantees a single instance, enforced by the compiler.",
+      "Lazy initialization: the object is only built when first needed.",
+      "Meyers' Singleton is thread-safe and needs no manual locking or `delete`."
+    ],
+    "fa": [
+      "وجود فقط یک نمونه را تضمین می‌کند و کامپایلر آن را اجبار می‌کند.",
+      "مقداردهی تنبل: شیء فقط وقتی برای اولین بار لازم شود ساخته می‌شود.",
+      "Meyers' Singleton ذاتاً thread-safe است و به قفل دستی یا `delete` نیاز ندارد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "It is global state in disguise: hidden dependencies make code harder to reason about.",
+      "Hard to unit-test — you cannot easily swap the instance for a mock.",
+      "Destruction order between singletons in different translation units is hard to control."
+    ],
+    "fa": [
+      "در واقع همان وضعیت سراسری با ظاهری دیگر است؛ وابستگی‌های پنهان، درک کد را سخت‌تر می‌کنند.",
+      "تست واحد آن دشوار است؛ نمی‌توان به‌راحتی نمونه را با یک mock عوض کرد.",
+      "کنترل ترتیب نابودی سینگلتون‌هایی که در فایل‌های مختلف (translation unit) هستند دشوار است."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Prefer the function-local static (Meyers' Singleton) over `new` + a static pointer: it is thread-safe and never leaks.",
+      "Always `= delete` the copy constructor and copy assignment, otherwise `auto cfg = Config::instance();` silently makes a copy.",
+      "Return a reference (`T&`), not a pointer, so callers cannot `delete` the instance.",
+      "Consider dependency injection first: pass the object to the code that needs it and keep the singleton only at the application's edge."
+    ],
+    "fa": [
+      "متغیر استاتیک محلی (Meyers' Singleton) را به `new` همراه با یک اشاره‌گر استاتیک ترجیح دهید: thread-safe است و هیچ‌وقت نشت حافظه ندارد.",
+      "همیشه سازندهٔ کپی و عملگر انتساب کپی را `= delete` کنید؛ وگرنه `auto cfg = Config::instance();` بی‌صدا یک کپی می‌سازد.",
+      "یک مرجع (`T&`) برگردانید نه اشاره‌گر، تا فراخوان نتواند نمونه را `delete` کند.",
+      "اول تزریق وابستگی (dependency injection) را در نظر بگیرید: شیء را به کدی که لازمش دارد پاس بدهید و سینگلتون را فقط در لبهٔ برنامه نگه دارید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::cout`, `std::cerr` and `std::cin` are single, globally accessible stream objects.",
+      "Loggers such as spdlog's default logger and application-wide settings objects (e.g. `QCoreApplication::instance()` in Qt)."
+    ],
+    "fa": [
+      "`std::cout`، `std::cerr` و `std::cin` اشیای جریان یکتایی هستند که به‌صورت سراسری در دسترس‌اند.",
+      "لاگرها مثل لاگر پیش‌فرض spdlog و اشیای تنظیمات سراسری برنامه (مثلاً `QCoreApplication::instance()` در Qt)."
+    ]
+  },
+  "related": [
+    {
+      "id": "abstract-factory",
+      "note": {
+        "en": "An application usually needs only one concrete factory, so factories are often implemented as singletons.",
+        "fa": "یک برنامه معمولاً فقط به یک کارخانهٔ مشخص نیاز دارد، به همین دلیل کارخانه‌ها اغلب به شکل سینگلتون پیاده‌سازی می‌شوند."
+      }
+    },
+    {
+      "id": "facade",
+      "note": {
+        "en": "A facade object is frequently a singleton because one simplified entry point is enough.",
+        "fa": "شیء نما (Facade) اغلب سینگلتون است، چون یک نقطهٔ ورود ساده‌شده کافی است."
+      }
+    },
+    {
+      "id": "flyweight",
+      "note": {
+        "en": "Flyweight also shares objects, but it manages many shared instances (one per intrinsic state) instead of exactly one.",
+        "fa": "فلای‌ویت هم اشیا را به اشتراک می‌گذارد، اما به‌جای دقیقاً یک نمونه، تعداد زیادی نمونهٔ مشترک (یکی برای هر وضعیت درونی) را مدیریت می‌کند."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "A shared application configuration",
+      "fa": "تنظیمات مشترک برنامه"
+    },
+    "description": {
+      "en": "`AppConfig` can only be reached through `instance()`. Notice that the constructor runs after `main()` starts (lazy creation) and only once, and that the renderer sees the value set in `main()` without receiving any parameter.",
+      "fa": "به `AppConfig` فقط از طریق `instance()` می‌توان دسترسی داشت. دقت کنید که سازنده بعد از شروع `main()` اجرا می‌شود (ساخت تنبل) و فقط یک بار، و تابع رندر بدون گرفتن هیچ پارامتری مقداری را که در `main()` تنظیم شده می‌بیند."
+    },
+    "output": "main() starts\n[AppConfig] defaults loaded\nrenderer uses theme: dark\nsame object: true\nconstructor ran 1 time(s)",
+    "highlights": [
+      {
+        "lines": [
+          8,
+          13
+        ],
+        "note": {
+          "en": "The access point. The local `static` is constructed the first time control passes through it — exactly once, and thread-safe since C++11.",
+          "fa": "نقطهٔ دسترسی. متغیر `static` محلی اولین باری که اجرا به آن برسد ساخته می‌شود؛ دقیقاً یک بار و از C++11 به بعد به‌صورت thread-safe."
+        }
+      },
+      {
+        "lines": [
+          15,
+          19
+        ],
+        "note": {
+          "en": "Deleted copy and move operations make it impossible to duplicate the instance by accident.",
+          "fa": "حذف عملیات کپی و انتقال باعث می‌شود تکثیر تصادفی نمونه غیرممکن شود."
+        }
+      },
+      {
+        "lines": [
+          30,
+          35
+        ],
+        "note": {
+          "en": "The private constructor: only `instance()`, a member of the class, is allowed to call it.",
+          "fa": "سازندهٔ private: فقط `instance()` که عضو خود کلاس است اجازهٔ صدا زدن آن را دارد."
+        }
+      },
+      {
+        "lines": [
+          46,
+          54
+        ],
+        "note": {
+          "en": "Every call to `instance()` returns the same object, so both references have the same address.",
+          "fa": "هر فراخوانی `instance()` همان شیء را برمی‌گرداند، بنابراین هر دو مرجع آدرس یکسانی دارند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Why is the constructor of a Singleton made private?",
+        "fa": "چرا سازندهٔ یک سینگلتون private می‌شود؟"
+      },
+      "options": {
+        "en": [
+          "To make the object faster to construct",
+          "So that code outside the class cannot create additional instances",
+          "Because static methods can only call private constructors",
+          "To allow derived classes to override it"
+        ],
+        "fa": [
+          "برای این‌که ساخت شیء سریع‌تر شود",
+          "تا کدِ بیرون از کلاس نتواند نمونه‌های اضافه بسازد",
+          "چون متدهای استاتیک فقط می‌توانند سازنده‌های private را صدا بزنند",
+          "تا کلاس‌های مشتق‌شده بتوانند آن را override کنند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "A private constructor means only members of the class — i.e. `instance()` — can create the object, which is what enforces the \"only one\" rule.",
+        "fa": "سازندهٔ private یعنی فقط اعضای خود کلاس (یعنی `instance()`) می‌توانند شیء را بسازند؛ همین قانون «فقط یکی» را اجبار می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "What makes `static T& instance() { static T obj; return obj; }` thread-safe in C++11 and later?",
+        "fa": "چه چیزی باعث می‌شود `static T& instance() { static T obj; return obj; }` در C++11 و بعد از آن thread-safe باشد؟"
+      },
+      "options": {
+        "en": [
+          "The `static` keyword on the method",
+          "Returning a reference instead of a pointer",
+          "The standard guarantees a function-local static is initialized exactly once, even with concurrent callers",
+          "It is not thread-safe; you must add a `std::mutex`"
+        ],
+        "fa": [
+          "کلیدواژهٔ `static` روی متد",
+          "برگرداندن مرجع به‌جای اشاره‌گر",
+          "استاندارد تضمین می‌کند متغیر استاتیک محلی دقیقاً یک بار مقداردهی شود، حتی با فراخوانی هم‌زمان",
+          "thread-safe نیست؛ باید یک `std::mutex` اضافه کنید"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Since C++11 (\"magic statics\"), if several threads reach the declaration at once, one initializes it and the others wait. No manual locking is needed for the creation itself.",
+        "fa": "از C++11 به بعد (معروف به «magic statics») اگر چند نخ هم‌زمان به این تعریف برسند، یکی مقداردهی می‌کند و بقیه منتظر می‌مانند. برای خودِ ساخت شیء نیازی به قفل دستی نیست."
+      }
+    },
+    {
+      "question": {
+        "en": "A singleton class `Config` forgot to delete its copy constructor. What does `auto cfg = Config::instance();` do?",
+        "fa": "در کلاس سینگلتون `Config` فراموش شده سازندهٔ کپی delete شود. `auto cfg = Config::instance();` چه می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "It silently creates a copy — changes to `cfg` no longer affect the singleton",
+          "It binds `cfg` as a reference to the singleton",
+          "It causes a compile error",
+          "It moves the singleton into `cfg`"
+        ],
+        "fa": [
+          "بی‌صدا یک کپی می‌سازد؛ تغییرات `cfg` دیگر روی سینگلتون اثری ندارد",
+          "`cfg` را به‌عنوان مرجعی به سینگلتون مقید می‌کند",
+          "خطای کامپایل می‌دهد",
+          "سینگلتون را به داخل `cfg` منتقل می‌کند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "`auto` deduces a value type, so this is a copy. That is a classic bug — deleting the copy constructor turns it into a compile error, and you would write `auto& cfg = ...` instead.",
+        "fa": "`auto` یک نوع مقداری استنتاج می‌کند، پس این یک کپی است. این یک باگ کلاسیک است؛ با delete کردن سازندهٔ کپی به خطای کامپایل تبدیل می‌شود و به‌جای آن `auto& cfg = ...` می‌نویسید."
+      }
+    },
+    {
+      "question": {
+        "en": "What is the most common criticism of the Singleton pattern?",
+        "fa": "رایج‌ترین انتقاد به الگوی سینگلتون چیست؟"
+      },
+      "options": {
+        "en": [
+          "It uses too much memory",
+          "It cannot be implemented in C++",
+          "It always causes memory leaks",
+          "It introduces hidden global state that makes testing and reasoning harder"
+        ],
+        "fa": [
+          "حافظهٔ زیادی مصرف می‌کند",
+          "در C++ قابل پیاده‌سازی نیست",
+          "همیشه باعث نشت حافظه می‌شود",
+          "وضعیت سراسری پنهانی ایجاد می‌کند که تست و درک کد را سخت‌تر می‌کند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Code that calls `instance()` has a dependency that does not appear in its signature, and tests cannot easily replace the instance. Use it sparingly.",
+        "fa": "کدی که `instance()` را صدا می‌زند وابستگی‌ای دارد که در امضای آن دیده نمی‌شود و تست‌ها نمی‌توانند به‌راحتی نمونه را عوض کنند. با احتیاط از آن استفاده کنید."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Your game engine needs exactly one audio mixer that the UI, the physics system and cutscenes can all reach without passing it through every function.",
+      "fa": "موتور بازی شما دقیقاً به یک میکسر صدا نیاز دارد که رابط کاربری، سیستم فیزیک و میان‌پرده‌ها بدون پاس دادنش به همهٔ توابع به آن دسترسی داشته باشند."
+    },
+    {
+      "en": "All modules must write to one shared log file; opening the file twice would interleave and corrupt the output.",
+      "fa": "همهٔ ماژول‌ها باید در یک فایل لاگ مشترک بنویسند؛ دو بار باز کردن فایل باعث درهم‌ریختگی و خرابی خروجی می‌شود."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "One ID generator for everyone",
+      "fa": "یک مولد شناسه برای همه"
+    },
+    "task": {
+      "en": "`createUser()` and `createOrder()` each build their own `IdGenerator`, so they hand out duplicate IDs (`user#1`, `order#1`, `user#1`). Turn `IdGenerator` into a Singleton so the whole program shares one counter and prints `user#1`, `order#2`, `user#3`.",
+      "fa": "`createUser()` و `createOrder()` هر کدام `IdGenerator` خودشان را می‌سازند و به همین دلیل شناسهٔ تکراری تولید می‌کنند (`user#1`، `order#1`، `user#1`). `IdGenerator` را به یک سینگلتون تبدیل کنید تا کل برنامه از یک شمارندهٔ مشترک استفاده کند و خروجی `user#1`، `order#2`، `user#3` شود."
+    },
+    "hints": {
+      "en": [
+        "Move `IdGenerator() = default;` into the `private:` section.",
+        "Inside `static IdGenerator& instance()` declare `static IdGenerator generator;` and return it.",
+        "In both functions replace the local `gen` with `IdGenerator::instance().next()`."
+      ],
+      "fa": [
+        "`IdGenerator() = default;` را به بخش `private:` منتقل کنید.",
+        "داخل `static IdGenerator& instance()` متغیر `static IdGenerator generator;` را تعریف و آن را برگردانید.",
+        "در هر دو تابع، متغیر محلی `gen` را با `IdGenerator::instance().next()` جایگزین کنید."
+      ]
+    },
+    "expectedOutput": "user#1\norder#2\nuser#3"
+  }
+}

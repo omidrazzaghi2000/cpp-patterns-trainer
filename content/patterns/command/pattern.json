@@ -1,0 +1,470 @@
+{
+  "id": "command",
+  "category": "behavioral",
+  "order": 2,
+  "difficulty": 2,
+  "icon": "undo-2",
+  "name": {
+    "en": "Command",
+    "fa": "کامند (فرمان)"
+  },
+  "aka": {
+    "en": "Action, Transaction",
+    "fa": "Action یا Transaction (عملیات، تراکنش)"
+  },
+  "tagline": {
+    "en": "Turn a request into an object you can store, queue and undo.",
+    "fa": "درخواست به شیئی تبدیل می‌شود که می‌توان ذخیره‌اش کرد، در صف گذاشت و برگرداند."
+  },
+  "intent": {
+    "en": "Encapsulate a request as an object, so you can parameterize clients with different requests, queue or log requests, and support undoable operations.",
+    "fa": "یک درخواست را در قالب یک شیء کپسوله می‌کند تا بتوان کلاینت‌ها را با درخواست‌های مختلف پیکربندی کرد، درخواست‌ها را در صف گذاشت یا ثبت کرد و از عملیات برگشت‌پذیر (undo) پشتیبانی کرد."
+  },
+  "problem": {
+    "en": "A music app lets users add and remove tracks from menus, keyboard shortcuts and drag-and-drop. Each UI element calls `Playlist` methods directly, so undo is nearly impossible: once `removeAt(0)` has run, nobody remembers **which** track was removed or where it was. Supporting undo would mean every button keeping its own private history, and the same edit triggered from a shortcut and from a menu would be implemented twice.",
+    "fa": "یک اپ موسیقی به کاربر اجازه می‌دهد از طریق منوها، میان‌برهای کیبورد و drag-and-drop آهنگ اضافه یا حذف کند. هر عنصر رابط کاربری مستقیماً متدهای `Playlist` را صدا می‌زند، پس undo تقریباً غیرممکن است: وقتی `removeAt(0)` اجرا شد، دیگر هیچ‌کس یادش نیست **کدام** آهنگ حذف شد و کجا بود. پشتیبانی از undo یعنی هر دکمه تاریخچهٔ خصوصی خودش را نگه دارد و یک ویرایش یکسان که هم از میان‌بر و هم از منو اجرا می‌شود، دو بار پیاده‌سازی شود."
+  },
+  "solution": {
+    "en": "Wrap each operation in a command object with a common interface — `execute()` and `undo()`. The command stores the receiver it acts on, its parameters and whatever it needs to reverse itself (the removed track and its position). UI elements — the invokers — just create and run commands; an `EditHistory` keeps executed commands on a stack, so undo means popping the latest command and calling its `undo()`.",
+    "fa": "هر عملیات را در یک شیء کامند با رابط مشترک `execute()` و `undo()` بپیچید. کامند گیرنده‌ای (receiver) که رویش کار می‌کند، پارامترهایش و هر چیزی را که برای برگرداندن خودش لازم دارد (آهنگ حذف‌شده و جایگاهش) نگه می‌دارد. عناصر رابط کاربری، یعنی فراخواننده‌ها (invoker)، فقط کامند می‌سازند و اجرا می‌کنند؛ یک `EditHistory` کامندهای اجراشده را روی یک پشته نگه می‌دارد، پس undo یعنی برداشتن آخرین کامند از پشته و صدا زدن `undo()` آن."
+  },
+  "analogy": {
+    "en": "An order slip in a restaurant. The waiter doesn't cook; they write the order on a slip and put it in the kitchen queue. The slip can wait, be reordered, be handed to any cook or be torn up if the guest changes their mind — and it records exactly what was asked for.",
+    "fa": "برگهٔ سفارش در رستوران. گارسون آشپزی نمی‌کند؛ سفارش را روی یک برگه می‌نویسد و در صف آشپزخانه می‌گذارد. برگه می‌تواند منتظر بماند، جابه‌جا شود، به هر آشپزی سپرده شود یا اگر مشتری نظرش عوض شد پاره شود؛ و دقیقاً همان چیزی را که خواسته شده ثبت کرده است."
+  },
+  "participants": [
+    {
+      "name": "Command",
+      "role": {
+        "en": "Interface for performing an operation and, for undo, reversing it: `execute()`, `undo()`.",
+        "fa": "رابطی برای انجام یک عملیات و در صورت نیاز برگرداندن آن: `execute()` و `undo()`."
+      }
+    },
+    {
+      "name": "ConcreteCommand",
+      "role": {
+        "en": "Binds a receiver to an action and stores the parameters plus the state needed to undo it (`AddTrack`, `RemoveTrack`).",
+        "fa": "یک گیرنده را به یک عمل مشخص گره می‌زند و پارامترها و وضعیت لازم برای undo را نگه می‌دارد (`AddTrack`، `RemoveTrack`)."
+      }
+    },
+    {
+      "name": "Receiver",
+      "role": {
+        "en": "Knows how to do the actual work and knows nothing about commands or undo (`Playlist`).",
+        "fa": "می‌داند کار واقعی را چطور انجام دهد و هیچ چیزی دربارهٔ کامندها یا undo نمی‌داند (`Playlist`)."
+      }
+    },
+    {
+      "name": "Invoker",
+      "role": {
+        "en": "Asks commands to execute and keeps the history for undo (`EditHistory`); it never calls the receiver directly.",
+        "fa": "از کامندها می‌خواهد اجرا شوند و تاریخچه را برای undo نگه می‌دارد (`EditHistory`)؛ هرگز مستقیماً گیرنده را صدا نمی‌زند."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Creates concrete commands, wires them to their receiver and hands them to the invoker (`main()`).",
+        "fa": "کامندهای مشخص را می‌سازد، آن‌ها را به گیرنده‌شان وصل می‌کند و به فراخواننده تحویل می‌دهد (`main()`)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Invoker",
+        "kind": "concrete",
+        "col": 1,
+        "row": 0,
+        "members": [
+          "- history_ : vector<Command>",
+          "+ run(cmd)",
+          "+ undo()"
+        ]
+      },
+      {
+        "id": "Command",
+        "kind": "interface",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "+ execute()",
+          "+ undo()"
+        ]
+      },
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 1
+      },
+      {
+        "id": "ConcreteCommand",
+        "kind": "concrete",
+        "col": 2,
+        "row": 1,
+        "members": [
+          "- receiver_ : Receiver&",
+          "- backup_ : State",
+          "+ execute()",
+          "+ undo()"
+        ]
+      },
+      {
+        "id": "Receiver",
+        "kind": "concrete",
+        "col": 3,
+        "row": 1,
+        "members": [
+          "+ action()"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "Client",
+        "to": "Invoker",
+        "type": "uses",
+        "label": "run(cmd)"
+      },
+      {
+        "from": "Client",
+        "to": "ConcreteCommand",
+        "type": "creates"
+      },
+      {
+        "from": "Invoker",
+        "to": "Command",
+        "type": "owns",
+        "label": "history_"
+      },
+      {
+        "from": "ConcreteCommand",
+        "to": "Command",
+        "type": "implements"
+      },
+      {
+        "from": "ConcreteCommand",
+        "to": "Receiver",
+        "type": "refs",
+        "label": "receiver_"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Declare a `Command` interface with `execute()` — plus `undo()` if you need it.",
+      "For each operation write a concrete command that holds a reference to the receiver and the operation's parameters.",
+      "In `execute()`, save whatever is needed to reverse the change (old value, removed element, position), then call the receiver.",
+      "Implement `undo()` using only that saved state and the receiver.",
+      "Let the invoker own executed commands in a `std::vector<std::unique_ptr<Command>>` and undo the most recent one first; for redo, move undone commands to a second stack and clear it on every new command.",
+      "Make clients create commands and hand them to the invoker instead of calling the receiver directly."
+    ],
+    "fa": [
+      "یک رابط `Command` با متد `execute()` تعریف کنید و اگر لازم است `undo()` را هم اضافه کنید.",
+      "برای هر عملیات یک کامند مشخص بنویسید که ارجاعی به گیرنده و پارامترهای عملیات را نگه دارد.",
+      "در `execute()` هر چیزی را که برای برگرداندن تغییر لازم است (مقدار قبلی، عنصر حذف‌شده، جایگاه) ذخیره کنید و بعد گیرنده را صدا بزنید.",
+      "`undo()` را فقط با همان وضعیت ذخیره‌شده و گیرنده پیاده‌سازی کنید.",
+      "بگذارید فراخواننده مالک کامندهای اجراشده در یک `std::vector<std::unique_ptr<Command>>` باشد و هنگام undo اول جدیدترین را برگرداند؛ برای redo، کامندهای برگشت‌خورده را به پشتهٔ دوم منتقل کنید و با هر کامند جدید آن را خالی کنید.",
+      "کلاینت‌ها به‌جای صدا زدن مستقیم گیرنده، کامند بسازند و آن را به فراخواننده بدهند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You need undo/redo.",
+      "Requests must be queued, scheduled or executed later — or on another thread (job queues, thread pools).",
+      "Operations must be logged so they can be replayed after a crash or recorded as macros.",
+      "The same action is triggered from several places (menu, toolbar, shortcut) and UI elements should be configured with actions rather than hard-wired to them."
+    ],
+    "fa": [
+      "به undo/redo نیاز دارید.",
+      "درخواست‌ها باید در صف قرار بگیرند، زمان‌بندی شوند یا بعداً (یا روی نخ دیگری) اجرا شوند؛ مثل صف کارها و thread pool.",
+      "عملیات باید ثبت شوند تا بعد از کرش دوباره اجرا شوند یا به‌صورت ماکرو ضبط شوند.",
+      "یک عمل از چند جا اجرا می‌شود (منو، نوار ابزار، میان‌بر) و عناصر رابط کاربری باید با عمل‌ها پیکربندی شوند، نه این‌که به‌طور ثابت به آن‌ها گره خورده باشند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Decouples the object that triggers an operation from the one that performs it.",
+      "Undo/redo, macros, logging and deferred execution become straightforward.",
+      "Open/Closed: new commands can be added without changing the invoker or existing commands.",
+      "Commands can be combined into composite macro commands."
+    ],
+    "fa": [
+      "شیئی را که عملیات را راه می‌اندازد از شیئی که آن را انجام می‌دهد جدا می‌کند.",
+      "undo/redo، ماکرو، ثبت عملیات و اجرای تأخیری ساده می‌شوند.",
+      "اصل باز/بسته: می‌توان کامندهای جدید اضافه کرد بدون تغییر فراخواننده یا کامندهای موجود.",
+      "کامندها را می‌توان در قالب ماکروهای ترکیبی (composite) کنار هم گذاشت."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Many small classes — one per operation.",
+      "Undo is only as correct as the state each command saves; if the receiver is changed outside the history, undo can corrupt it.",
+      "Long histories cost memory, especially when commands keep large backups."
+    ],
+    "fa": [
+      "کلاس‌های کوچک زیاد؛ یکی برای هر عملیات.",
+      "undo فقط به اندازهٔ وضعیتی که هر کامند ذخیره می‌کند درست است؛ اگر گیرنده بیرون از تاریخچه تغییر کند، undo می‌تواند آن را خراب کند.",
+      "تاریخچه‌های طولانی حافظه مصرف می‌کنند، مخصوصاً وقتی کامندها نسخهٔ پشتیبان بزرگی نگه می‌دارند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Store the history as `std::vector<std::unique_ptr<Command>>`: ownership is explicit, and the `virtual` destructor makes deleting through the base pointer safe.",
+      "Capture undo state inside `execute()`, not in the constructor — the receiver may change between creating and running the command, and redo runs `execute()` again.",
+      "A command holding a `Receiver&` must not outlive the receiver; keep the history next to the document it edits, or use `std::weak_ptr` when lifetimes are unclear.",
+      "For fire-and-forget actions without undo, a `std::function<void()>` holding a lambda is a perfectly good command; classes pay off once you need more than one operation (execute, undo, label, merge…).",
+      "Give commands a `label()` so menus can show \"Undo remove So What\"."
+    ],
+    "fa": [
+      "تاریخچه را به‌صورت `std::vector<std::unique_ptr<Command>>` نگه دارید: مالکیت صریح است و مخرب `virtual` باعث می‌شود حذف از طریق اشاره‌گر کلاس پایه امن باشد.",
+      "وضعیت لازم برای undo را داخل `execute()` بگیرید، نه در سازنده؛ ممکن است گیرنده بین ساخته شدن و اجرای کامند تغییر کند و redo هم دوباره `execute()` را اجرا می‌کند.",
+      "کامندی که `Receiver&` نگه می‌دارد نباید بیشتر از گیرنده عمر کند؛ تاریخچه را کنار همان سندی نگه دارید که ویرایشش می‌کند، یا وقتی طول عمرها مشخص نیست از `std::weak_ptr` استفاده کنید.",
+      "برای عمل‌های «اجرا کن و فراموش کن» که undo ندارند، یک `std::function<void()>` حاوی lambda کامند کاملاً مناسبی است؛ کلاس‌ها وقتی ارزششان را نشان می‌دهند که به بیش از یک عملیات (اجرا، undo، برچسب، ادغام و…) نیاز داشته باشید.",
+      "به کامندها یک `label()` بدهید تا منوها بتوانند متنی مثل «Undo remove So What» نشان دهند."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt's `QUndoCommand` / `QUndoStack` (with `redo()` and `undo()`) power undo in Qt Designer and many other Qt-based editors.",
+      "`std::function`, `std::packaged_task` and thread-pool job queues store callable requests to be run later.",
+      "Editors such as VS Code bind menus, keyboard shortcuts and the command palette to named commands.",
+      "Database write-ahead logs and event sourcing record operations so they can be replayed or rolled back."
+    ],
+    "fa": [
+      "`QUndoCommand` و `QUndoStack` در Qt (با متدهای `redo()` و `undo()`) قابلیت undo را در Qt Designer و بسیاری از ویرایشگرهای دیگرِ مبتنی بر Qt فراهم می‌کنند.",
+      "`std::function`، `std::packaged_task` و صف کارهای thread pool درخواست‌های قابل فراخوانی را برای اجرای بعدی نگه می‌دارند.",
+      "ویرایشگرهایی مثل VS Code منوها، میان‌برهای کیبورد و command palette را به کامندهای نام‌دار وصل می‌کنند.",
+      "write-ahead log در پایگاه‌های داده و event sourcing عملیات را ثبت می‌کنند تا بتوان آن‌ها را دوباره اجرا یا برگشت داد."
+    ]
+  },
+  "related": [
+    {
+      "id": "memento",
+      "note": {
+        "en": "A command can take a memento of the receiver before executing and restore it in `undo()` — handy when the reverse operation is hard to compute.",
+        "fa": "کامند می‌تواند پیش از اجرا یک memento از گیرنده بگیرد و در `undo()` آن را بازگرداند؛ وقتی محاسبهٔ عملیات معکوس سخت است، این روش خیلی به کار می‌آید."
+      }
+    },
+    {
+      "id": "composite",
+      "note": {
+        "en": "A macro command is a composite: it executes its child commands in order and undoes them in reverse order.",
+        "fa": "ماکرو کامند یک کامپوزیت است: فرزندانش را به‌ترتیب اجرا و به ترتیب معکوس undo می‌کند."
+      }
+    },
+    {
+      "id": "strategy",
+      "note": {
+        "en": "Both wrap behaviour in objects. A strategy is **how** to do one job (interchangeable algorithms); a command is **what** to do — a request that can be queued, logged or undone.",
+        "fa": "هر دو رفتار را در قالب شیء می‌پیچند. استراتژی **چگونگی** انجام یک کار است (الگوریتم‌های قابل تعویض)؛ کامند **چه کاری** است که باید انجام شود؛ درخواستی که می‌شود در صف گذاشت، ثبت کرد یا برگرداند."
+      }
+    },
+    {
+      "id": "chain-of-responsibility",
+      "note": {
+        "en": "Requests passed along a chain of handlers are often command objects.",
+        "fa": "درخواست‌هایی که در زنجیرهٔ هندلرها دست‌به‌دست می‌شوند اغلب اشیای کامند هستند."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "An undoable playlist editor",
+      "fa": "ویرایشگر لیست پخش با قابلیت undo"
+    },
+    "description": {
+      "en": "Every edit is an object handed to `EditHistory`. `RemoveTrack` remembers the track it removed, so undoing it puts **So What** back at position 0; `AddTrack` remembers where it inserted. The invoker never calls `Playlist` itself.",
+      "fa": "هر ویرایش شیئی است که به `EditHistory` تحویل داده می‌شود. `RemoveTrack` آهنگی را که حذف کرده به خاطر می‌سپارد، پس undo کردنش **So What** را به جایگاه ۰ برمی‌گرداند؛ `AddTrack` هم یادش می‌ماند آهنگ را کجا اضافه کرده است. فراخواننده هیچ‌وقت خودش `Playlist` را صدا نمی‌زند."
+    },
+    "output": "do   add So What\ndo   add Take Five\ndo   remove So What\n  playlist: [Take Five]\nundo remove So What\nundo add Take Five\n  playlist: [So What]",
+    "highlights": [
+      {
+        "lines": [
+          30,
+          37
+        ],
+        "note": {
+          "en": "The Command interface: every operation can perform itself, reverse itself and describe itself for the UI.",
+          "fa": "رابط Command: هر عملیات می‌تواند خودش را اجرا کند، خودش را برگرداند و برای رابط کاربری توضیحی از خودش بدهد."
+        }
+      },
+      {
+        "lines": [
+          51,
+          61
+        ],
+        "note": {
+          "en": "`RemoveTrack` saves the removed track in `execute()` — exactly the state `undo()` needs to put it back.",
+          "fa": "`RemoveTrack` آهنگ حذف‌شده را در `execute()` ذخیره می‌کند؛ دقیقاً همان وضعیتی که `undo()` برای برگرداندنش لازم دارد."
+        }
+      },
+      {
+        "lines": [
+          66,
+          70
+        ],
+        "note": {
+          "en": "The invoker executes the command and then takes ownership of it; the history is a stack of `unique_ptr`s.",
+          "fa": "فراخواننده کامند را اجرا می‌کند و بعد مالکیتش را برعهده می‌گیرد؛ تاریخچه پشته‌ای از `unique_ptr`هاست."
+        }
+      },
+      {
+        "lines": [
+          71,
+          76
+        ],
+        "note": {
+          "en": "Undo is LIFO: the most recent command is reversed first and then dropped from the history.",
+          "fa": "undo به‌صورت LIFO کار می‌کند: جدیدترین کامند اول برگردانده و سپس از تاریخچه حذف می‌شود."
+        }
+      },
+      {
+        "lines": [
+          82,
+          90
+        ],
+        "note": {
+          "en": "The client creates commands bound to a receiver and hands them to the invoker instead of editing the playlist directly.",
+          "fa": "کلاینت کامندهایی می‌سازد که به یک گیرنده وصل‌اند و به‌جای ویرایش مستقیم لیست پخش، آن‌ها را به فراخواننده می‌دهد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Why does turning `playlist.removeAt(0)` into a `RemoveTrack` object make undo possible?",
+        "fa": "چرا تبدیل `playlist.removeAt(0)` به یک شیء `RemoveTrack` امکان undo را فراهم می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "The object can remember what it removed and where, and it lives on in a history after it has run",
+          "Objects execute faster than direct method calls",
+          "The receiver automatically records every change",
+          "The compiler can generate the reverse of any virtual function"
+        ],
+        "fa": [
+          "این شیء می‌تواند به خاطر بسپارد چه چیزی را از کجا حذف کرده و پس از اجرا هم در تاریخچه باقی می‌ماند",
+          "اشیا سریع‌تر از فراخوانی مستقیم متدها اجرا می‌شوند",
+          "گیرنده به‌طور خودکار هر تغییری را ثبت می‌کند",
+          "کامپایلر می‌تواند معکوس هر تابع virtual را تولید کند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "A direct call is gone once it returns. A command is data: it carries its parameters and the state it captured, and the history keeps it alive so `undo()` can use that state later.",
+        "fa": "فراخوانی مستقیم بعد از برگشتن از بین می‌رود. کامند یک داده است: پارامترها و وضعیتی را که ثبت کرده با خودش دارد و تاریخچه آن را زنده نگه می‌دارد تا بعداً `undo()` از همان وضعیت استفاده کند."
+      }
+    },
+    {
+      "question": {
+        "en": "Where does `RemoveTrack` capture the track that `undo()` will need?",
+        "fa": "`RemoveTrack` آهنگی را که `undo()` لازم دارد کجا ذخیره می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "In its constructor, because the constructor runs first",
+          "In `undo()`, by asking the playlist what was removed",
+          "In `execute()`, because only then is the receiver in the state that is about to change",
+          "In the invoker, which keeps a copy of the whole playlist"
+        ],
+        "fa": [
+          "در سازنده، چون سازنده اول اجرا می‌شود",
+          "در `undo()`، با پرسیدن از لیست پخش که چه چیزی حذف شده",
+          "در `execute()`، چون فقط در همان لحظه گیرنده در وضعیتی است که قرار است تغییر کند",
+          "در فراخواننده، که یک کپی از کل لیست پخش نگه می‌دارد"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A command may be created long before it runs (or re-run by redo), so the only reliable moment to capture \"what I'm about to change\" is inside `execute()`. The receiver knows nothing about undo, and copying the whole playlist would be Memento, not Command.",
+        "fa": "ممکن است کامند مدت‌ها پیش از اجرا ساخته شود (یا با redo دوباره اجرا شود)، پس تنها لحظهٔ مطمئن برای ثبت «چیزی که قرار است تغییر کند» داخل `execute()` است. گیرنده چیزی دربارهٔ undo نمی‌داند و کپی کردن کل لیست پخش هم رویکرد Memento است، نه Command."
+      }
+    },
+    {
+      "question": {
+        "en": "In which situation is a full Command class hierarchy probably overkill?",
+        "fa": "در کدام وضعیت یک سلسله‌مراتب کامل از کلاس‌های Command احتمالاً زیادی است؟"
+      },
+      "options": {
+        "en": [
+          "An editor with undo/redo across dozens of operations",
+          "A single button that calls one function, with no undo, queueing or logging",
+          "A job queue that runs requests on worker threads",
+          "Recording user actions to replay them as a macro"
+        ],
+        "fa": [
+          "ویرایشگری با undo/redo برای ده‌ها نوع عملیات",
+          "یک دکمهٔ تنها که یک تابع را صدا می‌زند و نه undo دارد، نه صف و نه ثبت عملیات",
+          "صف کاری که درخواست‌ها را روی نخ‌های کارگر اجرا می‌کند",
+          "ضبط کارهای کاربر برای اجرای دوباره به‌صورت ماکرو"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Without undo, queueing, logging or reuse, a class per action only adds ceremony — a lambda or `std::function<void()>` is enough. The other three are textbook uses of Command.",
+        "fa": "بدون undo، صف، ثبت یا استفادهٔ مجدد، ساختن یک کلاس برای هر عمل فقط تشریفات اضافه است؛ یک lambda یا `std::function<void()>` کافی است. سه گزینهٔ دیگر کاربردهای کلاسیک Command هستند."
+      }
+    },
+    {
+      "question": {
+        "en": "Command vs Memento for undo — what is the key difference?",
+        "fa": "تفاوت اصلی Command و Memento برای پیاده‌سازی undo چیست؟"
+      },
+      "options": {
+        "en": [
+          "Memento can only be used together with Command",
+          "A command stores whole snapshots, a memento stores operations",
+          "There is no difference; both store the receiver's full state",
+          "A command records the operation (and just enough data to reverse it); a memento records a snapshot of the object's state to restore"
+        ],
+        "fa": [
+          "Memento فقط همراه با Command قابل استفاده است",
+          "کامند کل وضعیت را ذخیره می‌کند و memento عملیات را",
+          "فرقی ندارند؛ هر دو کل وضعیت گیرنده را ذخیره می‌کنند",
+          "کامند عملیات را (به‌همراه دادهٔ کافی برای برگرداندنش) ثبت می‌کند؛ memento یک تصویر لحظه‌ای (snapshot) از وضعیت شیء را برای بازگرداندن نگه می‌دارد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Command-based undo is usually cheap — `RemoveTrack` stores one string — but needs an inverse for every operation. Memento-based undo stores snapshots: simpler when the inverse is hard, but more memory. They combine well: a command can hold a memento.",
+        "fa": "undo مبتنی بر Command معمولاً کم‌هزینه است (`RemoveTrack` فقط یک رشته نگه می‌دارد)، اما برای هر عملیات به یک عملیات معکوس نیاز دارد. undo مبتنی بر Memento تصویر لحظه‌ای ذخیره می‌کند؛ وقتی معکوس کردن سخت است ساده‌تر است، اما حافظهٔ بیشتری مصرف می‌کند. این دو به‌خوبی با هم ترکیب می‌شوند: یک کامند می‌تواند یک memento نگه دارد."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Every change in a diagram editor — moving a shape, recolouring it, deleting it — must be reversible with Ctrl+Z and re-applicable with Ctrl+Y, in the right order.",
+      "fa": "هر تغییری در یک ویرایشگر نمودار (جابه‌جا کردن شکل، تغییر رنگ، حذف) باید با Ctrl+Z برگشت‌پذیر و با Ctrl+Y دوباره قابل اعمال باشد، آن هم به ترتیب درست."
+    },
+    {
+      "en": "A home-automation hub receives requests such as \"lights off at 23:00\" and \"close the blinds\" from a phone app, stores them in a queue and runs them later — even after a restart, from a log on disk.",
+      "fa": "یک هاب خانهٔ هوشمند درخواست‌هایی مثل «ساعت ۲۳ چراغ‌ها را خاموش کن» و «پرده‌ها را ببند» را از اپ موبایل می‌گیرد، در یک صف نگه می‌دارد و بعداً اجرا می‌کند؛ حتی پس از راه‌اندازی مجدد، از روی یک فایل ثبت روی دیسک."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "Undo for a smart thermostat",
+      "fa": "قابلیت undo برای ترموستات هوشمند"
+    },
+    "task": {
+      "en": "The phone app can change the thermostat, but undo does nothing: after two changes (23 °C, then 18 °C) every undo still shows 18. Complete the Command pattern: `SetTemperature` must remember the previous target when it executes and restore it in `undo()`, and `RemoteApp` must keep executed commands and undo them newest-first. Undoing with an empty history must be harmless.",
+      "fa": "اپ موبایل می‌تواند دمای ترموستات را تغییر دهد، اما undo هیچ کاری نمی‌کند: بعد از دو تغییر (اول ۲۳ و بعد ۱۸ درجه) هر undo باز هم ۱۸ را نشان می‌دهد. الگوی Command را کامل کنید: `SetTemperature` باید هنگام اجرا دمای هدف قبلی را به خاطر بسپارد و در `undo()` آن را برگرداند، و `RemoteApp` باید کامندهای اجراشده را نگه دارد و از جدیدترین به قدیمی‌ترین undo کند. undo روی تاریخچهٔ خالی نباید هیچ اثری داشته باشد."
+    },
+    "hints": {
+      "en": [
+        "The command itself holds the undo state — `previous_` is already declared for you.",
+        "In `execute()`, write `previous_ = thermostat_.target();` **before** calling `setTarget`; `undo()` is then a single `thermostat_.setTarget(previous_);`.",
+        "`press()` should `history_.push_back(std::move(cmd));`. `undoLast()` returns early if `history_.empty()`, otherwise calls `history_.back()->undo()` and then `history_.pop_back()`."
+      ],
+      "fa": [
+        "وضعیت لازم برای undo را خود کامند نگه می‌دارد؛ `previous_` از قبل برایتان تعریف شده است.",
+        "در `execute()` **پیش از** صدا زدن `setTarget` بنویسید `previous_ = thermostat_.target();`؛ آن‌وقت `undo()` فقط یک خط است: `thermostat_.setTarget(previous_);`.",
+        "در `press()` بنویسید `history_.push_back(std::move(cmd));`. `undoLast()` اگر `history_.empty()` بود زود برمی‌گردد و در غیر این صورت `history_.back()->undo()` و سپس `history_.pop_back()` را صدا می‌زند."
+      ]
+    },
+    "expectedOutput": "start: 20C\nafter two changes: 18C\nundo: 23C\nundo: 20C\nundo again: 20C"
+  }
+}

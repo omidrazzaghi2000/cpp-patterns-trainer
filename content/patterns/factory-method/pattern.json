@@ -1,0 +1,362 @@
+{
+  "id": "factory-method",
+  "category": "creational",
+  "order": 2,
+  "difficulty": 2,
+  "icon": "factory",
+  "name": { "en": "Factory Method", "fa": "فکتوری متد (متد کارخانه)" },
+  "aka": { "en": "Virtual Constructor", "fa": "Virtual Constructor (سازندهٔ مجازی)" },
+  "tagline": {
+    "en": "Let subclasses decide which class gets instantiated.",
+    "fa": "بگذارید زیرکلاس‌ها تصمیم بگیرند کدام کلاس ساخته شود."
+  },
+  "intent": {
+    "en": "Define an interface for creating an object, but let subclasses decide which concrete class to instantiate. The base class uses the product without ever naming its concrete type.",
+    "fa": "یک رابط برای ساختن شیء تعریف می‌کند، اما تصمیم این‌که کدام کلاس مشخص نمونه‌سازی شود را به زیرکلاس‌ها می‌سپارد. کلاس پایه از محصول استفاده می‌کند، بی‌آن‌که هرگز نام نوع واقعی آن را بیاورد."
+  },
+  "problem": {
+    "en": "Your delivery app started with trucks only, so the planning code is full of `std::make_unique<Truck>()`. Now the company adds sea freight, and drones are planned for next year. You could scatter `if (mode == \"sea\")` checks through the planning logic, but then every new vehicle means editing and re-testing code that already works. The code that uses a transport is welded to the code that decides which transport to create.",
+    "fa": "اپلیکیشن حمل‌ونقل شما فقط با کامیون شروع شده و کد برنامه‌ریزی پر از `std::make_unique<Truck>()` است. حالا شرکت حمل دریایی را هم اضافه می‌کند و برای سال بعد پهپاد هم در برنامه است. می‌توانید شرط‌های `if (mode == \"sea\")` را در سراسر منطق برنامه‌ریزی پخش کنید، اما آن‌وقت هر وسیلهٔ جدید یعنی ویرایش و تست دوبارهٔ کدی که همین حالا درست کار می‌کند. کدی که از وسیلهٔ حمل استفاده می‌کند به کدی که تصمیم می‌گیرد کدام وسیله ساخته شود جوش خورده است."
+  },
+  "solution": {
+    "en": "Move object creation into a separate virtual method — the **factory method** — such as `virtual std::unique_ptr<Transport> createTransport() const`. The base class (the **Creator**) keeps all the shared business logic and simply calls the factory method whenever it needs a product, working with it only through the `Transport` interface. Each subclass (`RoadLogistics`, `SeaLogistics`) overrides that one method to return its own concrete product. Supporting a new vehicle now means adding a new pair of classes, not editing existing ones.",
+    "fa": "ساختن شیء را به یک متد virtual جداگانه منتقل کنید (همان **متد کارخانه**)، مثلاً `virtual std::unique_ptr<Transport> createTransport() const`. کلاس پایه (**Creator**) همهٔ منطق مشترک کسب‌وکار را نگه می‌دارد و هر وقت به محصول نیاز داشت، فقط متد کارخانه را صدا می‌زند و از طریق رابط `Transport` با آن کار می‌کند. هر زیرکلاس (`RoadLogistics`، `SeaLogistics`) همین یک متد را override می‌کند تا محصول مشخص خودش را برگرداند. از این به بعد پشتیبانی از یک وسیلهٔ جدید یعنی اضافه کردن یک جفت کلاس تازه، نه ویرایش کلاس‌های موجود."
+  },
+  "analogy": {
+    "en": "A restaurant chain's head office writes one procedure for serving a burger: take the order, grill the patty, add the bun, pack it, hand it over. Only the step \"which bun?\" is left to each branch — the Tokyo branch uses a rice bun, the Munich branch a pretzel bun. The procedure never changes; each branch just fills in that one creation step.",
+    "fa": "دفتر مرکزی یک رستوران زنجیره‌ای برای سرو همبرگر یک دستورالعمل واحد نوشته است: سفارش را بگیر، گوشت را گریل کن، نان را اضافه کن، بسته‌بندی کن و تحویل بده. فقط مرحلهٔ «کدام نان؟» به هر شعبه سپرده شده؛ شعبهٔ توکیو نان برنجی می‌گذارد و شعبهٔ مونیخ نان پرتزل. دستورالعمل هیچ‌وقت عوض نمی‌شود؛ هر شعبه فقط همان یک مرحلهٔ ساخت را به روش خودش انجام می‌دهد."
+  },
+  "participants": [
+    {
+      "name": "Product",
+      "role": {
+        "en": "The interface (`Transport`) of the objects the factory method creates; the Creator works only with this type.",
+        "fa": "رابط (`Transport`) اشیایی که متد کارخانه می‌سازد؛ Creator فقط با همین نوع کار می‌کند."
+      }
+    },
+    {
+      "name": "ConcreteProduct",
+      "role": {
+        "en": "A concrete implementation of the Product (`Truck`, `Ship`).",
+        "fa": "یک پیاده‌سازی مشخص از Product (`Truck`، `Ship`)."
+      }
+    },
+    {
+      "name": "Creator",
+      "role": {
+        "en": "The base class (`Logistics`) that declares the factory method and contains the business logic that uses its result. It may also provide a default implementation.",
+        "fa": "کلاس پایه (`Logistics`) که متد کارخانه را اعلان می‌کند و منطق کسب‌وکاری را که از خروجی آن استفاده می‌کند در خود دارد. می‌تواند یک پیاده‌سازی پیش‌فرض هم ارائه کند."
+      }
+    },
+    {
+      "name": "ConcreteCreator",
+      "role": {
+        "en": "A subclass (`RoadLogistics`, `SeaLogistics`) that overrides the factory method to return one specific ConcreteProduct.",
+        "fa": "زیرکلاسی (`RoadLogistics`، `SeaLogistics`) که متد کارخانه را override می‌کند تا یک ConcreteProduct مشخص برگرداند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Logistics", "kind": "abstract", "col": 1, "row": 0, "members": ["+ planDelivery(cargo, km)", "# createTransport()"] },
+      { "id": "Transport", "kind": "interface", "col": 3, "row": 0, "members": ["+ name() : string", "+ costPerKm() : int", "+ deliver(cargo)"] },
+      { "id": "RoadLogistics", "kind": "concrete", "col": 1, "row": 1, "members": ["# createTransport()"] },
+      { "id": "Truck", "kind": "concrete", "col": 2, "row": 1, "members": ["+ deliver(cargo)"] },
+      { "id": "SeaLogistics", "kind": "concrete", "col": 0, "row": 2, "members": ["# createTransport()"] },
+      { "id": "Ship", "kind": "concrete", "col": 3, "row": 2, "members": ["+ deliver(cargo)"] }
+    ],
+    "edges": [
+      { "from": "Logistics", "to": "Transport", "type": "uses", "label": "deliver()" },
+      { "from": "RoadLogistics", "to": "Logistics", "type": "inherits" },
+      { "from": "SeaLogistics", "to": "Logistics", "type": "inherits" },
+      { "from": "Truck", "to": "Transport", "type": "implements" },
+      { "from": "Ship", "to": "Transport", "type": "implements" },
+      { "from": "RoadLogistics", "to": "Truck", "type": "creates" },
+      { "from": "SeaLogistics", "to": "Ship", "type": "creates" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Define a common interface (`Transport`) for every product the creator will work with.",
+      "Add a factory method to the creator that returns `std::unique_ptr<Product>` — pure virtual, or with a sensible default.",
+      "Replace every direct `std::make_unique<Concrete>()` in the creator's business logic with a call to the factory method.",
+      "For each product variant, write a creator subclass that overrides the factory method.",
+      "Let client code depend on the base creator (`const Logistics&`), so the only place that names a concrete class is where a creator subclass is chosen."
+    ],
+    "fa": [
+      "یک رابط مشترک (`Transport`) برای همهٔ محصولاتی که Creator با آن‌ها کار می‌کند تعریف کنید.",
+      "به Creator یک متد کارخانه اضافه کنید که `std::unique_ptr<Product>` برمی‌گرداند؛ یا pure virtual باشد یا یک پیاده‌سازی پیش‌فرض معقول داشته باشد.",
+      "هر `std::make_unique<Concrete>()` مستقیم را در منطق کسب‌وکار Creator با فراخوانی متد کارخانه جایگزین کنید.",
+      "برای هر نوع محصول، یک زیرکلاس از Creator بنویسید که متد کارخانه را override کند.",
+      "کد کلاینت را به Creator پایه (`const Logistics&`) وابسته کنید تا تنها جایی که نام یک کلاس مشخص آورده می‌شود، همان جایی باشد که زیرکلاس Creator انتخاب می‌شود."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A class knows **when** it needs an object but should not decide **which** concrete class that object is.",
+      "You are writing a framework or library, and users must be able to plug in their own product types by subclassing.",
+      "Creation logic is scattered as `if`/`switch` + `make_unique` across business code and you want it in one overridable place.",
+      "Tests need a seam: a test subclass can override the factory method to return a fake product."
+    ],
+    "fa": [
+      "یک کلاس می‌داند **چه زمانی** به یک شیء نیاز دارد، اما نباید تصمیم بگیرد آن شیء از **کدام** کلاس مشخص باشد.",
+      "در حال نوشتن یک فریم‌ورک یا کتابخانه هستید و کاربران باید بتوانند با ارث‌بری، انواع محصول خودشان را به آن اضافه کنند.",
+      "منطق ساخت به شکل `if`/`switch` همراه با `make_unique` در سراسر کد کسب‌وکار پخش شده و می‌خواهید آن را در یک نقطهٔ قابل override جمع کنید.",
+      "تست‌ها به یک نقطهٔ جایگزینی (seam) نیاز دارند: یک زیرکلاس تستی می‌تواند متد کارخانه را override کند و یک محصول جعلی (fake) برگرداند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Business logic depends only on the Product interface, never on concrete classes.",
+      "Open/Closed: new products arrive as new subclasses, without editing code that is already tested.",
+      "All creation code for a variant lives in one place (Single Responsibility).",
+      "Gives tests an easy seam for fakes and mocks."
+    ],
+    "fa": [
+      "منطق کسب‌وکار فقط به رابط Product وابسته است، نه به کلاس‌های مشخص.",
+      "اصل باز/بسته (Open/Closed): محصولات جدید به شکل زیرکلاس‌های جدید اضافه می‌شوند، بدون ویرایش کدی که قبلاً تست شده است.",
+      "همهٔ کد ساخت هر نوع در یک جا متمرکز است (اصل تک‌مسئولیتی).",
+      "برای تست‌ها راه ساده‌ای جهت جایگزینی با fake و mock فراهم می‌کند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Parallel hierarchies: each new product usually needs a matching creator subclass.",
+      "It relies on inheritance — to change the product you must subclass, which is heavier than passing a factory object or a `std::function`.",
+      "Pure indirection when there is only one product and no real variation."
+    ],
+    "fa": [
+      "سلسله‌مراتب موازی: هر محصول جدید معمولاً به یک زیرکلاس Creator متناظر نیاز دارد.",
+      "به ارث‌بری تکیه دارد؛ برای عوض کردن محصول باید زیرکلاس بسازید، که از پاس دادن یک شیء کارخانه یا یک `std::function` سنگین‌تر است.",
+      "وقتی فقط یک محصول وجود دارد و تنوع واقعی در کار نیست، چیزی جز یک لایهٔ غیرمستقیم اضافه نیست."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Return `std::unique_ptr<Product>`: the ownership transfer is explicit, nothing leaks, and a caller can still turn it into a `std::shared_ptr` if needed.",
+      "Never call the factory method from the Creator's constructor: during construction the object is still a `Logistics`, so the subclass override is not used (and calling a pure virtual is undefined behavior). Call it later from an ordinary member function.",
+      "Keep the factory method `protected` (or even `private` — subclasses can still override a private virtual) so only the Creator's own logic calls it.",
+      "Covariant return types only work with raw pointers and references: an override cannot return `std::unique_ptr<Truck>` when the base returns `std::unique_ptr<Transport>`.",
+      "If the creator itself needs no runtime polymorphism, a `std::function<std::unique_ptr<Transport>()>` passed to the constructor, or a template parameter, gives the same flexibility without subclassing."
+    ],
+    "fa": [
+      "`std::unique_ptr<Product>` برگردانید: انتقال مالکیت صریح است، هیچ نشتی رخ نمی‌دهد و فراخوان در صورت نیاز همچنان می‌تواند آن را به `std::shared_ptr` تبدیل کند.",
+      "هرگز متد کارخانه را از داخل سازندهٔ Creator صدا نزنید: در حین ساخت، شیء هنوز یک `Logistics` است، پس پیاده‌سازی زیرکلاس اجرا نمی‌شود (و صدا زدن یک تابع pure virtual رفتار تعریف‌نشده دارد). آن را بعداً از یک متد عادی صدا بزنید.",
+      "متد کارخانه را `protected` نگه دارید (یا حتی `private`؛ زیرکلاس‌ها باز هم می‌توانند یک تابع virtual خصوصی را override کنند) تا فقط منطق خود Creator آن را صدا بزند.",
+      "نوع بازگشتی هم‌وردا (covariant) فقط با اشاره‌گر خام و مرجع کار می‌کند: وقتی نسخهٔ پایه `std::unique_ptr<Transport>` برمی‌گرداند، override نمی‌تواند `std::unique_ptr<Truck>` برگرداند.",
+      "اگر خود Creator به چندریختی زمان اجرا نیاز ندارد، یک `std::function<std::unique_ptr<Transport>()>` که به سازنده پاس داده می‌شود، یا یک پارامتر template، همین انعطاف را بدون ساختن زیرکلاس فراهم می‌کند."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt's `QAbstractItemDelegate::createEditor()`: item views call it, and your delegate overrides it to return the right editor widget for a cell.",
+      "Qt's `QNetworkAccessManager::createRequest()`: a protected virtual you override to return a custom `QNetworkReply`.",
+      "GoogleTest registers every test with a factory object whose virtual `CreateTest()` builds a fresh instance of your test fixture."
+    ],
+    "fa": [
+      "`QAbstractItemDelegate::createEditor()` در Qt: نماهای آیتم (item view) آن را صدا می‌زنند و delegate شما آن را override می‌کند تا ویجت ویرایشگر مناسب هر خانه را برگرداند.",
+      "`QNetworkAccessManager::createRequest()` در Qt: یک متد virtual از نوع protected که با override کردنش یک `QNetworkReply` سفارشی برمی‌گردانید.",
+      "GoogleTest هر تست را همراه با یک شیء factory ثبت می‌کند که متد virtual آن یعنی `CreateTest()` هر بار یک نمونهٔ تازه از fixture تست شما می‌سازد."
+    ]
+  },
+  "related": [
+    {
+      "id": "abstract-factory",
+      "note": {
+        "en": "An Abstract Factory is often a bundle of factory methods — one per product of the family — gathered in a separate object that is passed to the client.",
+        "fa": "یک Abstract Factory اغلب مجموعه‌ای از متدهای کارخانه است (یکی برای هر محصول خانواده) که در یک شیء جداگانه جمع شده‌اند و به کلاینت پاس داده می‌شوند."
+      }
+    },
+    {
+      "id": "template-method",
+      "note": {
+        "en": "A factory method is usually one step of a template method: `planDelivery()` is the fixed algorithm and `createTransport()` is the overridable creation step.",
+        "fa": "متد کارخانه معمولاً یکی از مراحل یک Template Method است: `planDelivery()` الگوریتم ثابت است و `createTransport()` مرحلهٔ ساختی که می‌توان override کرد."
+      }
+    },
+    {
+      "id": "prototype",
+      "note": {
+        "en": "Prototype needs no creator subclasses: instead of overriding a method you clone a preconfigured object, which suits products chosen or configured at runtime.",
+        "fa": "Prototype به زیرکلاس Creator نیازی ندارد: به‌جای override کردن یک متد، از یک شیء از پیش پیکربندی‌شده کپی (clone) می‌گیرید؛ این روش برای محصولاتی که در زمان اجرا انتخاب یا پیکربندی می‌شوند مناسب‌تر است."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Road and sea logistics", "fa": "حمل‌ونقل زمینی و دریایی" },
+    "description": {
+      "en": "`Logistics::planDelivery()` holds the shared planning logic and calls the factory method `createTransport()` whenever it needs a vehicle. `RoadLogistics` and `SeaLogistics` override only that one method. Notice that neither `planDelivery()` nor `dispatch()` ever mentions `Truck` or `Ship`.",
+      "fa": "`Logistics::planDelivery()` منطق مشترک برنامه‌ریزی را در خود دارد و هر وقت به وسیلهٔ حمل نیاز داشته باشد، متد کارخانه یعنی `createTransport()` را صدا می‌زند. `RoadLogistics` و `SeaLogistics` فقط همین یک متد را override می‌کنند. دقت کنید که نه `planDelivery()` و نه `dispatch()` هیچ‌وقت نامی از `Truck` یا `Ship` نمی‌برند."
+    },
+    "output": "Plan: 12 pallets of tiles, 400 km by truck\n  truck drives 12 pallets of tiles along the highway\n  cost: 800 EUR\nPlan: 3 containers of cotton, 5000 km by ship\n  ship carries 3 containers of cotton across the sea\n  cost: 5000 EUR",
+    "highlights": [
+      {
+        "lines": [7, 14],
+        "note": {
+          "en": "The Product interface. Everything the creator needs from a vehicle is expressed here, so it never has to know the concrete class.",
+          "fa": "رابط Product. هر چیزی که Creator از یک وسیلهٔ حمل لازم دارد این‌جا بیان شده است، پس هیچ‌وقت لازم نیست کلاس مشخص آن را بشناسد."
+        }
+      },
+      {
+        "lines": [39, 45],
+        "note": {
+          "en": "The Creator's business logic. It obtains its product from `createTransport()` and uses it only through the `Transport` interface.",
+          "fa": "منطق کسب‌وکار Creator. محصولش را از `createTransport()` می‌گیرد و فقط از طریق رابط `Transport` از آن استفاده می‌کند."
+        }
+      },
+      {
+        "lines": [47, 49],
+        "note": {
+          "en": "The factory method itself: `protected` because only the creator calls it, pure virtual because every subclass must decide.",
+          "fa": "خودِ متد کارخانه: `protected` است چون فقط خود Creator آن را صدا می‌زند، و pure virtual است چون هر زیرکلاس باید خودش تصمیم بگیرد."
+        }
+      },
+      {
+        "lines": [52, 64],
+        "note": {
+          "en": "Concrete creators. Each overrides just the factory method and returns its own product as a `std::unique_ptr<Transport>`.",
+          "fa": "Creatorهای مشخص. هر کدام فقط متد کارخانه را override می‌کنند و محصول خودشان را در قالب `std::unique_ptr<Transport>` برمی‌گردانند."
+        }
+      },
+      {
+        "lines": [66, 77],
+        "note": {
+          "en": "Client code receives a `const Logistics&`. Choosing `road` or `sea` in `main()` is the only decision that involves concrete types.",
+          "fa": "کد کلاینت یک `const Logistics&` دریافت می‌کند. انتخاب `road` یا `sea` در `main()` تنها تصمیمی است که با نوع‌های مشخص سروکار دارد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What does the Factory Method pattern let a class do?",
+        "fa": "الگوی فکتوری متد به یک کلاس اجازهٔ چه کاری را می‌دهد؟"
+      },
+      "options": {
+        "en": [
+          "Guarantee that only one instance of its product ever exists",
+          "Assemble a complex product step by step",
+          "Leave the choice of which concrete class to instantiate to its subclasses",
+          "Copy an existing object without knowing its class"
+        ],
+        "fa": [
+          "تضمین کند که از محصولش همیشه فقط یک نمونه وجود داشته باشد",
+          "یک محصول پیچیده را مرحله‌به‌مرحله سرهم کند",
+          "انتخاب کلاس مشخصی را که باید نمونه‌سازی شود به زیرکلاس‌هایش بسپارد",
+          "از یک شیء موجود بدون دانستن کلاسش کپی بگیرد"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "The creator's code calls `createTransport()` and works with the result through the `Transport` interface; which concrete class gets built is decided by the overriding subclass. The other options describe Singleton, Builder and Prototype.",
+        "fa": "کد Creator تابع `createTransport()` را صدا می‌زند و از طریق رابط `Transport` با نتیجه کار می‌کند؛ این‌که کدام کلاس مشخص ساخته شود را زیرکلاسی تعیین می‌کند که متد را override کرده است. گزینه‌های دیگر به ترتیب Singleton، Builder و Prototype را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Why does `createTransport()` return `std::unique_ptr<Transport>` instead of a raw `Transport*`?",
+        "fa": "چرا `createTransport()` به‌جای یک `Transport*` خام، `std::unique_ptr<Transport>` برمی‌گرداند؟"
+      },
+      "options": {
+        "en": [
+          "It states in the type that the caller now owns the new object, and guarantees it is deleted",
+          "Virtual functions are not allowed to return raw pointers in modern C++",
+          "Returning a `std::unique_ptr` makes the virtual call itself faster",
+          "It lets several owners share the same transport object safely"
+        ],
+        "fa": [
+          "در خود نوع اعلام می‌کند که فراخوان حالا مالک شیء جدید است و حذف شدن آن را تضمین می‌کند",
+          "در C++ مدرن توابع virtual اجازه ندارند اشاره‌گر خام برگردانند",
+          "برگرداندن `std::unique_ptr` خودِ فراخوانی virtual را سریع‌تر می‌کند",
+          "اجازه می‌دهد چند مالک به‌طور امن یک شیء حمل مشترک داشته باشند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "A factory hands over a freshly created object. `std::unique_ptr` documents that transfer of ownership and deletes the object automatically, even when an exception is thrown. Shared ownership is `std::shared_ptr`'s job — and a `unique_ptr` converts to one if a caller needs it.",
+        "fa": "یک factory شیئی تازه‌ساخته را تحویل می‌دهد. `std::unique_ptr` این انتقال مالکیت را مستند می‌کند و شیء را به‌طور خودکار حذف می‌کند، حتی وقتی استثنا (exception) پرتاب شود. مالکیت مشترک کارِ `std::shared_ptr` است، و اگر فراخوان لازم داشته باشد، `unique_ptr` به آن تبدیل می‌شود."
+      }
+    },
+    {
+      "question": {
+        "en": "In which situation is Factory Method most likely overkill?",
+        "fa": "در کدام وضعیت، فکتوری متد به احتمال زیاد زیاده‌روی است؟"
+      },
+      "options": {
+        "en": [
+          "A framework must create objects whose classes are defined later by the application using it",
+          "Several subclasses of one base class each need a different kind of helper object",
+          "You want to add new product types without touching the creator's existing logic",
+          "There is exactly one product class and no variation in sight"
+        ],
+        "fa": [
+          "یک فریم‌ورک باید اشیایی بسازد که کلاس‌هایشان بعداً در برنامهٔ استفاده‌کننده تعریف می‌شوند",
+          "چند زیرکلاس از یک کلاس پایه، هر کدام به نوع متفاوتی از یک شیء کمکی نیاز دارند",
+          "می‌خواهید انواع محصول جدید اضافه کنید، بدون دست زدن به منطق فعلی Creator",
+          "دقیقاً یک کلاس محصول وجود دارد و هیچ تنوعی هم در افق دیده نمی‌شود"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The pattern costs a parallel class hierarchy and an extra virtual hop. With a single product and no variation, a plain `std::make_unique<Truck>()` is simpler and just as testable. The other three options are exactly the situations the pattern was designed for.",
+        "fa": "این الگو یک سلسله‌مراتب موازی از کلاس‌ها و یک فراخوانی virtual اضافه هزینه دارد. وقتی فقط یک محصول هست و تنوعی در کار نیست، یک فراخوانی مستقیم `std::make_unique<Truck>()` ساده‌تر است و به همان اندازه هم قابل تست است. سه گزینهٔ دیگر دقیقاً همان موقعیت‌هایی‌اند که این الگو برایشان طراحی شده است."
+      }
+    },
+    {
+      "question": {
+        "en": "How does Factory Method differ from Abstract Factory?",
+        "fa": "فکتوری متد چه تفاوتی با ابسترکت فکتوری دارد؟"
+      },
+      "options": {
+        "en": [
+          "Factory Method creates whole families of related objects, while Abstract Factory is limited to one object per program run",
+          "Factory Method is one overridable method used by its own class; Abstract Factory is a separate object that creates a whole family of products",
+          "They are the same pattern; \"abstract\" only means that the factory class declares its creation methods pure virtual",
+          "Factory Method must be implemented with templates, while Abstract Factory must be implemented with virtual functions"
+        ],
+        "fa": [
+          "فکتوری متد خانواده‌های کاملی از اشیای مرتبط می‌سازد، در حالی که ابسترکت فکتوری در هر اجرای برنامه فقط یک شیء می‌سازد",
+          "فکتوری متد یک متد قابل override است که خود کلاسش از آن استفاده می‌کند؛ ابسترکت فکتوری یک شیء جداگانه است که یک خانوادهٔ کامل از محصولات را می‌سازد",
+          "هر دو یک الگو هستند؛ «ابسترکت» فقط یعنی کلاس کارخانه متدهای ساختش را pure virtual تعریف کرده است",
+          "فکتوری متد حتماً باید با template پیاده‌سازی شود، در حالی که ابسترکت فکتوری حتماً باید با توابع virtual پیاده‌سازی شود"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Factory Method relies on inheritance: a subclass overrides one creation hook used by the base class's own logic. Abstract Factory relies on composition: the client receives a factory object and asks it for several products that are guaranteed to match. Abstract factories are often built out of factory methods.",
+        "fa": "فکتوری متد به ارث‌بری تکیه دارد: یک زیرکلاس، یک نقطهٔ ساخت را که منطق خود کلاس پایه از آن استفاده می‌کند override می‌کند. ابسترکت فکتوری به ترکیب (composition) تکیه دارد: کلاینت یک شیء کارخانه دریافت می‌کند و چند محصول را که تضمین شده با هم سازگارند از آن می‌خواهد. ابسترکت فکتوری‌ها اغلب با همین متدهای کارخانه ساخته می‌شوند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A document-editing framework handles opening, saving and closing files, but each application built on it — a drawing tool, a spreadsheet — must decide what kind of document object appears when the user clicks \"New\".",
+      "fa": "یک فریم‌ورک ویرایش سند، باز کردن، ذخیره و بستن فایل‌ها را انجام می‌دهد، اما هر برنامه‌ای که روی آن ساخته می‌شود (یک ابزار طراحی یا یک صفحه‌گسترده) باید خودش تعیین کند وقتی کاربر روی «جدید» کلیک می‌کند چه نوع شیء سندی ساخته شود."
+    },
+    {
+      "en": "Your test runner's base class executes every test case; teams want their own subclass to choose the report writer (JUnit XML, HTML) without copying or changing the run loop.",
+      "fa": "کلاس پایهٔ اجراکنندهٔ تست‌های شما همهٔ موارد تست را اجرا می‌کند؛ تیم‌ها می‌خواهند زیرکلاس خودشان نویسندهٔ گزارش (JUnit XML یا HTML) را انتخاب کند، بدون این‌که حلقهٔ اجرا را کپی یا تغییر دهند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Enemy waves per level", "fa": "موج دشمن‌ها در هر مرحله" },
+    "task": {
+      "en": "`Level::spawnWave()` hard-codes `std::make_unique<Slime>()`, so even the forest and the crypt spawn slimes. Add a factory method `createEnemy()` to `Level` whose default returns a `Slime`, call it from `spawnWave()`, and override it in `ForestLevel` (wolves) and `CryptLevel` (skeletons). `TutorialLevel` keeps the default.",
+      "fa": "`Level::spawnWave()` مستقیماً `std::make_unique<Slime>()` را صدا می‌زند، برای همین حتی جنگل و سردابه هم اسلایم تولید می‌کنند. به `Level` یک متد کارخانه به نام `createEnemy()` اضافه کنید که به‌طور پیش‌فرض یک `Slime` برمی‌گرداند، آن را در `spawnWave()` صدا بزنید و در `ForestLevel` (گرگ) و `CryptLevel` (اسکلت) override کنید. `TutorialLevel` همان پیش‌فرض را نگه می‌دارد."
+    },
+    "hints": {
+      "en": [
+        "`spawnWave()` should not name any concrete enemy class; all it needs is a call that returns a `std::unique_ptr<Enemy>`.",
+        "In the `protected:` section of `Level` add `virtual std::unique_ptr<Enemy> createEnemy() const` returning `std::make_unique<Slime>()`, and use `createEnemy()` inside the loop.",
+        "Give `ForestLevel` a `protected:` override: `std::unique_ptr<Enemy> createEnemy() const override { return std::make_unique<Wolf>(); }` — then do the same with `Skeleton` in `CryptLevel`."
+      ],
+      "fa": [
+        "`spawnWave()` نباید نام هیچ کلاس دشمن مشخصی را بیاورد؛ تنها چیزی که لازم دارد فراخوانی‌ای است که یک `std::unique_ptr<Enemy>` برگرداند.",
+        "در بخش `protected:` کلاس `Level` متد `virtual std::unique_ptr<Enemy> createEnemy() const` را اضافه کنید که `std::make_unique<Slime>()` را برمی‌گرداند، و داخل حلقه از `createEnemy()` استفاده کنید.",
+        "به `ForestLevel` یک override در بخش `protected:` بدهید: `std::unique_ptr<Enemy> createEnemy() const override { return std::make_unique<Wolf>(); }` و بعد همین کار را با `Skeleton` در `CryptLevel` انجام دهید."
+      ]
+    },
+    "expectedOutput": "Tutorial: slime(10) slime(10)\nForest: wolf(25) wolf(25)\nCrypt: skeleton(40) skeleton(40) skeleton(40)"
+  }
+}

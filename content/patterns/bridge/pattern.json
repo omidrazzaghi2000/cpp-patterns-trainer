@@ -1,0 +1,380 @@
+{
+  "id": "bridge",
+  "category": "structural",
+  "order": 2,
+  "difficulty": 3,
+  "icon": "bridge",
+  "name": { "en": "Bridge", "fa": "بریج (پل)" },
+  "aka": { "en": "Handle/Body", "fa": "Handle/Body (دستگیره/بدنه)" },
+  "tagline": {
+    "en": "Split one class into two hierarchies that can grow independently.",
+    "fa": "یک کلاس را به دو سلسله‌مراتب مستقل بشکنید که جدا از هم رشد کنند."
+  },
+  "intent": {
+    "en": "Decouple an abstraction from its implementation so that the two can vary independently. The abstraction holds a reference to an implementation object and delegates the low-level work to it.",
+    "fa": "یک انتزاع (abstraction) را از پیاده‌سازی‌اش جدا می‌کند تا هر دو بتوانند مستقل از هم تغییر کنند. انتزاع یک ارجاع به شیء پیاده‌سازی نگه می‌دارد و کارهای سطح پایین را به آن واگذار می‌کند."
+  },
+  "problem": {
+    "en": "Your app sends several kinds of notifications — order updates, security alerts, promotions — over several channels — email, SMS, push. If you model this with inheritance alone you end up with `EmailOrderShipped`, `SmsOrderShipped`, `PushOrderShipped`, `EmailSecurityAlert`… Every new kind needs one subclass per channel and every new channel needs one subclass per kind: the hierarchy grows as M × N, and the same channel code is copy-pasted into many classes. Two independent dimensions are tangled into a single hierarchy.",
+    "fa": "برنامهٔ شما چند نوع اعلان می‌فرستد (به‌روزرسانی سفارش، هشدار امنیتی، پیشنهاد تخفیف) و آن‌ها را از چند کانال ارسال می‌کند (ایمیل، پیامک، push). اگر فقط با ارث‌بری مدلش کنید، به کلاس‌هایی مثل `EmailOrderShipped`، `SmsOrderShipped`، `PushOrderShipped`، `EmailSecurityAlert` و … می‌رسید. هر نوع اعلان جدید به ازای هر کانال یک زیرکلاس می‌خواهد و هر کانال جدید به ازای هر نوع اعلان؛ یعنی سلسله‌مراتب به شکل M × N رشد می‌کند و کد هر کانال در چندین کلاس کپی می‌شود. دو بُعد مستقل در یک سلسله‌مراتب واحد به هم گره خورده‌اند."
+  },
+  "solution": {
+    "en": "Split the tangle into two hierarchies. The **abstraction** (`Notification`) describes *what* to do at a high level and holds a pointer to an object of the **implementor** interface (`Channel`), which offers a few primitive operations that describe *how*. Refined abstractions (`OrderShipped`, `SecurityAlert`) are written only in terms of those primitives, and concrete implementors (`EmailChannel`, `SmsChannel`) implement them. That pointer is the bridge: any abstraction can be combined with any implementation — even swapped at runtime — and each side can gain new subclasses without touching the other. You now need M + N classes instead of M × N.",
+    "fa": "این گره را به دو سلسله‌مراتب جدا تقسیم کنید. **انتزاع** (`Notification`) در سطح بالا توضیح می‌دهد *چه* کاری باید انجام شود و یک اشاره‌گر به شیئی از رابط **پیاده‌ساز** (`Channel`) نگه می‌دارد؛ این رابط چند عملیات پایه ارائه می‌دهد که *چگونگی* انجام کار را مشخص می‌کنند. انتزاع‌های پالایش‌شده (`OrderShipped`، `SecurityAlert`) فقط بر اساس همین عملیات پایه نوشته می‌شوند و پیاده‌سازهای مشخص (`EmailChannel`، `SmsChannel`) آن‌ها را پیاده‌سازی می‌کنند. همین اشاره‌گر «پل» است: هر انتزاعی را می‌توان با هر پیاده‌سازی‌ای ترکیب کرد (حتی در زمان اجرا عوضش کرد) و هر طرف می‌تواند بدون دست زدن به طرف دیگر زیرکلاس جدید بگیرد. حالا به‌جای M × N کلاس فقط M + N کلاس لازم دارید."
+  },
+  "analogy": {
+    "en": "Think of the switches on your wall and the appliances they power. Switch makers invent new kinds — toggle, dimmer, motion sensor, smart switch — while appliance makers build lamps, fans and heaters. Neither waits for the other, because they meet at a tiny standard interface: the wiring (power on/off, level). Nobody sells a special \"dimmer-for-fans\"; any switch drives any appliance.",
+    "fa": "کلیدهای روی دیوار و وسایلی را که به آن‌ها وصل‌اند در نظر بگیرید. سازندگان کلید مدل‌های جدید می‌سازند (کلید ساده، دیمر، سنسور حرکتی، کلید هوشمند) و سازندگان لوازم برقی لامپ، پنکه و بخاری تولید می‌کنند. هیچ‌کدام منتظر دیگری نمی‌ماند، چون در یک رابط کوچک و استاندارد به هم می‌رسند: سیم‌کشی برق (روشن/خاموش و میزان توان). هیچ‌کس «دیمر مخصوص پنکه» نمی‌فروشد؛ هر کلیدی هر وسیله‌ای را راه می‌اندازد."
+  },
+  "participants": [
+    {
+      "name": "Abstraction",
+      "role": {
+        "en": "`Notification`: the high-level interface clients use. Holds a pointer to an Implementor and delegates the low-level work to it.",
+        "fa": "`Notification`: رابط سطح بالایی که کلاینت‌ها از آن استفاده می‌کنند. یک اشاره‌گر به Implementor نگه می‌دارد و کارهای سطح پایین را به آن می‌سپارد."
+      }
+    },
+    {
+      "name": "RefinedAbstraction",
+      "role": {
+        "en": "`OrderShipped`, `SecurityAlert`: variants of the high-level behavior, written only in terms of the Implementor's primitives.",
+        "fa": "`OrderShipped` و `SecurityAlert`: گونه‌های مختلف رفتار سطح بالا که فقط با عملیات پایهٔ Implementor نوشته شده‌اند."
+      }
+    },
+    {
+      "name": "Implementor",
+      "role": {
+        "en": "`Channel`: the interface of the implementation hierarchy. It offers primitive operations and does not have to mirror the Abstraction's interface.",
+        "fa": "`Channel`: رابط سلسله‌مراتب پیاده‌سازی. عملیات پایه ارائه می‌دهد و لازم نیست شبیه رابط Abstraction باشد."
+      }
+    },
+    {
+      "name": "ConcreteImplementor",
+      "role": {
+        "en": "`EmailChannel`, `SmsChannel`: implement the primitives for one specific platform or technology.",
+        "fa": "`EmailChannel` و `SmsChannel`: عملیات پایه را برای یک پلتفرم یا فناوری مشخص پیاده‌سازی می‌کنند."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Chooses which abstraction to pair with which implementor and then talks only to the abstraction.",
+        "fa": "انتخاب می‌کند کدام انتزاع با کدام پیاده‌ساز جفت شود و از آن به بعد فقط با انتزاع کار می‌کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Abstraction", "kind": "abstract", "col": 1, "row": 0, "members": ["- impl : unique_ptr<Impl>", "+ send(user)"] },
+      { "id": "Implementor", "kind": "interface", "col": 3, "row": 0, "members": ["+ deliver(to, title, body)"] },
+      { "id": "RefinedAbstraction", "kind": "concrete", "col": 1, "row": 2, "members": ["+ send(user)"] },
+      { "id": "ConcreteImplA", "kind": "concrete", "col": 2, "row": 2, "members": ["+ deliver(...)"] },
+      { "id": "ConcreteImplB", "kind": "concrete", "col": 3, "row": 2, "members": ["+ deliver(...)"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Abstraction", "type": "uses" },
+      { "from": "Abstraction", "to": "Implementor", "type": "owns", "label": "bridge" },
+      { "from": "RefinedAbstraction", "to": "Abstraction", "type": "inherits" },
+      { "from": "ConcreteImplA", "to": "Implementor", "type": "implements" },
+      { "from": "ConcreteImplB", "to": "Implementor", "type": "implements" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Identify the two independent dimensions tangled in your classes (what vs. how, kind vs. channel, UI vs. platform).",
+      "Define the Implementor interface with the primitive operations the abstraction needs — small and platform-neutral.",
+      "Write one concrete implementor per platform or technology.",
+      "Give the Abstraction a member that points to the Implementor (`std::unique_ptr` if it owns it, a reference if it doesn't) and implement its operations by delegating.",
+      "Derive refined abstractions for the variants of the high-level behavior, using only the Implementor interface.",
+      "Let the client (or a factory) pick the pairing by passing an implementor to the abstraction's constructor."
+    ],
+    "fa": [
+      "دو بُعد مستقلی را که در کلاس‌هایتان به هم گره خورده‌اند پیدا کنید («چه» در برابر «چگونه»، نوع در برابر کانال، رابط کاربری در برابر پلتفرم).",
+      "رابط Implementor را با همان عملیات پایه‌ای که انتزاع لازم دارد تعریف کنید؛ کوچک و مستقل از پلتفرم.",
+      "برای هر پلتفرم یا فناوری یک پیاده‌ساز مشخص بنویسید.",
+      "به Abstraction عضوی بدهید که به Implementor اشاره کند (`std::unique_ptr` اگر مالکش است، مرجع اگر نیست) و عملیاتش را با واگذاری به آن پیاده‌سازی کنید.",
+      "برای گونه‌های مختلف رفتار سطح بالا انتزاع‌های پالایش‌شده مشتق کنید که فقط از رابط Implementor استفاده می‌کنند.",
+      "بگذارید کلاینت (یا یک factory) با پاس دادن پیاده‌ساز به سازندهٔ انتزاع، جفت مناسب را انتخاب کند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A class varies along two (or more) independent dimensions and inheritance would cause an M × N explosion of subclasses.",
+      "You want to choose or switch the implementation at runtime (delivery channel, rendering backend, storage driver).",
+      "Platform APIs or vendor SDKs must not leak into — or force recompilation of — the high-level code.",
+      "Both the abstractions and the implementations should be extensible by subclassing, independently of each other."
+    ],
+    "fa": [
+      "یک کلاس در دو (یا چند) بُعد مستقل تغییر می‌کند و ارث‌بری باعث انفجار M × N زیرکلاس می‌شود.",
+      "می‌خواهید پیاده‌سازی را در زمان اجرا انتخاب یا عوض کنید (کانال ارسال، موتور رندر، درایور ذخیره‌سازی).",
+      "APIهای پلتفرم یا SDK فروشنده‌ها نباید به کد سطح بالا نشت کنند یا باعث کامپایل دوبارهٔ آن شوند.",
+      "هم انتزاع‌ها و هم پیاده‌سازی‌ها باید مستقل از هم با زیرکلاس‌سازی قابل گسترش باشند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Replaces M × N subclasses with M + N classes.",
+      "Open/Closed on both sides: add a notification kind or a channel without touching the other hierarchy.",
+      "High-level code depends only on an interface, so platform details stay hidden and are easy to fake in tests.",
+      "The implementation can be chosen, or swapped, at runtime."
+    ],
+    "fa": [
+      "به‌جای M × N زیرکلاس، M + N کلاس خواهید داشت.",
+      "اصل باز/بسته در هر دو طرف رعایت می‌شود: نوع اعلان یا کانال جدید اضافه می‌کنید بدون این‌که به سلسله‌مراتب دیگر دست بزنید.",
+      "کد سطح بالا فقط به یک رابط وابسته است؛ جزئیات پلتفرم پنهان می‌ماند و جایگزینی آن با نمونهٔ جعلی در تست ساده است.",
+      "پیاده‌سازی را می‌توان در زمان اجرا انتخاب یا عوض کرد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "More indirection: an extra interface and a virtual call for every primitive operation.",
+      "Overkill when there is really only one dimension of variation or only one implementation.",
+      "Designing the Implementor interface is hard: too narrow and abstractions can't express features, too wide and every implementor must fake things it doesn't support."
+    ],
+    "fa": [
+      "لایهٔ واسطهٔ بیشتر: یک رابط اضافه و یک فراخوانی virtual برای هر عملیات پایه.",
+      "وقتی واقعاً فقط یک بُعد تغییر یا فقط یک پیاده‌سازی وجود دارد، زیاده‌روی است.",
+      "طراحی رابط Implementor سخت است: اگر خیلی محدود باشد انتزاع‌ها نمی‌توانند قابلیت‌ها را بیان کنند و اگر خیلی گسترده باشد هر پیاده‌ساز مجبور است چیزهایی را که پشتیبانی نمی‌کند به‌صورت ساختگی پیاده کند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Ownership is part of the design: hold the implementor as `std::unique_ptr<Impl>` when the abstraction owns it, and as a reference (or `std::shared_ptr`) when it is shared or lives elsewhere — a remote doesn't own the TV.",
+      "Give the Implementor base class a `virtual` destructor, because implementors are destroyed through a base pointer.",
+      "The **Pimpl idiom** is a degenerate Bridge: a class forwards to a private `Impl` through `std::unique_ptr<Impl>`. Declare the destructor in the header and define it in the .cpp, where `Impl` is complete.",
+      "If the implementation is fixed at compile time, a template parameter (`Notification<SmsChannel>`) gives a static bridge with no virtual calls — but you lose runtime swapping.",
+      "Keep implementor operations primitive. If you catch yourself adding `sendOrderShipped()` to `Channel`, the two dimensions are leaking into each other again."
+    ],
+    "fa": [
+      "مالکیت بخشی از طراحی است: اگر انتزاع مالک پیاده‌ساز است آن را با `std::unique_ptr<Impl>` نگه دارید و اگر مشترک است یا جای دیگری زندگی می‌کند با مرجع (یا `std::shared_ptr`)؛ ریموت مالک تلویزیون نیست.",
+      "کلاس پایهٔ Implementor را با destructor از نوع `virtual` تعریف کنید، چون پیاده‌سازها از طریق اشاره‌گر پایه نابود می‌شوند.",
+      "**Pimpl idiom** نوعی Bridge ساده‌شده است: کلاس همه‌چیز را از طریق `std::unique_ptr<Impl>` به یک `Impl` خصوصی می‌سپارد. destructor را در فایل هدر اعلان و در فایل .cpp، جایی که `Impl` کامل است، تعریف کنید.",
+      "اگر پیاده‌سازی در زمان کامپایل مشخص است، یک پارامتر template (مثل `Notification<SmsChannel>`) یک پل ایستا بدون فراخوانی virtual می‌سازد؛ البته امکان تعویض در زمان اجرا را از دست می‌دهید.",
+      "عملیات پیاده‌ساز را پایه‌ای نگه دارید. اگر دیدید دارید `sendOrderShipped()` را به `Channel` اضافه می‌کنید، یعنی دو بُعد دوباره در هم نشت کرده‌اند."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt's d-pointers: every `QWidget` forwards to a private `QWidgetPrivate` — the Pimpl form of Bridge that keeps Qt binary-compatible across versions.",
+      "Qt Platform Abstraction (QPA): the same widgets run on Windows, macOS, X11 and Wayland through interchangeable platform plugins.",
+      "`QSqlDatabase` talks to pluggable `QSqlDriver` backends (SQLite, PostgreSQL, MySQL), just like ODBC/JDBC drivers.",
+      "spdlog: a `logger` decides what and when to log, while interchangeable sinks (console, rotating file, syslog) decide how and where."
+    ],
+    "fa": [
+      "d-pointerهای Qt: هر `QWidget` کارها را به یک `QWidgetPrivate` خصوصی می‌سپارد؛ شکل Pimpl از Bridge که سازگاری باینری Qt را بین نسخه‌ها حفظ می‌کند.",
+      "Qt Platform Abstraction (QPA): همان ویجت‌ها از طریق پلاگین‌های پلتفرمیِ قابل‌تعویض روی Windows، macOS، X11 و Wayland اجرا می‌شوند.",
+      "`QSqlDatabase` با backendهای قابل‌تعویض `QSqlDriver` (مثل SQLite، PostgreSQL و MySQL) کار می‌کند؛ درست مثل درایورهای ODBC/JDBC.",
+      "در spdlog یک `logger` تصمیم می‌گیرد چه چیزی و چه زمانی لاگ شود و sinkهای قابل‌تعویض (کنسول، فایل چرخشی، syslog) تعیین می‌کنند چگونه و کجا."
+    ]
+  },
+  "related": [
+    {
+      "id": "adapter",
+      "note": {
+        "en": "Structurally similar, different intent: Adapter retrofits an existing, incompatible interface after the fact; Bridge is designed up front so both sides can evolve separately.",
+        "fa": "ساختارشان شبیه است ولی هدفشان فرق دارد: Adapter بعد از وقوع مشکل، یک رابط ناسازگارِ موجود را جفت‌وجور می‌کند؛ Bridge از ابتدا طراحی می‌شود تا دو طرف جدا از هم تکامل پیدا کنند."
+      }
+    },
+    {
+      "id": "strategy",
+      "note": {
+        "en": "Both delegate through an interface pointer. Strategy swaps one algorithm inside a context; Bridge separates a whole abstraction hierarchy from an implementation hierarchy.",
+        "fa": "هر دو از طریق یک اشاره‌گر به رابط کار را واگذار می‌کنند. Strategy یک الگوریتم را داخل یک context عوض می‌کند؛ Bridge یک سلسله‌مراتب کامل انتزاع را از سلسله‌مراتب پیاده‌سازی جدا می‌کند."
+      }
+    },
+    {
+      "id": "abstract-factory",
+      "note": {
+        "en": "An Abstract Factory can create the right implementors for the current platform, so clients never see the pairing.",
+        "fa": "یک Abstract Factory می‌تواند پیاده‌سازهای مناسب پلتفرم فعلی را بسازد تا کلاینت‌ها اصلاً درگیر جفت‌کردن نشوند."
+      }
+    },
+    {
+      "id": "pimpl",
+      "note": {
+        "en": "Pimpl is the C++-specific, single-implementation form of Bridge, used to hide private details and cut compile-time dependencies.",
+        "fa": "Pimpl شکل مخصوص C++ و تک‌پیاده‌سازیِ Bridge است که برای پنهان کردن جزئیات خصوصی و کم کردن وابستگی‌های زمان کامپایل به کار می‌رود."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Notifications over interchangeable channels", "fa": "اعلان‌ها روی کانال‌های قابل‌تعویض" },
+    "description": {
+      "en": "`Notification` (what to say) and `Channel` (how to deliver it) are separate hierarchies connected by one `std::unique_ptr<Channel>`. Every notification kind works with every channel, and a user switching from email to SMS is a single `setChannel()` call — no new classes.",
+      "fa": "`Notification` (چه بگوییم) و `Channel` (چطور برسانیم) دو سلسله‌مراتب جدا هستند که فقط با یک `std::unique_ptr<Channel>` به هم وصل شده‌اند. هر نوع اعلان با هر کانالی کار می‌کند و وقتی کاربر از ایمیل به پیامک می‌رود، فقط یک فراخوانی `setChannel()` لازم است؛ بدون هیچ کلاس جدیدی."
+    },
+    "output": "[email] sara@mail.com: Order #1042 shipped / track it in the app\n[sms] +1-555-0101: New login: Firefox\n-- users changed their preferences --\n[sms] +1-555-0101: Order #1042 shipped\n[email] sara@mail.com: New login: Firefox / not you? reset password",
+    "highlights": [
+      {
+        "lines": [9, 14],
+        "note": {
+          "en": "The Implementor interface: one primitive operation, `deliver()`. It knows nothing about orders or logins.",
+          "fa": "رابط Implementor: فقط یک عملیات پایه به نام `deliver()`. هیچ چیزی دربارهٔ سفارش یا ورود به حساب نمی‌داند."
+        }
+      },
+      {
+        "lines": [16, 30],
+        "note": {
+          "en": "Concrete implementors. SMS decides on its own to drop the body — a channel detail no notification class has to know about.",
+          "fa": "پیاده‌سازهای مشخص. کانال پیامک خودش تصمیم می‌گیرد متن اصلی را حذف کند؛ جزئیاتی از کانال که هیچ کلاس اعلانی لازم نیست از آن خبر داشته باشد."
+        }
+      },
+      {
+        "lines": [33, 47],
+        "note": {
+          "en": "The Abstraction owns a `std::unique_ptr<Channel>` — that member is the bridge. Subclasses reach it via the protected `channel()`, and `setChannel()` re-points it at runtime.",
+          "fa": "Abstraction مالک یک `std::unique_ptr<Channel>` است؛ همین عضو «پل» است. زیرکلاس‌ها از طریق `channel()` که protected است به آن دسترسی دارند و `setChannel()` آن را در زمان اجرا به کانال دیگری وصل می‌کند."
+        }
+      },
+      {
+        "lines": [63, 70],
+        "note": {
+          "en": "A refined abstraction expresses *what* to say only through `deliver()`. Neither `SecurityAlert` nor `OrderShipped` mentions email or SMS.",
+          "fa": "یک انتزاع پالایش‌شده *چه گفتن* را فقط از طریق `deliver()` بیان می‌کند. نه `SecurityAlert` و نه `OrderShipped` اسمی از ایمیل یا پیامک نمی‌برند."
+        }
+      },
+      {
+        "lines": [76, 88],
+        "note": {
+          "en": "The client pairs kinds with channels freely and swaps them later. A new `PushChannel` would work with both notifications without changing them.",
+          "fa": "کلاینت انواع اعلان را آزادانه با کانال‌ها جفت می‌کند و بعداً عوضشان می‌کند. یک `PushChannel` جدید بدون هیچ تغییری با هر دو اعلان کار می‌کرد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem is Bridge primarily designed to solve?",
+        "fa": "Bridge در اصل برای حل چه مشکلی طراحی شده است؟"
+      },
+      "options": {
+        "en": [
+          "A subclass explosion when a type varies along two independent dimensions",
+          "Letting a client use an existing class whose interface doesn't match",
+          "Adding responsibilities to individual objects at runtime",
+          "Guaranteeing that only one implementation object exists"
+        ],
+        "fa": [
+          "انفجار زیرکلاس‌ها وقتی یک نوع در دو بُعد مستقل تغییر می‌کند",
+          "استفادهٔ کلاینت از یک کلاس موجود که رابطش با انتظار کلاینت جور نیست",
+          "افزودن مسئولیت به تک‌تک اشیا در زمان اجرا",
+          "تضمین این‌که فقط یک شیء پیاده‌سازی وجود داشته باشد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Bridge untangles two dimensions (e.g. notification kind × channel) into two hierarchies joined by a pointer, turning M × N subclasses into M + N classes. The other options describe Adapter, Decorator and Singleton.",
+        "fa": "Bridge دو بُعد درهم‌تنیده (مثلاً نوع اعلان × کانال) را به دو سلسله‌مراتب تبدیل می‌کند که با یک اشاره‌گر به هم وصل‌اند و M × N زیرکلاس را به M + N کلاس کاهش می‌دهد. گزینه‌های دیگر به ترتیب Adapter، Decorator و Singleton را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "A `RemoteControl` must operate a `Device` (an abstract class) that exists independently and outlives the remote. Which member best expresses that?",
+        "fa": "یک `RemoteControl` باید یک `Device` (کلاس انتزاعی) را کنترل کند که مستقل از ریموت وجود دارد و بیشتر از آن عمر می‌کند. کدام عضو این را به بهترین شکل بیان می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "`Device device_;` stored by value",
+          "`std::unique_ptr<Device> device_;`",
+          "`Device& device_;` (or a non-owning `Device*`)",
+          "`std::shared_ptr<Device> device_;` created in the remote's constructor"
+        ],
+        "fa": [
+          "`Device device_;` که به‌صورت مقداری نگه داشته شود",
+          "`std::unique_ptr<Device> device_;`",
+          "`Device& device_;` (یا یک `Device*` بدون مالکیت)",
+          "`std::shared_ptr<Device> device_;` که در سازندهٔ ریموت ساخته شود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A by-value member can't even hold an abstract type (and would be a private copy anyway). `unique_ptr` claims ownership, so the remote would destroy the device. Creating a `shared_ptr` inside the remote builds its own device. A reference says \"I use it, I don't own it\"; use `unique_ptr` only when the abstraction really owns its implementor, as `Notification` owns its `Channel`.",
+        "fa": "عضو مقداری اصلاً نمی‌تواند نوع انتزاعی نگه دارد (و در هر حال یک کپی خصوصی می‌شد). `unique_ptr` ادعای مالکیت می‌کند و ریموت دستگاه را نابود خواهد کرد. ساختن `shared_ptr` داخل ریموت یعنی دستگاهِ مخصوص خودش را می‌سازد. مرجع می‌گوید «از آن استفاده می‌کنم ولی مالکش نیستم»؛ `unique_ptr` را فقط وقتی به کار ببرید که انتزاع واقعاً مالک پیاده‌ساز است، مثل `Notification` که مالک `Channel` است."
+      }
+    },
+    {
+      "question": {
+        "en": "In which situation is Bridge most likely over-engineering?",
+        "fa": "در کدام وضعیت احتمالاً استفاده از Bridge زیاده‌روی است؟"
+      },
+      "options": {
+        "en": [
+          "A drawing app must render the same shapes with OpenGL and to SVG files",
+          "Two teams develop the high-level features and the platform backends separately",
+          "You want to unit-test high-level logic with a fake implementation",
+          "There is one implementation and no realistic prospect of a second one"
+        ],
+        "fa": [
+          "یک برنامهٔ طراحی باید همان شکل‌ها را هم با OpenGL رندر کند و هم در فایل SVG",
+          "دو تیم جداگانه قابلیت‌های سطح بالا و backendهای پلتفرم را توسعه می‌دهند",
+          "می‌خواهید منطق سطح بالا را با یک پیاده‌سازی جعلی تست واحد کنید",
+          "فقط یک پیاده‌سازی وجود دارد و احتمال واقعی برای دومی نیست"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Bridge pays off when there really are two axes of variation. With a single implementation you only add an interface, a pointer and virtual calls. The other three are classic reasons to use it.",
+        "fa": "Bridge وقتی ارزشش را دارد که واقعاً دو محور تغییر وجود داشته باشد. با فقط یک پیاده‌سازی، تنها یک رابط، یک اشاره‌گر و فراخوانی‌های virtual اضافه کرده‌اید. سه گزینهٔ دیگر دلایل کلاسیک استفاده از آن هستند."
+      }
+    },
+    {
+      "question": {
+        "en": "Bridge and Adapter both put an interface between two classes. What is the key difference?",
+        "fa": "Bridge و Adapter هر دو یک رابط بین دو کلاس قرار می‌دهند. تفاوت اصلی‌شان چیست؟"
+      },
+      "options": {
+        "en": [
+          "Adapter works only with templates, Bridge only with virtual functions",
+          "Bridge is designed up front so both sides can evolve; Adapter retrofits an existing, incompatible interface",
+          "Bridge always changes the interface the client sees; Adapter never does",
+          "Adapter requires two class hierarchies; Bridge needs only one"
+        ],
+        "fa": [
+          "Adapter فقط با template کار می‌کند و Bridge فقط با توابع virtual",
+          "Bridge از ابتدا طراحی می‌شود تا دو طرف تکامل پیدا کنند؛ Adapter یک رابط ناسازگارِ موجود را بعداً جفت‌وجور می‌کند",
+          "Bridge همیشه رابطی را که کلاینت می‌بیند تغییر می‌دهد و Adapter هرگز",
+          "Adapter به دو سلسله‌مراتب کلاس نیاز دارد و Bridge فقط به یکی"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "The difference is intent and timing. Adapter is a fix applied after the fact to make legacy or third-party code fit; Bridge is an up-front design decision that deliberately separates abstraction from implementation (and it is Bridge that has two hierarchies).",
+        "fa": "تفاوت در هدف و زمان است. Adapter راه‌حلی است که بعداً اعمال می‌شود تا کد قدیمی یا کتابخانهٔ شخص ثالث جا بیفتد؛ Bridge تصمیمی از پیش گرفته‌شده در طراحی است که عمداً انتزاع را از پیاده‌سازی جدا می‌کند (و در واقع این Bridge است که دو سلسله‌مراتب دارد)."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A charting library must draw bar, line and pie charts both on an OpenGL canvas and into SVG files, and every release adds new chart types and new rendering backends.",
+      "fa": "یک کتابخانهٔ نمودار باید نمودارهای میله‌ای، خطی و دایره‌ای را هم روی بوم OpenGL و هم در فایل SVG رسم کند و در هر نسخه هم نوع نمودار جدید اضافه می‌شود و هم موتور رندر جدید."
+    },
+    {
+      "en": "A file-sync client offers mirror, backup and archive modes that must all run on top of S3, Google Drive or a local disk — without writing a class for every mode-and-storage pair.",
+      "fa": "یک کلاینت همگام‌سازی فایل حالت‌های mirror، پشتیبان‌گیری و آرشیو دارد که همه باید روی S3، Google Drive یا دیسک محلی کار کنند؛ بدون این‌که برای هر جفت «حالت و فضای ذخیره‌سازی» یک کلاس نوشته شود."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "One remote, any device", "fa": "یک ریموت، هر دستگاهی" },
+    "task": {
+      "en": "`RemoteControl` is welded to a `Tv` it owns, so `advanced` controls its own private TV instead of the radio, and the real `tv` in `main()` never changes. Build the bridge: store a `Device&` in `RemoteControl` and receive it in the constructor, implement `AdvancedRemote::mute()` using only `Device` primitives, and pair `basic` with `tv` and `advanced` with `radio`.",
+      "fa": "`RemoteControl` به یک `Tv` که مالکش است جوش خورده؛ برای همین `advanced` به‌جای رادیو تلویزیون خصوصی خودش را کنترل می‌کند و `tv` واقعی در `main()` هیچ‌وقت تغییر نمی‌کند. پل را بسازید: در `RemoteControl` یک `Device&` نگه دارید و آن را از سازنده بگیرید، `AdvancedRemote::mute()` را فقط با عملیات پایهٔ `Device` پیاده‌سازی کنید و `basic` را با `tv` و `advanced` را با `radio` جفت کنید."
+    },
+    "hints": {
+      "en": [
+        "The abstraction should only know the `Device` interface — find every use of `tv_`.",
+        "Replace `Tv tv_;` with `Device& device_;` and add `explicit RemoteControl(Device& device) : device_(device) {}`. A reference member must be initialized in the constructor.",
+        "In `AdvancedRemote` write `using RemoteControl::RemoteControl;` and implement `mute()` as `device_.setVolume(0); report();`.",
+        "In `main()`: `RemoteControl basic(tv);` and `AdvancedRemote advanced(radio);`."
+      ],
+      "fa": [
+        "انتزاع فقط باید رابط `Device` را بشناسد؛ همهٔ جاهایی را که از `tv_` استفاده شده پیدا کنید.",
+        "`Tv tv_;` را با `Device& device_;` جایگزین کنید و `explicit RemoteControl(Device& device) : device_(device) {}` را اضافه کنید. عضو مرجع حتماً باید در سازنده مقداردهی شود.",
+        "در `AdvancedRemote` بنویسید `using RemoteControl::RemoteControl;` و `mute()` را به شکل `device_.setVolume(0); report();` پیاده‌سازی کنید.",
+        "در `main()`: `RemoteControl basic(tv);` و `AdvancedRemote advanced(radio);`."
+      ]
+    },
+    "expectedOutput": "TV volume: 40\nRadio volume: 30\nRadio volume: 0\ntv=40 radio=0"
+  }
+}

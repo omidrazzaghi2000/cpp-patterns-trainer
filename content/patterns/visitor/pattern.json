@@ -1,0 +1,373 @@
+{
+  "id": "visitor",
+  "category": "behavioral",
+  "order": 11,
+  "difficulty": 3,
+  "icon": "footprints",
+  "name": { "en": "Visitor", "fa": "ویزیتور (بازدیدکننده)" },
+  "aka": { "en": "Double dispatch", "fa": "Double Dispatch (توزیع دوگانه)" },
+  "tagline": {
+    "en": "Add new operations to a class hierarchy without touching its classes.",
+    "fa": "عملیات جدید به یک سلسله‌مراتب کلاس اضافه کنید، بدون دست زدن به خود کلاس‌ها."
+  },
+  "intent": {
+    "en": "Represent an operation on the elements of an object structure as a separate object, so you can define new operations without changing the classes of the elements it works on.",
+    "fa": "یک عملیات روی عناصر یک ساختار از اشیا را به شکل یک شیء جداگانه درمی‌آورد تا بتوانید عملیات جدید تعریف کنید، بدون این‌که کلاس عناصری را که روی آن‌ها کار می‌کند تغییر دهید."
+  },
+  "problem": {
+    "en": "A document editor models its content as `Paragraph`, `Image` and `CodeBlock` objects. Every sprint brings a new operation: export to HTML, export to Markdown, count words, spell-check, find broken image links. Adding each one as a virtual function to every element class fills the classes with unrelated concerns (HTML knowledge inside `Image`?), forces everything to recompile, and is impossible when the element classes belong to another team. The alternative — a chain of `dynamic_cast`s inside every operation — is fragile: nobody notices when one case is missing.",
+    "fa": "یک ویرایشگر اسناد، محتوا را با اشیای `Paragraph`، `Image` و `CodeBlock` مدل می‌کند. هر اسپرینت یک عملیات تازه می‌آورد: خروجی HTML، خروجی Markdown، شمارش کلمات، غلط‌یابی، پیدا کردن لینک‌های خراب تصاویر. اگر هر کدام را به‌صورت یک تابع virtual به همهٔ کلاس‌های عنصر اضافه کنید، کلاس‌ها پر از دغدغه‌های نامرتبط می‌شوند (دانش HTML داخل `Image`؟)، همه‌چیز باید دوباره کامپایل شود و اگر کلاس‌های عنصر مال تیم دیگری باشند، اصلاً ممکن نیست. راه دیگر، یعنی زنجیره‌ای از `dynamic_cast` داخل هر عملیات، شکننده است: هیچ‌کس متوجه نمی‌شود که یک حالت جا افتاده است."
+  },
+  "solution": {
+    "en": "Give every element a single `accept(Visitor&)` function and move each operation into its own visitor class with one `visit()` overload per element type. `accept()` simply calls `v.visit(*this)`: the virtual `accept()` resolves the element's type, and inside it the static type of `*this` selects the right overload of the virtual `visit()` — **double dispatch**, choosing code by two runtime types. A new operation is now a new visitor class and the elements never change. Because the visitor interface lists every element type as a pure virtual, the compiler rejects a visitor that forgets a case.",
+    "fa": "به هر عنصر فقط یک تابع `accept(Visitor&)` بدهید و هر عملیات را به یک کلاس ویزیتور جداگانه ببرید که برای هر نوع عنصر یک overload از `visit()` دارد. `accept()` فقط `v.visit(*this)` را صدا می‌زند: فراخوانی virtual روی `accept()` نوع عنصر را مشخص می‌کند و داخل آن، نوع ایستای `*this` overload درست از `visit()` (که خودش virtual است) را انتخاب می‌کند؛ این همان **double dispatch** است، یعنی انتخاب کد بر اساس دو نوع زمان اجرا. حالا هر عملیات جدید یک کلاس ویزیتور جدید است و عناصر هیچ‌وقت تغییر نمی‌کنند. چون رابط ویزیتور همهٔ انواع عنصر را به‌صورت pure virtual فهرست می‌کند، کامپایلر ویزیتوری را که حالتی را فراموش کرده باشد رد می‌کند."
+  },
+  "analogy": {
+    "en": "An insurance assessor tours a neighborhood. The buildings know nothing about insurance — each one simply opens its door (`accept`), and the assessor applies the right procedure for a flat, a villa or a shop. Tomorrow a plumber or a tax inspector can tour the same buildings with completely different procedures, and the buildings stay exactly as they are.",
+    "fa": "یک کارشناس بیمه را تصور کنید که به ساختمان‌های یک محله سر می‌زند. ساختمان‌ها هیچ چیزی دربارهٔ بیمه نمی‌دانند؛ هر کدام فقط در را باز می‌کند (`accept`) و کارشناس رویهٔ مناسب آپارتمان، ویلا یا مغازه را اجرا می‌کند. فردا یک لوله‌کش یا مأمور مالیات می‌تواند با رویه‌هایی کاملاً متفاوت به همان ساختمان‌ها سر بزند و ساختمان‌ها دقیقاً همان‌طور که بودند باقی می‌مانند."
+  },
+  "participants": [
+    {
+      "name": "Visitor (DocVisitor)",
+      "role": {
+        "en": "Declares one `visit()` overload for every concrete element type.",
+        "fa": "برای هر نوع عنصر مشخص، یک overload از `visit()` اعلام می‌کند."
+      }
+    },
+    {
+      "name": "ConcreteVisitor (HtmlExporter, StatsCollector)",
+      "role": {
+        "en": "Implements one operation for all element types and may keep state (counters, output) across the visits.",
+        "fa": "یک عملیات را برای همهٔ انواع عنصر پیاده‌سازی می‌کند و می‌تواند در طول بازدیدها وضعیت (شمارنده، خروجی) نگه دارد."
+      }
+    },
+    {
+      "name": "Element",
+      "role": {
+        "en": "The common base class; declares `accept(Visitor&)`.",
+        "fa": "کلاس پایهٔ مشترک که `accept(Visitor&)` را اعلام می‌کند."
+      }
+    },
+    {
+      "name": "ConcreteElement (Paragraph, Image, CodeBlock)",
+      "role": {
+        "en": "Implements `accept()` as `v.visit(*this)` and exposes the data visitors need.",
+        "fa": "`accept()` را به شکل `v.visit(*this)` پیاده‌سازی می‌کند و داده‌هایی را که ویزیتورها لازم دارند در اختیارشان می‌گذارد."
+      }
+    },
+    {
+      "name": "Client / ObjectStructure",
+      "role": {
+        "en": "Holds the elements (here a `std::vector<std::unique_ptr<Element>>`) and hands a visitor to each of them.",
+        "fa": "عناصر را نگه می‌دارد (این‌جا یک `std::vector<std::unique_ptr<Element>>`) و ویزیتور را به تک‌تک آن‌ها می‌دهد."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Element", "kind": "interface", "col": 1, "row": 0, "members": ["+ accept(DocVisitor&)"] },
+      { "id": "DocVisitor", "kind": "interface", "col": 3, "row": 0, "members": ["+ visit(const Paragraph&)", "+ visit(const Image&)", "+ visit(const CodeBlock&)"] },
+      { "id": "Paragraph", "kind": "concrete", "col": 0, "row": 2, "members": ["+ accept(v): v.visit(*this)", "+ text : string"] },
+      { "id": "Image", "kind": "concrete", "col": 1, "row": 2, "members": ["+ accept(v): v.visit(*this)", "+ file : string"] },
+      { "id": "HtmlExporter", "kind": "concrete", "col": 2, "row": 2, "members": ["+ visit(const Paragraph&)", "+ visit(const Image&)"] },
+      { "id": "StatsCollector", "kind": "concrete", "col": 3, "row": 2, "members": ["+ visit(const Paragraph&)", "+ visit(const Image&)", "- words_ : int"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Element", "type": "uses", "label": "accept(visitor)" },
+      { "from": "Element", "to": "DocVisitor", "type": "uses", "label": "visit(*this)" },
+      { "from": "Paragraph", "to": "Element", "type": "implements" },
+      { "from": "Image", "to": "Element", "type": "implements" },
+      { "from": "HtmlExporter", "to": "DocVisitor", "type": "implements" },
+      { "from": "StatsCollector", "to": "DocVisitor", "type": "implements" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Check that the element hierarchy is stable: Visitor pays off when types rarely change but operations are added often.",
+      "Forward-declare the element classes and write a visitor interface with one pure virtual `visit(const T&)` per concrete element type.",
+      "Add a pure virtual `accept(Visitor&)` to the element base class.",
+      "In every concrete element implement `accept()` as `v.visit(*this);` — repeated in each class so that `*this` has the concrete type.",
+      "Implement each operation as a concrete visitor class; keep results or accumulated state in its members.",
+      "Let the client walk the structure and call `element->accept(visitor)` on every element."
+    ],
+    "fa": [
+      "مطمئن شوید سلسله‌مراتب عناصر پایدار است: ویزیتور وقتی می‌ارزد که انواع به‌ندرت تغییر کنند ولی عملیات‌ها زیاد اضافه شوند.",
+      "کلاس‌های عنصر را forward declare کنید و یک رابط ویزیتور بنویسید که برای هر نوع عنصر مشخص یک `visit(const T&)` از نوع pure virtual دارد.",
+      "یک تابع pure virtual به نام `accept(Visitor&)` به کلاس پایهٔ عناصر اضافه کنید.",
+      "در هر عنصر مشخص `accept()` را به شکل `v.visit(*this);` پیاده‌سازی کنید؛ این کد باید در تک‌تک کلاس‌ها تکرار شود تا `*this` نوع مشخص را داشته باشد.",
+      "هر عملیات را به شکل یک کلاس ویزیتور مشخص پیاده‌سازی کنید و نتیجه یا وضعیت انباشته را در اعضای آن نگه دارید.",
+      "کلاینت ساختار را پیمایش کند و روی هر عنصر `element->accept(visitor)` را صدا بزند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "The class hierarchy is stable, but you keep adding new operations over it (compiler ASTs, document models, scene graphs).",
+      "Many unrelated operations — export, statistics, validation, rendering — would otherwise pollute the element classes.",
+      "An operation depends on the concrete type of each element and you want the compiler, not a `dynamic_cast` chain, to guarantee every type is handled.",
+      "The element classes are owned by another team or library, but they already offer an `accept()` hook."
+    ],
+    "fa": [
+      "سلسله‌مراتب کلاس‌ها پایدار است، اما مدام عملیات جدیدی روی آن اضافه می‌کنید (AST کامپایلرها، مدل اسناد، scene graph).",
+      "عملیات‌های نامرتبط زیادی مثل خروجی گرفتن، آمار، اعتبارسنجی و رندر، در غیر این صورت کلاس‌های عنصر را شلوغ می‌کنند.",
+      "یک عملیات به نوع مشخص هر عنصر بستگی دارد و می‌خواهید کامپایلر (نه زنجیره‌ای از `dynamic_cast`) تضمین کند که همهٔ انواع پوشش داده شده‌اند.",
+      "کلاس‌های عنصر متعلق به تیم یا کتابخانهٔ دیگری هستند، اما از قبل یک `accept()` ارائه می‌دهند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Open/closed for operations: a new operation is a new class, and the element classes stay untouched.",
+      "Related behavior lives together in one visitor instead of being scattered across many classes.",
+      "A visitor can accumulate state across a whole traversal (counters, output buffers, symbol tables).",
+      "Completeness is checked at compile time: a visitor missing an overload does not compile."
+    ],
+    "fa": [
+      "برای عملیات‌ها باز و برای تغییر بسته است (Open/Closed): هر عملیات جدید یک کلاس جدید است و کلاس‌های عنصر دست‌نخورده می‌مانند.",
+      "رفتارهای مرتبط به‌جای پخش شدن در کلاس‌های مختلف، کنار هم در یک ویزیتور قرار می‌گیرند.",
+      "ویزیتور می‌تواند در طول کل پیمایش وضعیت جمع کند (شمارنده، بافر خروجی، جدول نمادها).",
+      "کامل بودن در زمان کامپایل بررسی می‌شود: ویزیتوری که یک overload را کم داشته باشد کامپایل نمی‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Adding a new element type is expensive: the visitor interface and every existing visitor must change.",
+      "Elements must expose enough of their state for visitors to do their job, which can weaken encapsulation.",
+      "The `accept` → `visit` ping-pong is hard for newcomers to follow and to step through in a debugger.",
+      "Visitor and elements depend on each other cyclically: the visitor names every element type."
+    ],
+    "fa": [
+      "اضافه کردن نوع عنصر جدید پرهزینه است: رابط ویزیتور و تک‌تک ویزیتورهای موجود باید تغییر کنند.",
+      "عناصر باید به‌اندازهٔ کافی از وضعیت درونی‌شان را در اختیار ویزیتورها بگذارند و این می‌تواند کپسوله‌سازی را تضعیف کند.",
+      "رفت‌وبرگشت `accept` ← `visit` برای تازه‌کارها سخت قابل دنبال کردن است و ردگیری آن در دیباگر هم آسان نیست.",
+      "ویزیتور و عناصر به‌صورت چرخه‌ای به هم وابسته‌اند: ویزیتور نام همهٔ انواع عنصر را می‌داند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Modern alternative for a closed set of types: `using Element = std::variant<Paragraph, Image, CodeBlock>;` plus `std::visit(overloaded{...lambdas...}, element)` — no base class, no `accept()`, no heap allocation, and a missing case is still a compile error.",
+      "The `overloaded` helper is one line: `template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };` — since C++20 no deduction guide is needed. `std::visit` also returns the lambda's result directly, and `std::visit(f, a, b)` dispatches on two variants at once.",
+      "Choose the classic form when elements already live in a polymorphic hierarchy behind `std::unique_ptr<Element>` or cross library/plugin boundaries; choose `std::variant` for new code with a closed set of value types.",
+      "`accept()` cannot be inherited: inside `Element::accept` the static type of `*this` is `const Element`, so no overload matches. Write the one-liner in each class, or generate it with a CRTP helper that does `v.visit(static_cast<const Derived&>(*this))`.",
+      "Take elements by `const&` in read-only visitors, mark concrete visitors `final`, and give the visitor interface a virtual destructor. To produce a value, store it in a member (like `StatsCollector`) and read it after the traversal."
+    ],
+    "fa": [
+      "جایگزین مدرن برای مجموعه‌ای بسته از انواع: `using Element = std::variant<Paragraph, Image, CodeBlock>;` به همراه `std::visit(overloaded{...lambdas...}, element)`؛ بدون کلاس پایه، بدون `accept()`، بدون تخصیص روی heap و باز هم حالت جاافتاده یک خطای کامپایل است.",
+      "ساختار کمکی `overloaded` فقط یک خط است: `template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };`؛ از C++20 به بعد نیازی به deduction guide ندارد. `std::visit` نتیجهٔ lambda را هم مستقیماً برمی‌گرداند و `std::visit(f, a, b)` هم‌زمان روی دو variant توزیع انجام می‌دهد.",
+      "وقتی عناصر از قبل در یک سلسله‌مراتب چندریخت پشت `std::unique_ptr<Element>` زندگی می‌کنند یا از مرز کتابخانه/پلاگین عبور می‌کنند، شکل کلاسیک را انتخاب کنید؛ برای کد جدید با مجموعه‌ای بسته از value typeها `std::variant` را.",
+      "`accept()` را نمی‌توان به ارث برد: داخل `Element::accept` نوع ایستای `*this` برابر `const Element` است و هیچ overloadی با آن جور نمی‌شود. این یک خط را در هر کلاس بنویسید یا با یک کلاس کمکی CRTP بسازید که `v.visit(static_cast<const Derived&>(*this))` را صدا می‌زند.",
+      "در ویزیتورهای فقط‌خواندنی عناصر را با `const&` بگیرید، ویزیتورهای مشخص را `final` کنید و به رابط ویزیتور یک مخرب virtual بدهید. برای تولید یک مقدار، آن را در یک عضو نگه دارید (مثل `StatsCollector`) و بعد از پیمایش بخوانید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Clang's `RecursiveASTVisitor` and `StmtVisitor` walk C++ syntax trees; LLVM's `InstVisitor` dispatches over IR instruction types.",
+      "`std::visit` over `std::variant` (C++17) is the standard library's type-safe visitor.",
+      "Boost.Variant's `boost::static_visitor` / `boost::apply_visitor`, and the BFS/DFS visitors of the Boost Graph Library."
+    ],
+    "fa": [
+      "`RecursiveASTVisitor` و `StmtVisitor` در Clang درخت نحوی C++ را پیمایش می‌کنند؛ `InstVisitor` در LLVM روی انواع دستورهای IR توزیع انجام می‌دهد.",
+      "`std::visit` روی `std::variant` (از C++17) ویزیتور type-safe خود کتابخانهٔ استاندارد است.",
+      "`boost::static_visitor` و `boost::apply_visitor` در Boost.Variant و ویزیتورهای BFS/DFS در کتابخانهٔ Boost Graph."
+    ]
+  },
+  "related": [
+    {
+      "id": "composite",
+      "note": {
+        "en": "Visitors are most often applied to composite trees (ASTs, scene graphs): the composite provides the structure and traversal, the visitor the per-node operation.",
+        "fa": "ویزیتورها بیشتر از همه روی درخت‌های کامپوزیت (AST، scene graph) به کار می‌روند: کامپوزیت ساختار و پیمایش را فراهم می‌کند و ویزیتور عملیات مخصوص هر گره را."
+      }
+    },
+    {
+      "id": "interpreter",
+      "note": {
+        "en": "An interpreter's syntax tree is the classic visitor target: evaluating, pretty-printing and type-checking become visitors instead of virtual functions in every node.",
+        "fa": "درخت نحوی یک مفسر هدف کلاسیک ویزیتور است: ارزیابی، چاپ مرتب و بررسی نوع به‌جای توابع virtual در هر گره، به ویزیتور تبدیل می‌شوند."
+      }
+    },
+    {
+      "id": "iterator",
+      "note": {
+        "en": "An iterator decides which element comes next; a visitor decides what to do with it based on its concrete type. They are often used together.",
+        "fa": "ایتریتور تعیین می‌کند کدام عنصر بعدی است؛ ویزیتور بر اساس نوع مشخص عنصر تعیین می‌کند با آن چه کار کند. این دو اغلب با هم استفاده می‌شوند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Exporting and analyzing a document", "fa": "خروجی گرفتن و تحلیل یک سند" },
+    "description": {
+      "en": "Three element types, two operations. `HtmlExporter` and `StatsCollector` are separate classes, yet each reacts differently to a `Paragraph`, an `Image` and a `CodeBlock` — without a single `dynamic_cast`. A Markdown exporter would be one more class and zero changes to the elements.",
+      "fa": "سه نوع عنصر و دو عملیات. `HtmlExporter` و `StatsCollector` کلاس‌های جداگانه‌ای هستند، اما هر کدام با `Paragraph`، `Image` و `CodeBlock` رفتار متفاوتی دارد؛ بدون حتی یک `dynamic_cast`. یک خروجی Markdown فقط یک کلاس دیگر است و هیچ تغییری در عناصر لازم ندارد."
+    },
+    "output": "<p>Visitors add new operations</p>\n<img src=\"uml.png\">\n<pre lang=\"cpp\">12 lines</pre>\n<p>without editing element classes</p>\nwords: 8, images: 1, code lines: 12",
+    "highlights": [
+      {
+        "lines": [11, 18],
+        "note": {
+          "en": "The visitor interface has one pure virtual `visit()` per element type. It is the price of the pattern: a new element type means a new overload here and in every visitor.",
+          "fa": "رابط ویزیتور برای هر نوع عنصر یک `visit()` از نوع pure virtual دارد. این هزینهٔ الگوست: نوع عنصر جدید یعنی یک overload جدید این‌جا و در همهٔ ویزیتورها."
+        }
+      },
+      {
+        "lines": [20, 31],
+        "note": {
+          "en": "Double dispatch. Calling the virtual `accept()` selects `Paragraph::accept`; there `*this` is statically a `Paragraph`, so `v.visit(*this)` picks the matching overload of the visitor that was passed in.",
+          "fa": "توزیع دوگانه. فراخوانی virtual روی `accept()` تابع `Paragraph::accept` را انتخاب می‌کند؛ آن‌جا `*this` به‌صورت ایستا یک `Paragraph` است، پس `v.visit(*this)` overload مناسبِ همان ویزیتوری را که دریافت شده انتخاب می‌کند."
+        }
+      },
+      {
+        "lines": [46, 56],
+        "note": {
+          "en": "A whole operation in one class. The HTML knowledge lives here, not scattered across `Paragraph`, `Image` and `CodeBlock`.",
+          "fa": "یک عملیات کامل در یک کلاس. دانش HTML این‌جاست، نه پخش‌شده در `Paragraph`، `Image` و `CodeBlock`."
+        }
+      },
+      {
+        "lines": [58, 73],
+        "note": {
+          "en": "A visitor can carry state: `StatsCollector` accumulates counts over every element it visits and reports them at the end.",
+          "fa": "ویزیتور می‌تواند وضعیت داشته باشد: `StatsCollector` در طول بازدید از همهٔ عناصر، شمارش‌ها را جمع می‌کند و در پایان گزارش می‌دهد."
+        }
+      },
+      {
+        "lines": [82, 87],
+        "note": {
+          "en": "The same loop over the same elements runs two completely different operations — only the visitor object changes.",
+          "fa": "همان حلقه روی همان عناصر دو عملیات کاملاً متفاوت را اجرا می‌کند؛ فقط شیء ویزیتور عوض می‌شود."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Which kind of change does Visitor make cheap, and which one expensive?",
+        "fa": "ویزیتور کدام نوع تغییر را ارزان و کدام را گران می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Cheap: adding element types; expensive: adding operations",
+          "Both are cheap — that is the point of the pattern",
+          "Cheap: adding operations; expensive: adding element types",
+          "Cheap: changing element data; expensive: iterating over the elements"
+        ],
+        "fa": [
+          "ارزان: اضافه کردن نوع عنصر؛ گران: اضافه کردن عملیات",
+          "هر دو ارزان‌اند؛ هدف الگو همین است",
+          "ارزان: اضافه کردن عملیات؛ گران: اضافه کردن نوع عنصر",
+          "ارزان: تغییر دادهٔ عناصر؛ گران: پیمایش عناصر"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A new operation is just a new visitor class. A new element type needs a new `visit()` overload in the visitor interface — and therefore in every existing visitor. Visitor fits stable hierarchies with a growing set of operations.",
+        "fa": "عملیات جدید فقط یک کلاس ویزیتور جدید است. اما نوع عنصر جدید به یک overload جدید از `visit()` در رابط ویزیتور نیاز دارد و در نتیجه در تک‌تک ویزیتورهای موجود. ویزیتور برای سلسله‌مراتب پایدار با مجموعه‌ای رو به رشد از عملیات مناسب است."
+      }
+    },
+    {
+      "question": {
+        "en": "Why does every concrete element repeat the one-liner `v.visit(*this);` in its own `accept()` instead of inheriting it from `Element`?",
+        "fa": "چرا هر عنصر مشخص، دستور یک‌خطی `v.visit(*this);` را در `accept()` خودش تکرار می‌کند و آن را از `Element` به ارث نمی‌برد؟"
+      },
+      "options": {
+        "en": [
+          "Because virtual functions cannot be inherited in C++",
+          "In `Element::accept` the static type of `*this` is `const Element`, and overloads are chosen at compile time, so no `visit()` would match",
+          "Because `accept()` must be declared `final`",
+          "It doesn't have to — a single version in the base class works the same way"
+        ],
+        "fa": [
+          "چون در C++ توابع virtual قابل ارث‌بری نیستند",
+          "در `Element::accept` نوع ایستای `*this` برابر `const Element` است و overload در زمان کامپایل انتخاب می‌شود، پس هیچ نسخه‌ای از `visit()` جور نمی‌شود",
+          "چون `accept()` باید `final` اعلام شود",
+          "لازم نیست؛ یک نسخه در کلاس پایه هم همین کار را می‌کند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Overload resolution uses static types. Only inside `Paragraph::accept` is `*this` statically a `Paragraph`, so the compiler can pick `visit(const Paragraph&)`. The virtual `accept()` gives the first dispatch; the overload choice plus the virtual `visit()` give the second.",
+        "fa": "انتخاب overload بر اساس نوع ایستا انجام می‌شود. فقط داخل `Paragraph::accept` است که `*this` به‌صورت ایستا یک `Paragraph` است و کامپایلر می‌تواند `visit(const Paragraph&)` را انتخاب کند. فراخوانی virtual روی `accept()` توزیع اول را انجام می‌دهد و انتخاب overload به همراه `visit()` virtual، توزیع دوم را."
+      }
+    },
+    {
+      "question": {
+        "en": "Your team adds a new element type almost every week, while the set of operations barely changes. What fits best?",
+        "fa": "تیم شما تقریباً هر هفته یک نوع عنصر جدید اضافه می‌کند، در حالی که مجموعهٔ عملیات‌ها به‌ندرت تغییر می‌کند. چه چیزی مناسب‌تر است؟"
+      },
+      "options": {
+        "en": [
+          "Visitor anyway — the compiler will point out every visitor to update",
+          "Visitor, but without the `accept()` functions",
+          "A `dynamic_cast` chain inside every operation",
+          "Ordinary virtual member functions on the elements, so each new type brings its own implementations"
+        ],
+        "fa": [
+          "باز هم ویزیتور؛ کامپایلر همهٔ ویزیتورهایی را که باید به‌روز شوند نشان می‌دهد",
+          "ویزیتور، اما بدون توابع `accept()`",
+          "زنجیره‌ای از `dynamic_cast` داخل هر عملیات",
+          "توابع عضو virtual معمولی روی عناصر، تا هر نوع جدید پیاده‌سازی‌های خودش را همراه بیاورد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "With a changing set of types, every new type would force edits to every visitor. Plain virtual functions make new types cheap (one new class) — exactly the opposite trade-off of Visitor. `dynamic_cast` chains would compile even when a case is forgotten.",
+        "fa": "وقتی مجموعهٔ انواع مدام تغییر می‌کند، هر نوع جدید ویرایش همهٔ ویزیتورها را اجباری می‌کند. توابع virtual معمولی اضافه کردن نوع جدید را ارزان می‌کنند (فقط یک کلاس جدید)؛ یعنی دقیقاً مصالحهٔ برعکس ویزیتور. زنجیرهٔ `dynamic_cast` هم حتی با یک حالت جاافتاده کامپایل می‌شود."
+      }
+    },
+    {
+      "question": {
+        "en": "Iterator and Visitor both help you process every element of a collection. What is the essential difference?",
+        "fa": "ایتریتور و ویزیتور هر دو به پردازش همهٔ عناصر یک مجموعه کمک می‌کنند. تفاوت اصلی آن‌ها چیست؟"
+      },
+      "options": {
+        "en": [
+          "An iterator gives uniform sequential access and leaves the processing to the caller; a visitor packages a type-specific operation and picks the right code per element type",
+          "An iterator works only on arrays, a visitor only on trees",
+          "A visitor may change the structure of the collection, an iterator never can",
+          "None — Visitor is simply the object-oriented name for Iterator"
+        ],
+        "fa": [
+          "ایتریتور دسترسی ترتیبی یکنواخت می‌دهد و پردازش را به فراخوان می‌سپارد؛ ویزیتور یک عملیات وابسته به نوع را بسته‌بندی می‌کند و برای هر نوع عنصر کد درست را انتخاب می‌کند",
+          "ایتریتور فقط روی آرایه‌ها کار می‌کند و ویزیتور فقط روی درخت‌ها",
+          "ویزیتور می‌تواند ساختار مجموعه را تغییر دهد، ولی ایتریتور هرگز",
+          "تفاوتی ندارند؛ ویزیتور فقط نام شیءگرای ایتریتور است"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "They answer different questions and are often combined: the iterator (or the composite) decides **which** element comes next, the visitor decides **what** to do with it depending on its concrete type.",
+        "fa": "این دو به سؤال‌های متفاوتی جواب می‌دهند و اغلب با هم ترکیب می‌شوند: ایتریتور (یا کامپوزیت) تعیین می‌کند «کدام» عنصر بعدی است و ویزیتور بسته به نوع مشخص عنصر تعیین می‌کند «چه کاری» با آن انجام شود."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A compiler front-end has a fixed set of syntax-tree node classes, but each release different teams add new passes — type checking, constant folding, pretty-printing, code generation.",
+      "fa": "بخش جلویی یک کامپایلر مجموعهٔ ثابتی از کلاس‌های گرهٔ درخت نحوی دارد، اما در هر نسخه تیم‌های مختلف مرحله‌های پردازش جدیدی اضافه می‌کنند: بررسی نوع، ساده‌سازی ثابت‌ها، چاپ مرتب و تولید کد."
+    },
+    {
+      "en": "An insurance system stores houses, cars and boats in one polymorphic list; actuaries keep requesting new calculations (premium, risk score, tax report) that depend on each asset's concrete type, and the asset classes belong to a team that refuses to add a method per report.",
+      "fa": "یک سیستم بیمه خانه‌ها، خودروها و قایق‌ها را در یک فهرست چندریخت نگه می‌دارد؛ کارشناسان مدام محاسبه‌های جدیدی (حق بیمه، امتیاز ریسک، گزارش مالیاتی) می‌خواهند که به نوع مشخص هر دارایی بستگی دارد و کلاس‌های دارایی متعلق به تیمی هستند که حاضر نیست برای هر گزارش یک متد اضافه کند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Shipping costs for a shopping cart", "fa": "هزینهٔ ارسال برای سبد خرید" },
+    "task": {
+      "en": "The cart holds `Book`, `Laptop` and `Grocery` items, and `Describer` is already a visitor. Add the new operation **shipping cost** without putting shipping rules into the item classes: fix `Grocery::accept()` (it currently ignores every visitor), implement the three `visit()` overloads of `ShippingCost` (Book 3, Laptop 5 + 2 per kg, Grocery 4 — or 10 when chilled) and run the visitor over the whole cart. The expected total is `26 EUR`.",
+      "fa": "سبد خرید شامل اقلام `Book`، `Laptop` و `Grocery` است و `Describer` از قبل یک ویزیتور است. عملیات جدید **هزینهٔ ارسال** را بدون بردن قوانین ارسال به کلاس‌های کالا اضافه کنید: `Grocery::accept()` را درست کنید (فعلاً همهٔ ویزیتورها را نادیده می‌گیرد)، سه overload از `visit()` را در `ShippingCost` پیاده‌سازی کنید (کتاب ۳، لپ‌تاپ ۵ به‌علاوهٔ ۲ برای هر کیلوگرم، خواربار ۴ یا در صورت یخچالی بودن ۱۰) و ویزیتور را روی کل سبد اجرا کنید. جمع مورد انتظار `26 EUR` است."
+    },
+    "hints": {
+      "en": [
+        "Double dispatch only works if every element calls back into the visitor — look at how `Book::accept()` does it.",
+        "Inside `visit(const Laptop& l)` you can read `l.weightKg`; inside `visit(const Grocery& g)` read `g.chilled`. Give the parameters names so you can use them.",
+        "In `main()`, mirror the `Describer` loop: `for (const auto& item : cart) item->accept(shipping);`"
+      ],
+      "fa": [
+        "توزیع دوگانه فقط وقتی کار می‌کند که هر عنصر دوباره ویزیتور را صدا بزند؛ ببینید `Book::accept()` این کار را چطور انجام می‌دهد.",
+        "داخل `visit(const Laptop& l)` می‌توانید `l.weightKg` را بخوانید و داخل `visit(const Grocery& g)` مقدار `g.chilled` را. برای پارامترها اسم بگذارید تا بتوانید از آن‌ها استفاده کنید.",
+        "در `main()` از حلقهٔ `Describer` تقلید کنید: `for (const auto& item : cart) item->accept(shipping);`"
+      ]
+    },
+    "expectedOutput": "book: Dune\nlaptop: 2 kg\ngrocery: ice cream (chilled)\ngrocery: rice\nshipping: 26 EUR"
+  }
+}

@@ -1,0 +1,368 @@
+{
+  "id": "abstract-factory",
+  "category": "creational",
+  "order": 3,
+  "difficulty": 2,
+  "icon": "warehouse",
+  "name": { "en": "Abstract Factory", "fa": "ابسترکت فکتوری (کارخانهٔ انتزاعی)" },
+  "aka": { "en": "Kit", "fa": "Kit (کیت)" },
+  "tagline": {
+    "en": "Create whole families of matching objects — and never mix them up.",
+    "fa": "خانواده‌های کاملی از اشیای سازگار بسازید، بدون این‌که با هم قاطی شوند."
+  },
+  "intent": {
+    "en": "Provide an interface for creating families of related or dependent objects without specifying their concrete classes.",
+    "fa": "رابطی برای ساختن خانواده‌هایی از اشیای مرتبط یا وابسته به هم فراهم می‌کند، بدون این‌که کلاس‌های مشخص آن‌ها را تعیین کند."
+  },
+  "problem": {
+    "en": "Your data layer must run on PostgreSQL in production and on SQLite in unit tests. Each backend needs several cooperating objects: a connection, a SQL dialect that knows how parameters are written (`$1` vs `?`), perhaps a transaction or a migration runner. If the repository code calls `std::make_unique<PgConnection>()` in one place and `std::make_unique<SqliteDialect>()` in another, nothing prevents a mismatched pair — and every new backend forces you to hunt down every `make_unique` in the code base.",
+    "fa": "لایهٔ دسترسی به دادهٔ شما باید در محیط production روی PostgreSQL و در تست‌های واحد روی SQLite اجرا شود. هر backend به چند شیء همکار نیاز دارد: یک اتصال (connection)، یک گویش SQL که می‌داند پارامترها چطور نوشته می‌شوند (`$1` در برابر `?`) و شاید یک تراکنش یا اجراکنندهٔ migration. اگر کد repository در یک جا `std::make_unique<PgConnection>()` و در جای دیگر `std::make_unique<SqliteDialect>()` را صدا بزند، هیچ چیز جلوی ساخته شدن یک جفت ناسازگار را نمی‌گیرد؛ و هر backend جدید مجبورتان می‌کند تک‌تک `make_unique`ها را در کل کد پیدا کنید."
+  },
+  "solution": {
+    "en": "Declare an **abstract factory** interface with one creation method per product kind: `createConnection()`, `createDialect()`. For each family write a concrete factory (`PostgresFactory`, `SqliteFactory`) that returns only products of that family. Client code receives a `const DatabaseFactory&`, creates everything through it and sees only the abstract product interfaces. Swapping the whole family becomes a single decision made in one place, and mixing families becomes impossible by construction.",
+    "fa": "یک رابط **کارخانهٔ انتزاعی** تعریف کنید که برای هر نوع محصول یک متد ساخت دارد: `createConnection()` و `createDialect()`. برای هر خانواده یک کارخانهٔ مشخص بنویسید (`PostgresFactory`، `SqliteFactory`) که فقط محصولات همان خانواده را برمی‌گرداند. کد کلاینت یک `const DatabaseFactory&` دریافت می‌کند، همه‌چیز را از طریق آن می‌سازد و فقط رابط‌های انتزاعی محصولات را می‌بیند. به این ترتیب عوض کردن کل خانواده به یک تصمیم واحد در یک نقطه تبدیل می‌شود و قاطی شدن خانواده‌ها ذاتاً غیرممکن می‌شود."
+  },
+  "analogy": {
+    "en": "A furniture store sells complete collections. Order the \"Nordic\" line and the chair, the table and the sofa all arrive in the same style and fit together. You choose the collection once; you never have to check each piece for a matching style.",
+    "fa": "یک فروشگاه مبلمان، مجموعه‌های کامل می‌فروشد. اگر خط «نوردیک» را سفارش دهید، صندلی، میز و کاناپه همه در یک سبک می‌رسند و به هم می‌آیند. مجموعه را یک بار انتخاب می‌کنید و دیگر لازم نیست تک‌تک قطعه‌ها را از نظر هماهنگی سبک بررسی کنید."
+  },
+  "participants": [
+    {
+      "name": "AbstractFactory",
+      "role": {
+        "en": "The interface (`DatabaseFactory`) with one creation method per product kind of the family.",
+        "fa": "رابطی (`DatabaseFactory`) که برای هر نوع محصول در خانواده یک متد ساخت دارد."
+      }
+    },
+    {
+      "name": "ConcreteFactory",
+      "role": {
+        "en": "Implements every creation method so that all of them return products of one family (`PostgresFactory`, `SqliteFactory`).",
+        "fa": "همهٔ متدهای ساخت را طوری پیاده‌سازی می‌کند که همگی محصولاتی از یک خانواده برگردانند (`PostgresFactory`، `SqliteFactory`)."
+      }
+    },
+    {
+      "name": "AbstractProduct",
+      "role": {
+        "en": "The interface for one kind of product (`Connection`, `SqlDialect`).",
+        "fa": "رابط یک نوع محصول (`Connection`، `SqlDialect`)."
+      }
+    },
+    {
+      "name": "ConcreteProduct",
+      "role": {
+        "en": "A product that belongs to exactly one family (`PgConnection`, `SqliteDialect`, …).",
+        "fa": "محصولی که دقیقاً به یک خانواده تعلق دارد (`PgConnection`، `SqliteDialect` و …)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Uses only the abstract factory and the abstract product interfaces (`findUser()`), so it works with any family.",
+        "fa": "فقط از رابط کارخانهٔ انتزاعی و رابط‌های انتزاعی محصولات استفاده می‌کند (`findUser()`)، پس با هر خانواده‌ای کار می‌کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 1, "row": 0, "members": ["+ findUser(db, id)"] },
+      { "id": "Connection", "kind": "interface", "col": 0, "row": 1, "members": ["+ execute(sql, param)"] },
+      { "id": "DatabaseFactory", "kind": "interface", "col": 1, "row": 1, "members": ["+ createConnection()", "+ createDialect()"] },
+      { "id": "SqlDialect", "kind": "interface", "col": 2, "row": 1, "members": ["+ placeholder(i) : string"] },
+      { "id": "PgConnection", "kind": "concrete", "col": 0, "row": 2, "members": ["+ execute(sql, param)"] },
+      { "id": "PostgresFactory", "kind": "concrete", "col": 1, "row": 2, "members": ["+ createConnection()", "+ createDialect()"] },
+      { "id": "PgDialect", "kind": "concrete", "col": 2, "row": 2, "members": ["+ placeholder(i)", "  → \"$1\", \"$2\", …"] },
+      { "id": "SQLite family", "kind": "note", "col": 3, "row": 2, "members": ["SqliteFactory creates", "SqliteConnection and", "SqliteDialect (\"?\")"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "DatabaseFactory", "type": "uses", "label": "create*()" },
+      { "from": "PostgresFactory", "to": "DatabaseFactory", "type": "implements" },
+      { "from": "PgConnection", "to": "Connection", "type": "implements" },
+      { "from": "PgDialect", "to": "SqlDialect", "type": "implements" },
+      { "from": "PostgresFactory", "to": "PgConnection", "type": "creates" },
+      { "from": "PostgresFactory", "to": "PgDialect", "type": "creates" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "List the product kinds (`Connection`, `SqlDialect`) and the families (PostgreSQL, SQLite); declare an abstract interface for each product kind.",
+      "Implement every product kind once per family (`PgConnection`, `SqliteConnection`, …).",
+      "Declare the abstract factory with one `create…()` method per product kind, each returning a `std::unique_ptr` to the abstract product.",
+      "Write one concrete factory per family that returns only that family's products.",
+      "Let clients receive the factory as a parameter (`const DatabaseFactory&`) and choose the concrete factory in exactly one place, e.g. from configuration."
+    ],
+    "fa": [
+      "انواع محصول (`Connection`، `SqlDialect`) و خانواده‌ها (PostgreSQL، SQLite) را فهرست کنید و برای هر نوع محصول یک رابط انتزاعی تعریف کنید.",
+      "هر نوع محصول را برای هر خانواده یک بار پیاده‌سازی کنید (`PgConnection`، `SqliteConnection` و …).",
+      "کارخانهٔ انتزاعی را با یک متد `create…()` برای هر نوع محصول تعریف کنید که هر کدام یک `std::unique_ptr` به محصول انتزاعی برمی‌گرداند.",
+      "برای هر خانواده یک کارخانهٔ مشخص بنویسید که فقط محصولات همان خانواده را برمی‌گرداند.",
+      "کلاینت‌ها کارخانه را به‌عنوان پارامتر (`const DatabaseFactory&`) بگیرند و کارخانهٔ مشخص فقط در یک نقطه انتخاب شود، مثلاً بر اساس فایل تنظیمات."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Your code works with several families of related objects (UI themes, database backends, OS platforms) that must never be mixed.",
+      "You want to switch the entire family at once — production vs. test, light vs. dark — by changing a single object.",
+      "You ship a library and want to expose product interfaces while keeping the concrete implementation classes hidden."
+    ],
+    "fa": [
+      "کد شما با چند خانواده از اشیای مرتبط کار می‌کند (تم‌های رابط کاربری، backendهای پایگاه داده، سیستم‌عامل‌ها) که هرگز نباید با هم قاطی شوند.",
+      "می‌خواهید کل خانواده را یک‌جا عوض کنید (production در برابر تست، روشن در برابر تیره)، فقط با تغییر یک شیء.",
+      "یک کتابخانه منتشر می‌کنید و می‌خواهید رابط‌های محصولات را در اختیار بگذارید، ولی کلاس‌های پیاده‌سازی مشخص پنهان بمانند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Products that come from one factory are guaranteed to be compatible with each other.",
+      "Clients are decoupled from concrete classes; they only ever see interfaces.",
+      "Swapping a whole family is a one-line change in one place.",
+      "Adding a new family (say, MySQL) needs only new classes — existing code stays untouched."
+    ],
+    "fa": [
+      "تضمین می‌شود محصولاتی که از یک کارخانه می‌آیند با هم سازگار باشند.",
+      "کلاینت‌ها از کلاس‌های مشخص جدا هستند و همیشه فقط رابط‌ها را می‌بینند.",
+      "عوض کردن یک خانوادهٔ کامل، تغییری یک‌خطی در یک نقطه است.",
+      "اضافه کردن یک خانوادهٔ جدید (مثلاً MySQL) فقط به کلاس‌های جدید نیاز دارد و کد موجود دست‌نخورده می‌ماند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Adding a new product **kind** (e.g. `Transaction`) changes the abstract factory interface and therefore every concrete factory.",
+      "Many small classes: families × product kinds, plus one factory per family.",
+      "Overkill when there is only one family, or when the products do not really depend on each other."
+    ],
+    "fa": [
+      "اضافه کردن یک **نوع** محصول جدید (مثلاً `Transaction`) رابط کارخانهٔ انتزاعی و در نتیجه همهٔ کارخانه‌های مشخص را تغییر می‌دهد.",
+      "کلاس‌های کوچک زیاد: تعداد خانواده‌ها ضرب در تعداد انواع محصول، به‌علاوهٔ یک کارخانه برای هر خانواده.",
+      "وقتی فقط یک خانواده وجود دارد یا محصولات واقعاً به هم وابسته نیستند، زیاده‌روی است."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Return `std::unique_ptr<AbstractProduct>` from every `create…()` method and make the methods `const` — creating an object should not change the factory.",
+      "Give every abstract product a `virtual` destructor: products are destroyed through `std::unique_ptr<Base>`, and without it that deletion is undefined behavior.",
+      "Pass the factory by reference (`const DatabaseFactory&`) to the code that needs it instead of reaching for a global — tests can then hand in a fake factory.",
+      "If the family is fixed at compile time, a template parameter (`Repository<PostgresTraits>`) holding type aliases gives the same consistency with zero virtual calls.",
+      "Concrete factories are usually stateless, so one instance per family is enough — often a function-local `static`."
+    ],
+    "fa": [
+      "از هر متد `create…()` یک `std::unique_ptr<AbstractProduct>` برگردانید و متدها را `const` تعریف کنید؛ ساختن یک شیء نباید وضعیت کارخانه را تغییر دهد.",
+      "به هر محصول انتزاعی یک مخرب (destructor) `virtual` بدهید: محصولات از طریق `std::unique_ptr<Base>` نابود می‌شوند و بدون آن، این حذف رفتار تعریف‌نشده دارد.",
+      "کارخانه را به‌صورت مرجع (`const DatabaseFactory&`) به کدی که لازمش دارد پاس بدهید، نه این‌که سراغ یک متغیر سراسری بروید؛ آن‌وقت تست‌ها می‌توانند یک کارخانهٔ جعلی بدهند.",
+      "اگر خانواده در زمان کامپایل مشخص است، یک پارامتر template (`Repository<PostgresTraits>`) که type aliasها را در خود دارد همین سازگاری را بدون هیچ فراخوانی virtual فراهم می‌کند.",
+      "کارخانه‌های مشخص معمولاً وضعیتی (state) ندارند، پس یک نمونه برای هر خانواده کافی است؛ اغلب یک متغیر `static` محلی در تابع."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt's SQL module: each `QSqlDriver` (PostgreSQL, SQLite, MySQL…) creates its matching `QSqlResult` via `createResult()`, and `QSqlDatabase::addDatabase(\"QPSQL\")` selects the whole family.",
+      "Direct3D's `ID3D11Device` creates buffers, textures and shaders (`CreateBuffer()`, `CreateTexture2D()`, …) that only work with that device.",
+      "Cross-platform GUI toolkits that create a native widget family per platform — the motivating example of the GoF book."
+    ],
+    "fa": [
+      "ماژول SQL در Qt: هر `QSqlDriver` (برای PostgreSQL، SQLite، MySQL و …) از طریق `createResult()` شیء `QSqlResult` متناظر خودش را می‌سازد و `QSqlDatabase::addDatabase(\"QPSQL\")` کل خانواده را انتخاب می‌کند.",
+      "`ID3D11Device` در Direct3D بافرها، تکسچرها و shaderهایی می‌سازد (`CreateBuffer()`، `CreateTexture2D()` و …) که فقط با همان device کار می‌کنند.",
+      "کیت‌های رابط کاربری چندسکویی که برای هر سکو خانوادهٔ ویجت‌های بومی خودش را می‌سازند؛ همان مثال انگیزشی کتاب GoF."
+    ]
+  },
+  "related": [
+    {
+      "id": "factory-method",
+      "note": {
+        "en": "Each `create…()` method of an abstract factory is usually a factory method; Abstract Factory bundles several of them into an object you pass around.",
+        "fa": "هر متد `create…()` در یک کارخانهٔ انتزاعی معمولاً یک Factory Method است؛ Abstract Factory چند تا از آن‌ها را در شیئی جمع می‌کند که می‌توانید پاسش بدهید."
+      }
+    },
+    {
+      "id": "builder",
+      "note": {
+        "en": "Builder assembles one complex object step by step; Abstract Factory returns several related objects, each one from a single call.",
+        "fa": "Builder یک شیء پیچیده را مرحله‌به‌مرحله سرهم می‌کند؛ Abstract Factory چند شیء مرتبط برمی‌گرداند که هر کدام با یک فراخوانی ساخته می‌شوند."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "A concrete factory is stateless and needed only once per family, so it is often implemented as a singleton.",
+        "fa": "یک کارخانهٔ مشخص وضعیتی ندارد و برای هر خانواده فقط یک بار لازم است، به همین دلیل اغلب به شکل سینگلتون پیاده‌سازی می‌شود."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Database backends: PostgreSQL vs. SQLite", "fa": "backendهای پایگاه داده: PostgreSQL در برابر SQLite" },
+    "description": {
+      "en": "`findUser()` asks the factory for a connection and a SQL dialect and never learns which database it talks to. Because both objects come from the same factory, the placeholder (`$1` or `?`) always matches the driver that executes the query. `makeFactory()` is the only place that names a concrete family.",
+      "fa": "`findUser()` از کارخانه یک اتصال و یک گویش SQL می‌خواهد و هیچ‌وقت نمی‌فهمد با کدام پایگاه داده صحبت می‌کند. چون هر دو شیء از یک کارخانه می‌آیند، placeholder (`$1` یا `?`) همیشه با درایوری که کوئری را اجرا می‌کند جور است. `makeFactory()` تنها جایی است که نام یک خانوادهٔ مشخص را می‌آورد."
+    },
+    "output": "production:\n  [libpq]   SELECT * FROM users WHERE id = $1   <- 42\nunit-test:\n  [sqlite3] SELECT * FROM users WHERE id = ?   <- 42",
+    "highlights": [
+      {
+        "lines": [7, 17],
+        "note": {
+          "en": "The abstract products. Every backend must provide both a `Connection` and a `SqlDialect` — together they form a family.",
+          "fa": "محصولات انتزاعی. هر backend باید هم یک `Connection` و هم یک `SqlDialect` ارائه کند؛ این دو با هم یک خانواده را می‌سازند."
+        }
+      },
+      {
+        "lines": [19, 41],
+        "note": {
+          "en": "Two families of concrete products. `PgDialect` writes `$1` and `SqliteDialect` writes `?`: each dialect only makes sense next to its own connection.",
+          "fa": "دو خانواده از محصولات مشخص. `PgDialect` می‌نویسد `$1` و `SqliteDialect` می‌نویسد `?`؛ هر گویش فقط کنار اتصال خانوادهٔ خودش معنا دارد."
+        }
+      },
+      {
+        "lines": [43, 49],
+        "note": {
+          "en": "The abstract factory: one `create…()` method per product kind, each returning ownership as a `std::unique_ptr` to the abstract type.",
+          "fa": "کارخانهٔ انتزاعی: برای هر نوع محصول یک متد `create…()` که مالکیت را در قالب یک `std::unique_ptr` به نوع انتزاعی برمی‌گرداند."
+        }
+      },
+      {
+        "lines": [51, 70],
+        "note": {
+          "en": "Concrete factories. `PostgresFactory` can only ever produce PostgreSQL objects, so a mismatched pair cannot be created through it.",
+          "fa": "کارخانه‌های مشخص. `PostgresFactory` فقط و فقط اشیای PostgreSQL تولید می‌کند، پس از طریق آن نمی‌توان یک جفت ناسازگار ساخت."
+        }
+      },
+      {
+        "lines": [72, 90],
+        "note": {
+          "en": "The client sees only abstract types. Switching the whole backend happens in `makeFactory()` — the single place that knows concrete classes.",
+          "fa": "کلاینت فقط نوع‌های انتزاعی را می‌بیند. عوض کردن کل backend در `makeFactory()` اتفاق می‌افتد؛ تنها جایی که کلاس‌های مشخص را می‌شناسد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem does Abstract Factory primarily solve?",
+        "fa": "ابسترکت فکتوری در اصل چه مشکلی را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Avoiding expensive construction by copying existing objects",
+          "Guaranteeing that objects which must work together always come from the same family",
+          "Converting one interface into another that the client expects",
+          "Constructing an object that needs many optional configuration steps"
+        ],
+        "fa": [
+          "پرهیز از ساخت پرهزینه با کپی گرفتن از اشیای موجود",
+          "تضمین این‌که اشیایی که باید با هم کار کنند همیشه از یک خانواده بیایند",
+          "تبدیل یک رابط به رابط دیگری که کلاینت انتظارش را دارد",
+          "ساختن شیئی که به مراحل پیکربندی اختیاری زیادی نیاز دارد"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "The factory is the single source for a whole family, so a PostgreSQL connection is never paired with a SQLite dialect. The other options describe Prototype, Adapter and Builder.",
+        "fa": "کارخانه تنها منبع ساخت یک خانوادهٔ کامل است، پس هیچ‌وقت یک اتصال PostgreSQL کنار یک گویش SQLite قرار نمی‌گیرد. گزینه‌های دیگر به ترتیب Prototype، Adapter و Builder را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Why does `SqlDialect` declare `virtual ~SqlDialect() = default;`?",
+        "fa": "چرا `SqlDialect` مخرب `virtual ~SqlDialect() = default;` را تعریف می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "It is what makes `SqlDialect` an abstract class that cannot be instantiated",
+          "`std::make_unique` only compiles for classes that declare a virtual destructor",
+          "It allows `SqlDialect` objects to be copied and moved safely",
+          "Products are deleted through `std::unique_ptr<SqlDialect>`; without it, destroying a `PgDialect` is undefined behavior"
+        ],
+        "fa": [
+          "همین است که `SqlDialect` را به کلاسی انتزاعی و غیرقابل نمونه‌سازی تبدیل می‌کند",
+          "`std::make_unique` فقط برای کلاس‌هایی کامپایل می‌شود که مخرب virtual تعریف کرده‌اند",
+          "اجازه می‌دهد اشیای `SqlDialect` به‌طور امن کپی و منتقل (move) شوند",
+          "محصولات از طریق `std::unique_ptr<SqlDialect>` حذف می‌شوند؛ بدون آن، نابود کردن یک `PgDialect` رفتار تعریف‌نشده دارد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The factory returns `std::unique_ptr<SqlDialect>`, whose deleter calls `delete` on a base pointer. Only a virtual destructor makes that call reach `~PgDialect()`. Abstractness comes from the pure virtual `placeholder()`, not from the destructor.",
+        "fa": "کارخانه `std::unique_ptr<SqlDialect>` برمی‌گرداند که هنگام حذف، `delete` را روی یک اشاره‌گر پایه صدا می‌زند. فقط مخرب virtual باعث می‌شود این فراخوانی به `~PgDialect()` برسد. انتزاعی بودن کلاس از تابع pure virtual یعنی `placeholder()` می‌آید، نه از مخرب."
+      }
+    },
+    {
+      "question": {
+        "en": "Your abstract factory already supports three database families. What does adding a new product kind, `Transaction`, cost?",
+        "fa": "کارخانهٔ انتزاعی شما از قبل سه خانوادهٔ پایگاه داده را پشتیبانی می‌کند. اضافه کردن یک نوع محصول جدید به نام `Transaction` چه هزینه‌ای دارد؟"
+      },
+      "options": {
+        "en": [
+          "Just one new `Transaction` class that all three families share unchanged",
+          "Nothing in the factories — clients simply create transactions themselves",
+          "`createTransaction()` joins the factory interface, so every concrete factory changes, plus one transaction class per family",
+          "A second, separate abstract factory has to be written for each of the three families"
+        ],
+        "fa": [
+          "فقط یک کلاس جدید `Transaction` که هر سه خانواده بدون تغییر از آن استفاده می‌کنند",
+          "هیچ تغییری در کارخانه‌ها لازم نیست؛ کلاینت‌ها خودشان تراکنش را می‌سازند",
+          "`createTransaction()` به رابط کارخانه اضافه می‌شود، پس همهٔ کارخانه‌های مشخص تغییر می‌کنند، به‌علاوهٔ یک کلاس تراکنش برای هر خانواده",
+          "برای هر یک از سه خانواده باید یک کارخانهٔ انتزاعی دوم و جداگانه نوشت"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "This is the pattern's main weakness: new families are cheap, but new product kinds ripple through the interface and every implementation of it. Letting clients create transactions directly would bring back the mixing problem.",
+        "fa": "این نقطه‌ضعف اصلی الگوست: اضافه کردن خانوادهٔ جدید ارزان است، اما نوع محصول جدید در رابط و همهٔ پیاده‌سازی‌های آن موج ایجاد می‌کند. اگر کلاینت‌ها خودشان تراکنش بسازند، همان مشکل قاطی شدن خانواده‌ها برمی‌گردد."
+      }
+    },
+    {
+      "question": {
+        "en": "Which statement best contrasts Abstract Factory with Builder?",
+        "fa": "کدام جمله تفاوت ابسترکت فکتوری و بیلدر را بهتر بیان می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Abstract Factory returns several related products, each from one call; Builder assembles one complex product over several calls",
+          "Builder guarantees that products from different families are compatible; Abstract Factory does not",
+          "Abstract Factory only works with templates, while Builder only works with inheritance",
+          "Builder creates its products lazily, while Abstract Factory creates them all at program start"
+        ],
+        "fa": [
+          "ابسترکت فکتوری چند محصول مرتبط برمی‌گرداند که هر کدام با یک فراخوانی ساخته می‌شوند؛ بیلدر یک محصول پیچیده را طی چند فراخوانی سرهم می‌کند",
+          "بیلدر سازگاری محصولات خانواده‌های مختلف را تضمین می‌کند، ولی ابسترکت فکتوری نه",
+          "ابسترکت فکتوری فقط با template کار می‌کند و بیلدر فقط با ارث‌بری",
+          "بیلدر محصولاتش را به‌صورت تنبل می‌سازد، در حالی که ابسترکت فکتوری همه را در شروع برنامه می‌سازد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Both hide construction details, but they answer different questions: Abstract Factory answers \"which family?\" for several objects, Builder answers \"how is this one object put together?\" step by step, returning the result at the end.",
+        "fa": "هر دو جزئیات ساخت را پنهان می‌کنند، اما به پرسش‌های متفاوتی پاسخ می‌دهند: ابسترکت فکتوری برای چند شیء به پرسش «کدام خانواده؟» جواب می‌دهد و بیلدر به پرسش «این یک شیء چطور مرحله‌به‌مرحله سرهم می‌شود؟» و نتیجه را در پایان برمی‌گرداند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Your app must look native on Windows and on macOS: buttons, menus and scrollbars have to come from the same platform set, and switching platforms must not require touching any screen code.",
+      "fa": "برنامهٔ شما باید هم در ویندوز و هم در macOS ظاهری بومی داشته باشد: دکمه‌ها، منوها و اسکرول‌بارها باید از یک مجموعهٔ مربوط به همان سکو بیایند و عوض کردن سکو نباید به دست زدن در کد هیچ صفحه‌ای نیاز داشته باشد."
+    },
+    {
+      "en": "A game engine renders with either Vulkan or DirectX; buffers, textures and shaders created for one API cannot be used with the other, and the gameplay code should not care which API is active.",
+      "fa": "یک موتور بازی با Vulkan یا DirectX رندر می‌کند؛ بافرها، تکسچرها و shaderهایی که برای یک API ساخته شده‌اند با دیگری قابل استفاده نیستند و کد گیم‌پلی نباید اهمیتی بدهد کدام API فعال است."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Consistent themes for a settings screen", "fa": "تم یکدست برای صفحهٔ تنظیمات" },
+    "task": {
+      "en": "`drawSettings()` hard-codes a `DarkCheckbox` next to a `LightButton`, so both screens look the same — and mixed. Write a `DarkFactory`, make `drawSettings()` take a `const WidgetFactory&` and create both widgets through it, then draw the screen once with a `LightFactory` and once with a `DarkFactory`.",
+      "fa": "`drawSettings()` مستقیماً یک `DarkCheckbox` را کنار یک `LightButton` می‌سازد، برای همین هر دو صفحه شبیه هم‌اند؛ آن هم با تم‌های قاطی‌شده. یک `DarkFactory` بنویسید، `drawSettings()` را طوری تغییر دهید که یک `const WidgetFactory&` بگیرد و هر دو ویجت را از طریق آن بسازد، و بعد صفحه را یک بار با `LightFactory` و یک بار با `DarkFactory` رسم کنید."
+    },
+    "hints": {
+      "en": [
+        "`DarkFactory` looks exactly like `LightFactory`; only the classes it returns differ.",
+        "Change the signature to `void drawSettings(const WidgetFactory& factory)` and replace both `std::make_unique<…>()` calls with `factory.createCheckbox()` and `factory.createButton()`.",
+        "In `main()` you can pass temporaries: `drawSettings(LightFactory{});` and `drawSettings(DarkFactory{});`."
+      ],
+      "fa": [
+        "`DarkFactory` دقیقاً شبیه `LightFactory` است؛ فقط کلاس‌هایی که برمی‌گرداند فرق دارند.",
+        "امضای تابع را به `void drawSettings(const WidgetFactory& factory)` تغییر دهید و هر دو فراخوانی `std::make_unique<…>()` را با `factory.createCheckbox()` و `factory.createButton()` جایگزین کنید.",
+        "در `main()` می‌توانید اشیای موقت پاس بدهید: `drawSettings(LightFactory{});` و `drawSettings(DarkFactory{});`."
+      ]
+    },
+    "expectedOutput": "-- light --\n[x] Email alerts\n[ ] Auto-update\n[ Save ]\n-- dark --\n(*) Email alerts\n( ) Auto-update\n<< Save >>"
+  }
+}

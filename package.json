@@ -1,0 +1,33 @@
+{
+  "name": "cpp-patterns-trainer",
+  "version": "1.0.0",
+  "description": "Bilingual (English / Persian) interactive trainer for C++ design patterns \u2014 examples, quizzes and live coding exercises.",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch-path=server --watch-path=content server/index.js",
+    "validate": "node scripts/validate-content.js",
+    "test": "node --test test/",
+    "build:static": "node scripts/build-static.js",
+    "preview:static": "node scripts/preview-static.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/vazirmatn": "^5.3.0",
+    "codemirror": "^5.65.21",
+    "express": "^4.22.3",
+    "lucide-static": "^1.49.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omidrazzaghi2000/cpp-patterns-trainer.git"
+  },
+  "homepage": "https://omidrazzaghi2000.github.io/cpp-patterns-trainer/"
+}

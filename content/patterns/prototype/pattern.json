@@ -1,0 +1,357 @@
+{
+  "id": "prototype",
+  "category": "creational",
+  "order": 5,
+  "difficulty": 2,
+  "icon": "copy",
+  "name": { "en": "Prototype", "fa": "پروتوتایپ (نمونهٔ اولیه)" },
+  "aka": { "en": "Clone, Virtual Copy Constructor", "fa": "Clone یا Virtual Copy Constructor (سازندهٔ کپی مجازی)" },
+  "tagline": {
+    "en": "Copy objects through their interface — without knowing their class.",
+    "fa": "از اشیا از طریق رابطشان کپی بگیرید؛ بدون این‌که کلاسشان را بدانید."
+  },
+  "intent": {
+    "en": "Specify the kinds of objects to create using a prototypical instance, and create new objects by copying (cloning) that prototype.",
+    "fa": "نوع اشیایی را که باید ساخته شوند با یک نمونهٔ اولیه مشخص می‌کند و اشیای جدید را با کپی گرفتن (clone) از همان نمونه می‌سازد."
+  },
+  "problem": {
+    "en": "A drawing app keeps its canvas as `std::vector<std::unique_ptr<Shape>>`. When the user presses Ctrl+D, the selected shapes must be duplicated — but the editor only holds `Shape` pointers. `Shape copy = *shape;` does not compile for an abstract class (and would slice the object if it did). A chain of `dynamic_cast<Circle*>`, `dynamic_cast<Rectangle*>`… must be extended for every new shape, and breaks as soon as a plugin adds a shape the editor has never heard of.",
+    "fa": "یک برنامهٔ طراحی، بوم را به شکل `std::vector<std::unique_ptr<Shape>>` نگه می‌دارد. وقتی کاربر Ctrl+D را می‌زند، شکل‌های انتخاب‌شده باید تکثیر شوند؛ اما ویرایشگر فقط اشاره‌گرهای `Shape` در اختیار دارد. `Shape copy = *shape;` برای یک کلاس انتزاعی کامپایل نمی‌شود (و اگر هم می‌شد، شیء برش می‌خورد؛ همان slicing). زنجیره‌ای از `dynamic_cast<Circle*>`، `dynamic_cast<Rectangle*>` و … هم باید برای هر شکل جدید گسترش پیدا کند و به محض این‌که یک افزونه شکلی اضافه کند که ویرایشگر هرگز اسمش را نشنیده، از کار می‌افتد."
+  },
+  "solution": {
+    "en": "Make copying part of the interface: declare `virtual std::unique_ptr<Shape> clone() const = 0;` in the base class. Every concrete class implements it in one line — `return std::make_unique<Circle>(*this);` — and lets its own copy constructor do the real work, because only the concrete class knows its full type and all of its fields. Client code now duplicates any shape with `shape->clone()`. Keep a registry of preconfigured **prototypes** and you can create new objects by cloning them instead of constructing them from scratch.",
+    "fa": "کپی کردن را بخشی از رابط کنید: در کلاس پایه `virtual std::unique_ptr<Shape> clone() const = 0;` را تعریف کنید. هر کلاس مشخص آن را با یک خط پیاده‌سازی می‌کند (`return std::make_unique<Circle>(*this);`) و کار اصلی را به سازندهٔ کپی خودش می‌سپارد، چون فقط خود کلاس مشخص، نوع کامل و همهٔ فیلدهایش را می‌شناسد. حالا کد کلاینت هر شکلی را با `shape->clone()` تکثیر می‌کند. اگر یک رجیستری از **نمونه‌های اولیهٔ** از پیش پیکربندی‌شده نگه دارید، می‌توانید اشیای جدید را به‌جای ساختن از صفر، با clone گرفتن از آن‌ها بسازید."
+  },
+  "analogy": {
+    "en": "A key-cutting shop doesn't need the lock's blueprint or the manufacturer's machine: hand over any key and it produces an exact copy. The key itself is the prototype — whatever shape it has, the copy has too.",
+    "fa": "یک کلیدساز به نقشهٔ قفل یا دستگاه کارخانهٔ سازنده نیازی ندارد: هر کلیدی به او بدهید، یک نسخهٔ دقیق از آن می‌سازد. خود کلید همان نمونهٔ اولیه است؛ هر شکلی که داشته باشد، کپی‌اش هم همان شکل را دارد."
+  },
+  "participants": [
+    {
+      "name": "Prototype",
+      "role": {
+        "en": "The base class (`Shape`) that declares the `clone()` interface.",
+        "fa": "کلاس پایه (`Shape`) که رابط `clone()` را اعلان می‌کند."
+      }
+    },
+    {
+      "name": "ConcretePrototype",
+      "role": {
+        "en": "Implements `clone()` by copying itself, usually through its own copy constructor (`Circle`, `Rectangle`).",
+        "fa": "`clone()` را با کپی گرفتن از خودش پیاده‌سازی می‌کند، معمولاً به کمک سازندهٔ کپی خودش (`Circle`، `Rectangle`)."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Creates new objects by asking existing ones to clone themselves, never naming a concrete class (`duplicate()`).",
+        "fa": "با درخواست clone از اشیای موجود، اشیای جدید می‌سازد و هرگز نام یک کلاس مشخص را نمی‌آورد (`duplicate()`)."
+      }
+    },
+    {
+      "name": "Prototype registry",
+      "role": {
+        "en": "Optional. Stores named, preconfigured prototypes and hands out clones on request (the exercise's `TemplateGallery`).",
+        "fa": "اختیاری. نمونه‌های اولیهٔ نام‌دار و از پیش پیکربندی‌شده را نگه می‌دارد و در صورت درخواست، از آن‌ها clone تحویل می‌دهد (`TemplateGallery` در تمرین)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Editor", "kind": "client", "col": 0, "row": 0, "members": ["+ duplicate(selection)"] },
+      { "id": "Shape", "kind": "abstract", "col": 2, "row": 0, "members": ["+ clone() : unique_ptr<Shape>", "+ draw()", "+ moveBy(dx, dy)", "# Shape(const Shape&)"] },
+      { "id": "clone() inside", "kind": "note", "col": 0, "row": 1, "members": ["make_unique<Circle>(*this)", "copy ctor copies every field"] },
+      { "id": "Circle", "kind": "concrete", "col": 1, "row": 1, "members": ["+ clone() : unique_ptr<Shape>", "- radius_ : int"] },
+      { "id": "Rectangle", "kind": "concrete", "col": 3, "row": 1, "members": ["+ clone() : unique_ptr<Shape>", "- width_, height_ : int"] }
+    ],
+    "edges": [
+      { "from": "Editor", "to": "Shape", "type": "uses", "label": "clone()" },
+      { "from": "Circle", "to": "Shape", "type": "inherits" },
+      { "from": "Rectangle", "to": "Shape", "type": "inherits" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Add `virtual std::unique_ptr<Base> clone() const = 0;` to the base class, next to a virtual destructor.",
+      "Make sure every concrete class has a correct copy constructor — deep-copy anything it owns (e.g. members held by `std::unique_ptr`).",
+      "Implement `clone()` in every concrete class as `return std::make_unique<Concrete>(*this);`.",
+      "Protect the base against slicing: make its copy constructor `protected` and delete its copy assignment.",
+      "Optionally keep a registry (`std::map<std::string, std::unique_ptr<Base>>`) of configured prototypes and create new objects with `registry.at(key)->clone()`."
+    ],
+    "fa": [
+      "به کلاس پایه، کنار یک مخرب virtual، متد `virtual std::unique_ptr<Base> clone() const = 0;` را اضافه کنید.",
+      "مطمئن شوید هر کلاس مشخص یک سازندهٔ کپی درست دارد؛ هر چیزی را که مالکش است (مثلاً اعضایی که با `std::unique_ptr` نگه داشته می‌شوند) به‌صورت عمیق (deep copy) کپی کنید.",
+      "`clone()` را در هر کلاس مشخص به شکل `return std::make_unique<Concrete>(*this);` پیاده‌سازی کنید.",
+      "کلاس پایه را در برابر slicing محافظت کنید: سازندهٔ کپی آن را `protected` کنید و عملگر انتساب کپی را delete کنید.",
+      "در صورت نیاز یک رجیستری (`std::map<std::string, std::unique_ptr<Base>>`) از نمونه‌های پیکربندی‌شده نگه دارید و اشیای جدید را با `registry.at(key)->clone()` بسازید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You must copy objects that you only know through a base-class pointer or reference.",
+      "Building an object from scratch is expensive (parsing, loading, heavy configuration), while copying a ready one is cheap.",
+      "The available kinds of objects are configured at run time — templates, presets, types added by plugins — rather than fixed by subclasses.",
+      "Many objects differ only in a few settings: clone a preset and tweak it instead of writing one subclass per variant."
+    ],
+    "fa": [
+      "باید از اشیایی کپی بگیرید که فقط از طریق اشاره‌گر یا مرجع کلاس پایه آن‌ها را می‌شناسید.",
+      "ساختن یک شیء از صفر پرهزینه است (پارس کردن، بارگذاری، پیکربندی سنگین)، در حالی که کپی گرفتن از یک شیء آماده ارزان است.",
+      "انواع اشیای موجود در زمان اجرا پیکربندی می‌شوند (قالب‌ها، presetها، نوع‌هایی که افزونه‌ها اضافه می‌کنند)، نه این‌که با زیرکلاس‌ها ثابت شده باشند.",
+      "اشیای زیادی فقط در چند تنظیم با هم فرق دارند: به‌جای نوشتن یک زیرکلاس برای هر حالت، از یک preset کپی بگیرید و کمی تغییرش دهید."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Copies objects without knowing their concrete classes — no `dynamic_cast` chains.",
+      "New kinds, even ones provided by plugins, work with existing client code immediately.",
+      "Preconfigured prototypes replace many tiny subclasses or complicated construction code.",
+      "Cloning a ready object can be much cheaper than building one from scratch."
+    ],
+    "fa": [
+      "بدون دانستن کلاس مشخص از اشیا کپی می‌گیرد؛ دیگر از زنجیره‌های `dynamic_cast` خبری نیست.",
+      "انواع جدید، حتی آن‌هایی که افزونه‌ها اضافه می‌کنند، بلافاصله با کد کلاینت موجود کار می‌کنند.",
+      "نمونه‌های اولیهٔ از پیش پیکربندی‌شده جای تعداد زیادی زیرکلاس کوچک یا کد ساخت پیچیده را می‌گیرند.",
+      "clone گرفتن از یک شیء آماده می‌تواند خیلی ارزان‌تر از ساختن آن از صفر باشد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Every concrete class must implement `clone()`; if the base version is not pure virtual, forgetting it silently slices the copy.",
+      "Deep vs. shallow copy must be decided carefully for pointers, handles and shared state.",
+      "Objects with circular references or non-copyable resources (sockets, mutexes) are hard to clone meaningfully."
+    ],
+    "fa": [
+      "هر کلاس مشخص باید `clone()` را پیاده‌سازی کند؛ اگر نسخهٔ پایه pure virtual نباشد، فراموش کردنش بی‌صدا باعث slicing در کپی می‌شود.",
+      "برای اشاره‌گرها، handleها و وضعیت‌های مشترک باید با دقت بین کپی عمیق و کپی سطحی تصمیم گرفت.",
+      "clone گرفتن معنادار از اشیایی که ارجاع حلقوی یا منابع غیرقابل کپی (مثل socket یا mutex) دارند دشوار است."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Implement `clone()` with the copy constructor — `return std::make_unique<Circle>(*this);` — instead of copying fields by hand; hand-written copies silently miss members added later.",
+      "Covariant return types don't work with smart pointers: every override must return `std::unique_ptr<Shape>`. If callers need the concrete type, add a non-virtual helper or generate `clone()` with CRTP.",
+      "A class with a `std::unique_ptr` member has a deleted copy constructor. Write one that deep-copies (`child_(other.child_->clone())`), or `make_unique<T>(*this)` won't compile.",
+      "Guard the base against slicing (C++ Core Guidelines C.67): make its copy constructor `protected` and delete copy assignment, so copies happen only through `clone()` or a concrete type.",
+      "Make `clone()` pure virtual in the base. A base implementation such as `make_unique<Base>(*this)` compiles fine and silently drops the subclass part."
+    ],
+    "fa": [
+      "`clone()` را با سازندهٔ کپی پیاده‌سازی کنید (`return std::make_unique<Circle>(*this);`)، نه با کپی دستی فیلدها؛ کپی دستی، عضوهایی را که بعداً اضافه می‌شوند بی‌صدا جا می‌اندازد.",
+      "نوع بازگشتی هم‌وردا (covariant) با اشاره‌گرهای هوشمند کار نمی‌کند: همهٔ overrideها باید `std::unique_ptr<Shape>` برگردانند. اگر فراخوان به نوع مشخص نیاز دارد، یک تابع کمکی غیر virtual اضافه کنید یا `clone()` را با CRTP تولید کنید.",
+      "کلاسی که عضو `std::unique_ptr` دارد، سازندهٔ کپی‌اش delete شده است. یک سازندهٔ کپی بنویسید که کپی عمیق بگیرد (`child_(other.child_->clone())`)، وگرنه `make_unique<T>(*this)` کامپایل نمی‌شود.",
+      "کلاس پایه را در برابر slicing محافظت کنید (قاعدهٔ C.67 از C++ Core Guidelines): سازندهٔ کپی را `protected` کنید و انتساب کپی را delete کنید تا کپی فقط از طریق `clone()` یا یک نوع مشخص انجام شود.",
+      "`clone()` را در کلاس پایه pure virtual کنید. پیاده‌سازی‌ای مثل `make_unique<Base>(*this)` در کلاس پایه بی‌دردسر کامپایل می‌شود و بی‌صدا بخش مربوط به زیرکلاس را دور می‌ریزد."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Qt's `QStandardItemModel::setItemPrototype()`: whenever the model needs a new item, it calls `clone()` on your `QStandardItem` subclass.",
+      "LLVM's `Instruction::clone()` duplicates an IR instruction of any concrete subclass, e.g. when inlining or unrolling loops.",
+      "Game-engine prefabs (e.g. Unity's `Instantiate(prefab)`): designers configure one object, and the game spawns copies of it."
+    ],
+    "fa": [
+      "`QStandardItemModel::setItemPrototype()` در Qt: هر وقت مدل به یک آیتم جدید نیاز داشته باشد، `clone()` را روی زیرکلاس `QStandardItem` شما صدا می‌زند.",
+      "`Instruction::clone()` در LLVM یک دستور IR را، از هر زیرکلاس مشخصی که باشد، تکثیر می‌کند؛ مثلاً هنگام inline کردن توابع یا باز کردن حلقه‌ها.",
+      "prefabها در موتورهای بازی (مثلاً `Instantiate(prefab)` در Unity): طراح یک شیء را یک بار پیکربندی می‌کند و بازی از روی آن کپی‌های متعدد می‌سازد."
+    ]
+  },
+  "related": [
+    {
+      "id": "factory-method",
+      "note": {
+        "en": "Factory Method creates objects through creator subclasses; Prototype creates them by copying configured instances, so no creator hierarchy is needed.",
+        "fa": "Factory Method اشیا را از طریق زیرکلاس‌های Creator می‌سازد؛ Prototype آن‌ها را با کپی گرفتن از نمونه‌های پیکربندی‌شده می‌سازد، پس به سلسله‌مراتب Creator نیازی نیست."
+      }
+    },
+    {
+      "id": "abstract-factory",
+      "note": {
+        "en": "An Abstract Factory can store one prototype per product and clone it, instead of hard-coding the product classes.",
+        "fa": "یک Abstract Factory می‌تواند برای هر محصول یک نمونهٔ اولیه نگه دارد و از آن clone بگیرد، به‌جای این‌که کلاس محصولات را در کد ثابت کند."
+      }
+    },
+    {
+      "id": "composite",
+      "note": {
+        "en": "Cloning a Composite means deep-cloning its children: its `clone()` calls `clone()` on every child.",
+        "fa": "clone گرفتن از یک Composite یعنی کپی عمیق از فرزندانش: `clone()` آن روی تک‌تک فرزندان `clone()` را صدا می‌زند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Duplicating shapes in a drawing app", "fa": "تکثیر شکل‌ها در یک برنامهٔ طراحی" },
+    "description": {
+      "en": "`duplicate()` only sees `std::unique_ptr<Shape>`, yet every copy comes back as a real `Circle` or `Rectangle` with all its fields, because each class clones itself through its own copy constructor. Moving the copies leaves the originals untouched — they are independent objects.",
+      "fa": "`duplicate()` فقط `std::unique_ptr<Shape>` را می‌بیند، اما هر کپی به شکل یک `Circle` یا `Rectangle` واقعی با همهٔ فیلدهایش برمی‌گردد، چون هر کلاس از طریق سازندهٔ کپی خودش از خودش clone می‌گیرد. جابه‌جا کردن کپی‌ها نسخه‌های اصلی را دست‌نخورده باقی می‌گذارد؛ این‌ها اشیایی مستقل‌اند."
+    },
+    "output": "originals (unchanged):\n  red circle r=5 at (0,0)\n  blue rect 8x4 at (20,5)\nduplicates:\n  red circle r=5 at (10,10)\n  blue rect 8x4 at (30,15)",
+    "highlights": [
+      {
+        "lines": [8, 13],
+        "note": {
+          "en": "The prototype interface. `clone()` is pure virtual and returns a `std::unique_ptr<Shape>`, so the caller owns the new copy.",
+          "fa": "رابط prototype. `clone()` یک تابع pure virtual است و `std::unique_ptr<Shape>` برمی‌گرداند، پس فراخوان مالک کپی جدید است."
+        }
+      },
+      {
+        "lines": [17, 20],
+        "note": {
+          "en": "The copy constructor is `protected`: subclasses can use it, but nobody can slice a shape by copying through a `Shape&`. Copy assignment is deleted for the same reason.",
+          "fa": "سازندهٔ کپی `protected` است: زیرکلاس‌ها می‌توانند از آن استفاده کنند، اما هیچ‌کس نمی‌تواند با کپی از طریق `Shape&` یک شکل را برش بزند. انتساب کپی هم به همین دلیل delete شده است."
+        }
+      },
+      {
+        "lines": [32, 34],
+        "note": {
+          "en": "One line per class. Here `*this` has the full `Circle` type, so the copy constructor copies every field, including `radius_`.",
+          "fa": "برای هر کلاس فقط یک خط. این‌جا `*this` نوع کامل `Circle` را دارد، پس سازندهٔ کپی همهٔ فیلدها، از جمله `radius_` را کپی می‌کند."
+        }
+      },
+      {
+        "lines": [64, 73],
+        "note": {
+          "en": "The client never names a concrete class: the virtual call to `clone()` picks the right implementation at run time.",
+          "fa": "کلاینت هرگز نام یک کلاس مشخص را نمی‌آورد: فراخوانی virtual تابع `clone()` در زمان اجرا پیاده‌سازی درست را انتخاب می‌کند."
+        }
+      },
+      {
+        "lines": [80, 84],
+        "note": {
+          "en": "The copies were moved by (10, 10), the originals were not: a clone is a fully independent object.",
+          "fa": "کپی‌ها به اندازهٔ (10, 10) جابه‌جا شده‌اند و نسخه‌های اصلی نه: هر clone یک شیء کاملاً مستقل است."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the core idea of the Prototype pattern?",
+        "fa": "ایدهٔ اصلی الگوی پروتوتایپ چیست؟"
+      },
+      "options": {
+        "en": [
+          "Create objects through subclasses that override a creation method",
+          "Guarantee that only one shared instance exists",
+          "Assemble an object from optional parts in several steps",
+          "Create new objects by asking an existing object to copy itself"
+        ],
+        "fa": [
+          "ساختن اشیا از طریق زیرکلاس‌هایی که یک متد ساخت را override می‌کنند",
+          "تضمین این‌که فقط یک نمونهٔ مشترک وجود داشته باشد",
+          "سرهم کردن یک شیء از بخش‌های اختیاری طی چند مرحله",
+          "ساختن اشیای جدید با درخواست از یک شیء موجود برای کپی گرفتن از خودش"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "With Prototype, the object itself is the template: `clone()` copies it, including its concrete type and configuration. The other options describe Factory Method, Singleton and Builder.",
+        "fa": "در پروتوتایپ خودِ شیء نقش الگو را دارد: `clone()` از آن کپی می‌گیرد، همراه با نوع مشخص و پیکربندی‌اش. گزینه‌های دیگر به ترتیب Factory Method، Singleton و Builder را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "`Document::clone()` is implemented as `return std::make_unique<Document>(*this);` and `Invoice` does not override it. What does calling `clone()` on an `Invoice` return?",
+        "fa": "`Document::clone()` به شکل `return std::make_unique<Document>(*this);` پیاده‌سازی شده و `Invoice` آن را override نکرده است. صدا زدن `clone()` روی یک `Invoice` چه چیزی برمی‌گرداند؟"
+      },
+      "options": {
+        "en": [
+          "A complete `Invoice`, because `*this` refers to the `Invoice` object",
+          "A plain `Document` holding only the base part — the invoice data is sliced away",
+          "Nothing: it does not compile, because `Invoice` must override every virtual function",
+          "A `nullptr`, because the dynamic types do not match"
+        ],
+        "fa": [
+          "یک `Invoice` کامل، چون `*this` به شیء `Invoice` اشاره می‌کند",
+          "یک `Document` ساده که فقط بخش پایه را دارد؛ داده‌های فاکتور برش خورده و از دست رفته‌اند",
+          "هیچ؛ کامپایل نمی‌شود، چون `Invoice` باید همهٔ توابع virtual را override کند",
+          "یک `nullptr`، چون نوع‌های پویا با هم نمی‌خوانند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Inside `Document::clone()`, `*this` has static type `Document&`, so `make_unique<Document>` runs `Document`'s copy constructor and builds a `Document`. Making `clone()` pure virtual forces every subclass to provide its own — exactly what the exercise asks you to do.",
+        "fa": "داخل `Document::clone()`، نوع ایستای `*this` برابر `Document&` است، پس `make_unique<Document>` سازندهٔ کپی `Document` را اجرا می‌کند و یک `Document` می‌سازد. pure virtual کردن `clone()` هر زیرکلاس را مجبور می‌کند نسخهٔ خودش را ارائه دهد؛ دقیقاً همان کاری که در تمرین از شما خواسته شده است."
+      }
+    },
+    {
+      "question": {
+        "en": "Which of these objects is the hardest to support with a simple `clone()`?",
+        "fa": "پشتیبانی از `clone()` ساده برای کدام‌یک از این اشیا از همه دشوارتر است؟"
+      },
+      "options": {
+        "en": [
+          "A network connection that owns an open socket handle",
+          "A shape storing its coordinates and color in plain members",
+          "A game-unit preset keeping its stats in a `std::vector<int>`",
+          "A document template holding a title and a currency code"
+        ],
+        "fa": [
+          "یک اتصال شبکه که مالک یک handle باز از socket است",
+          "شکلی که مختصات و رنگش را در عضوهای ساده نگه می‌دارد",
+          "یک preset از واحد بازی که آمارش را در یک `std::vector<int>` نگه می‌دارد",
+          "یک قالب سند که یک عنوان و یک کد ارز در خود دارد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "The other three copy correctly with the compiler-generated copy constructor. An open socket cannot simply be duplicated: you must decide whether a clone opens a new connection, shares the existing one, or whether the type should not be cloneable at all.",
+        "fa": "سه مورد دیگر با سازندهٔ کپی‌ای که کامپایلر تولید می‌کند به‌درستی کپی می‌شوند. یک socket باز را نمی‌شود به‌سادگی تکثیر کرد: باید تصمیم بگیرید که clone یک اتصال جدید باز کند، اتصال موجود را به اشتراک بگذارد یا اصلاً این نوع نباید قابل clone باشد."
+      }
+    },
+    {
+      "question": {
+        "en": "Compared with Factory Method, what does Prototype NOT require?",
+        "fa": "در مقایسه با فکتوری متد، پروتوتایپ به چه چیزی نیاز ندارد؟"
+      },
+      "options": {
+        "en": [
+          "A common base class for the products",
+          "Virtual functions",
+          "A parallel hierarchy of creator subclasses, one per product type",
+          "Each concrete product implementing a special method"
+        ],
+        "fa": [
+          "یک کلاس پایهٔ مشترک برای محصولات",
+          "توابع virtual",
+          "یک سلسله‌مراتب موازی از زیرکلاس‌های Creator، یکی برای هر نوع محصول",
+          "این‌که هر محصول مشخص یک متد ویژه را پیاده‌سازی کند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "With Factory Method each new product usually needs a new creator subclass. Prototype replaces that hierarchy with objects: register a configured instance and clone it. Both still rely on a common base and virtual functions, and in Prototype every concrete class must implement `clone()`.",
+        "fa": "در فکتوری متد، هر محصول جدید معمولاً به یک زیرکلاس Creator جدید نیاز دارد. پروتوتایپ این سلسله‌مراتب را با خود اشیا جایگزین می‌کند: یک نمونهٔ پیکربندی‌شده را ثبت کنید و از آن clone بگیرید. هر دو الگو همچنان به کلاس پایهٔ مشترک و توابع virtual تکیه دارند و در پروتوتایپ هر کلاس مشخص باید `clone()` را پیاده‌سازی کند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A level editor lets designers configure an enemy once — health, weapon, AI profile — and then stamp out dozens of identical enemies across the map, including enemy types added later by mods.",
+      "fa": "یک ویرایشگر مرحله به طراحان اجازه می‌دهد یک دشمن را یک بار پیکربندی کنند (سلامتی، سلاح، پروفایل هوش مصنوعی) و بعد ده‌ها دشمن یکسان را در سراسر نقشه قرار دهند؛ حتی برای انواع دشمنی که بعداً modها اضافه می‌کنند."
+    },
+    {
+      "en": "A spreadsheet's \"paste\" must duplicate whatever cells, charts or images are on the clipboard, although the paste code only holds pointers to a common `Item` base class.",
+      "fa": "عملیات «paste» در یک صفحه‌گسترده باید هر چیزی را که روی کلیپ‌بورد است (سلول، نمودار یا تصویر) تکثیر کند، در حالی که کد paste فقط اشاره‌گرهایی به کلاس پایهٔ مشترک `Item` در اختیار دارد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A document template gallery", "fa": "گالری قالب‌های سند" },
+    "task": {
+      "en": "`TemplateGallery::create()` already calls `clone()`, but only `Document` implements it, so every new invoice or letter is sliced into a plain `document`. Make `clone()` pure virtual in `Document` and override it in `Invoice` and `Letter`, so each new document is a complete copy of its prototype — and renaming it leaves the prototype untouched.",
+      "fa": "`TemplateGallery::create()` همین حالا `clone()` را صدا می‌زند، اما فقط `Document` آن را پیاده‌سازی کرده است، برای همین هر فاکتور یا نامهٔ جدید به یک `document` ساده برش می‌خورد (slicing). `clone()` را در `Document` به pure virtual تبدیل کنید و آن را در `Invoice` و `Letter` override کنید تا هر سند جدید یک کپی کامل از نمونهٔ اولیه‌اش باشد و تغییر نام آن هم روی نمونهٔ اولیه اثری نگذارد."
+    },
+    "hints": {
+      "en": [
+        "The base class cannot know how to copy a subclass, so it should not try: replace its body with `= 0`.",
+        "Inside `Invoice`, `*this` is a complete `Invoice`, so its implicit copy constructor copies `currency_` and `vat_` too.",
+        "`std::unique_ptr<Document> clone() const override { return std::make_unique<Invoice>(*this); }` — then the same for `Letter`."
+      ],
+      "fa": [
+        "کلاس پایه نمی‌داند چطور از یک زیرکلاس کپی بگیرد، پس نباید تلاش کند: بدنه‌اش را با `= 0` جایگزین کنید.",
+        "داخل `Invoice`، `*this` یک `Invoice` کامل است، پس سازندهٔ کپی ضمنی آن `currency_` و `vat_` را هم کپی می‌کند.",
+        "`std::unique_ptr<Document> clone() const override { return std::make_unique<Invoice>(*this); }` و بعد همین کار را برای `Letter` انجام دهید."
+      ]
+    },
+    "expectedOutput": "invoice 'INV-0301' in EUR, VAT 19%\nletter 'Welcome pack' starting \"Dear customer,\"\ntemplate kept: invoice 'Invoice' in EUR, VAT 19%"
+  }
+}

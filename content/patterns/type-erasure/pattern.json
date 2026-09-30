@@ -1,0 +1,384 @@
+{
+  "id": "type-erasure",
+  "category": "idioms",
+  "order": 4,
+  "difficulty": 3,
+  "icon": "eraser",
+  "name": { "en": "Type Erasure", "fa": "پاک‌سازی نوع (Type Erasure)" },
+  "aka": {
+    "en": "Concept–Model idiom, value-semantic polymorphism (Sean Parent)",
+    "fa": "ایدیوم Concept–Model، چندریختی با معنای مقداری (Sean Parent)"
+  },
+  "tagline": {
+    "en": "Polymorphism without inheritance: any type that fits, stored by value.",
+    "fa": "چندریختی بدون وراثت: هر نوع سازگار، به‌صورت مقدار ذخیره می‌شود."
+  },
+  "intent": {
+    "en": "Let unrelated types that support the same operations be used through one concrete, copyable wrapper type, while their real types stay hidden behind an internal interface.",
+    "fa": "به انواع نامرتبطی که عملیات یکسانی دارند اجازه می‌دهد از طریق یک نوع پوشانندهٔ مشخص و قابل‌کپی استفاده شوند، در حالی که نوع واقعی‌شان پشت یک رابط داخلی پنهان می‌ماند."
+  },
+  "problem": {
+    "en": "Your smart-home app must show readings from thermometers, door contacts and air-quality sensors that come from different vendor SDKs. They all have a `reading()` method, but they share no base class and you cannot edit them to add one. Classic OOP forces you to hand-write an adapter class per vendor type and juggle `std::vector<std::unique_ptr<ISensor>>` — pointer semantics, so copying the list copies pointers, not sensors. Templates alone don't help either: a `std::vector` needs one element type fixed at compile time.",
+    "fa": "اپلیکیشن خانهٔ هوشمند شما باید خوانش دماسنج‌ها، سنسورهای در و سنسورهای کیفیت هوا را نشان دهد که هر کدام از SDK یک تولیدکنندهٔ متفاوت می‌آیند. همهٔ آن‌ها متد `reading()` دارند، اما هیچ کلاس پایهٔ مشترکی ندارند و نمی‌توانید کدشان را تغییر دهید تا یکی اضافه کنید. OOP کلاسیک شما را مجبور می‌کند برای هر نوع یک کلاس adapter دستی بنویسید و با `std::vector<std::unique_ptr<ISensor>>` سر و کله بزنید؛ یعنی معنای اشاره‌گری، و کپی کردن لیست فقط اشاره‌گرها را کپی می‌کند نه خود سنسورها را. template به‌تنهایی هم کمکی نمی‌کند، چون `std::vector` باید یک نوع عنصر واحد داشته باشد که در زمان کامپایل مشخص شده است."
+  },
+  "solution": {
+    "en": "Write one concrete wrapper class (`Sensor`) that hides the real type inside it. Privately it declares an abstract **Concept** listing the needed operations, and a class template **Model<T>** that implements the Concept by forwarding each call to a stored `T`. A templated constructor accepts any suitable `T`, wraps it in a `Model<T>` and keeps it through a `std::unique_ptr<Concept>` — from that point on, `T` is \"erased\". A virtual `clone()` gives the wrapper real value semantics: copying a `Sensor` deep-copies the hidden object. Callers see an ordinary value type; the virtual dispatch is an implementation detail.",
+    "fa": "یک کلاس پوشانندهٔ مشخص (`Sensor`) بنویسید که نوع واقعی را درون خودش پنهان کند. این کلاس به‌صورت خصوصی یک رابط انتزاعی به نام **Concept** تعریف می‌کند که عملیات لازم را فهرست می‌کند، و یک کلاس template به نام **Model<T>** که Concept را با ارجاع (forward) هر فراخوانی به یک شیء ذخیره‌شده از نوع `T` پیاده‌سازی می‌کند. یک سازندهٔ template هر `T` مناسبی را می‌پذیرد، آن را در یک `Model<T>` می‌پیچد و از طریق `std::unique_ptr<Concept>` نگه می‌دارد؛ از این نقطه به بعد نوع `T` «پاک» شده است. متد virtual به نام `clone()` به پوشاننده معنای مقداری (value semantics) واقعی می‌دهد: کپی کردن یک `Sensor` شیء پنهان را هم به‌صورت عمیق کپی می‌کند. از دید فراخوان این فقط یک نوع مقداری معمولی است و dispatch مجازی فقط جزئی از پیاده‌سازی است."
+  },
+  "analogy": {
+    "en": "Cranes, ships and trucks only know how to lift, stack and track a standard shipping container. Whatever is packed inside — bikes, coffee, furniture — is invisible to them, yet every container moves through the port as one uniform unit. Type erasure packs any object into such a standard box that still knows the few operations everyone needs.",
+    "fa": "جرثقیل‌ها، کشتی‌ها و کامیون‌ها فقط بلدند یک کانتینر استاندارد را بلند کنند، روی هم بچینند و ردیابی کنند. هر چیزی که داخلش باشد (دوچرخه، قهوه یا مبلمان) برای آن‌ها نامرئی است، اما هر کانتینر مثل یک واحد یکسان در بندر جابه‌جا می‌شود. Type Erasure هر شیئی را در چنین جعبهٔ استانداردی بسته‌بندی می‌کند که هنوز همان چند عملیاتی را که همه لازم دارند بلد است."
+  },
+  "participants": [
+    {
+      "name": "Wrapper (Sensor)",
+      "role": {
+        "en": "The public value type clients use. Holds a `std::unique_ptr<Concept>`, has a templated constructor, forwards each call to the hidden object and copies it via `clone()`.",
+        "fa": "نوع مقداری عمومی که کلاینت‌ها با آن کار می‌کنند. یک `std::unique_ptr<Concept>` نگه می‌دارد، یک سازندهٔ template دارد، هر فراخوانی را به شیء پنهان ارجاع می‌دهد و کپی را با `clone()` انجام می‌دهد."
+      }
+    },
+    {
+      "name": "Concept",
+      "role": {
+        "en": "Private abstract interface listing the required operations, plus `clone()` and a virtual destructor.",
+        "fa": "رابط انتزاعی خصوصی که عملیات لازم را به‌همراه `clone()` و یک مخرب (destructor) virtual فهرست می‌کند."
+      }
+    },
+    {
+      "name": "Model<T>",
+      "role": {
+        "en": "Private class template deriving from `Concept`; stores a `T` and implements every virtual function by forwarding to it.",
+        "fa": "کلاس template خصوصی که از `Concept` ارث می‌برد؛ یک شیء از نوع `T` را ذخیره می‌کند و هر تابع virtual را با ارجاع به آن پیاده‌سازی می‌کند."
+      }
+    },
+    {
+      "name": "Erased type (T)",
+      "role": {
+        "en": "Any type offering the required operations (`Thermometer`, `DoorContact`, …). It needs no base class and no virtual functions.",
+        "fa": "هر نوعی که عملیات لازم را داشته باشد (`Thermometer`، `DoorContact` و…). به هیچ کلاس پایه یا تابع virtual نیازی ندارد."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Stores, copies and passes wrappers around like plain values, e.g. in a `std::vector<Sensor>`.",
+        "fa": "پوشاننده‌ها را مثل مقادیر معمولی ذخیره، کپی و جابه‌جا می‌کند؛ مثلاً در یک `std::vector<Sensor>`."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 1 },
+      { "id": "Sensor", "kind": "concrete", "col": 1, "row": 1, "members": ["+ Sensor(T)", "+ reading() : string", "- self_ : unique_ptr<Concept>"] },
+      { "id": "Concept", "kind": "interface", "col": 2, "row": 0, "members": ["+ reading() : string", "+ clone() : unique_ptr"] },
+      { "id": "Model<T>", "kind": "concrete", "col": 2, "row": 1, "members": ["- device : T", "+ reading() : string", "+ clone() : unique_ptr"] },
+      { "id": "Thermometer", "kind": "concrete", "col": 2, "row": 2, "members": ["+ reading() : string"] },
+      { "id": "DoorContact", "kind": "concrete", "col": 3, "row": 2, "members": ["+ reading() : string"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Sensor", "type": "uses", "label": "by value" },
+      { "from": "Sensor", "to": "Concept", "type": "owns", "label": "self_" },
+      { "from": "Sensor", "to": "Model<T>", "type": "creates", "label": "Sensor(T)" },
+      { "from": "Model<T>", "to": "Concept", "type": "implements" },
+      { "from": "Model<T>", "to": "Thermometer", "type": "owns", "label": "T = Thermometer" },
+      { "from": "Model<T>", "to": "DoorContact", "type": "owns", "label": "T = DoorContact" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Decide which operations the wrapper must support (here `reading()`) and create the wrapper class that clients will use as a value type.",
+      "Inside it, declare a private `Concept` interface with those operations as pure virtual functions, plus `clone()` and a virtual destructor.",
+      "Add a private `template <typename T> struct Model : Concept` that stores a `T` and implements each function by forwarding to it; `clone()` returns `std::make_unique<Model>(*this)`.",
+      "Give the wrapper a templated constructor that moves its argument into a new `Model<T>` held by `std::unique_ptr<Concept>`; constrain `T` with a C++20 concept.",
+      "Implement the copy constructor with `clone()`, default the `noexcept` move operations, and make each public member function forward to `self_`."
+    ],
+    "fa": [
+      "مشخص کنید پوشاننده باید چه عملیاتی را پشتیبانی کند (این‌جا `reading()`) و کلاس پوشاننده‌ای را بسازید که کلاینت‌ها مثل یک نوع مقداری از آن استفاده می‌کنند.",
+      "داخل آن یک رابط خصوصی `Concept` تعریف کنید که آن عملیات را به‌صورت توابع pure virtual، به‌همراه `clone()` و یک مخرب virtual داشته باشد.",
+      "یک `template <typename T> struct Model : Concept` خصوصی اضافه کنید که یک `T` را نگه دارد و هر تابع را با ارجاع به آن پیاده‌سازی کند؛ `clone()` مقدار `std::make_unique<Model>(*this)` را برمی‌گرداند.",
+      "به پوشاننده یک سازندهٔ template بدهید که آرگومانش را به داخل یک `Model<T>` جدید منتقل کند و آن را در `std::unique_ptr<Concept>` نگه دارد؛ `T` را با یک concept در C++20 محدود کنید.",
+      "سازندهٔ کپی را با `clone()` پیاده کنید، عملیات انتقال را به‌صورت `noexcept` و `= default` تعریف کنید و هر تابع عمومی را به `self_` ارجاع دهید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You need runtime polymorphism over types you don't control (third-party, standard or built-in types) and cannot add a common base class.",
+      "You want polymorphic objects that behave like values: copyable and stored directly in containers, with no `unique_ptr` juggling for users.",
+      "You want to hide templates behind one stable, non-template type, e.g. to keep a library's interface simple or to cut compile times.",
+      "You accept callbacks, handlers or plugins that can be any object providing a small set of operations."
+    ],
+    "fa": [
+      "به چندریختی زمان اجرا روی انواعی نیاز دارید که کنترلی رویشان ندارید (کتابخانه‌های ثالث، کتابخانهٔ استاندارد یا انواع پایه) و نمی‌توانید کلاس پایهٔ مشترکی اضافه کنید.",
+      "می‌خواهید اشیای چندریخت مثل مقدار رفتار کنند: قابل‌کپی باشند و مستقیم در کانتینرها ذخیره شوند، بدون این‌که کاربر درگیر `unique_ptr` شود.",
+      "می‌خواهید template‌ها را پشت یک نوع پایدار و غیر template پنهان کنید؛ مثلاً برای ساده نگه داشتن رابط یک کتابخانه یا کاهش زمان کامپایل.",
+      "callback، handler یا plugin‌هایی می‌پذیرید که می‌توانند هر شیئی باشند که مجموعهٔ کوچکی از عملیات را ارائه می‌دهد."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Non-intrusive: types need no base class and no virtual functions, so existing and third-party types just work.",
+      "Value semantics: wrappers can be copied, stored in a `std::vector` and passed around like an `int`.",
+      "Decouples client code from concrete types; supporting a new type needs no change to the wrapper.",
+      "Keeps templates out of interfaces: one non-template type replaces a whole family of instantiations."
+    ],
+    "fa": [
+      "غیرمداخله‌گر (non-intrusive) است: انواع به کلاس پایه و تابع virtual نیازی ندارند، پس انواع موجود و کتابخانه‌های ثالث بدون تغییر کار می‌کنند.",
+      "معنای مقداری: پوشاننده‌ها را می‌توان کپی کرد، در `std::vector` نگه داشت و مثل یک `int` این طرف و آن طرف فرستاد.",
+      "کد کلاینت را از انواع مشخص جدا می‌کند؛ پشتیبانی از یک نوع جدید هیچ تغییری در پوشاننده لازم ندارد.",
+      "template‌ها را از رابط‌ها بیرون نگه می‌دارد: یک نوع غیر template جای یک خانوادهٔ کامل از نمونه‌سازی‌ها را می‌گیرد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Boilerplate: every operation is written three times (wrapper, `Concept`, `Model<T>`).",
+      "Runtime cost: typically one heap allocation per object (unless you add a small-buffer optimization) and an indirect call per operation.",
+      "The set of operations is fixed by the `Concept`; getting the original type back needs an explicit, `std::any_cast`-style query.",
+      "Without a constraining concept, a type that doesn't fit produces long, confusing template errors deep inside `Model<T>`."
+    ],
+    "fa": [
+      "کد تکراری: هر عملیات سه بار نوشته می‌شود (پوشاننده، `Concept` و `Model<T>`).",
+      "هزینهٔ زمان اجرا: معمولاً یک تخصیص heap برای هر شیء (مگر این‌که small-buffer optimization اضافه کنید) و یک فراخوانی غیرمستقیم برای هر عملیات.",
+      "مجموعهٔ عملیات را `Concept` ثابت می‌کند؛ برگرداندن نوع اصلی به یک پرس‌وجوی صریح شبیه `std::any_cast` نیاز دارد.",
+      "بدون یک concept محدودکننده، نوعی که جور نیست خطاهای template طولانی و گیج‌کننده‌ای در عمق `Model<T>` تولید می‌کند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "You already use this idiom: `std::function<void()>` erases \"anything callable with no arguments\", `std::any` erases \"anything copyable\", and `std::move_only_function` (C++23) does the same for move-only callables.",
+      "Take the templated constructor's argument by value (as here). An unconstrained `template <class T> Sensor(T&&)` hijacks copies of non-const wrappers, because `T&&` binds better than `const Sensor&`.",
+      "Constrain `T` with a C++20 concept (`template <HasReading T>`) so a wrong type fails with a short error at the call site instead of deep inside `Model<T>`.",
+      "Write copy assignment as `return *this = Sensor(other);` — copy first, then a `noexcept` move — to get the strong exception guarantee for free.",
+      "Serious implementations (including most `std::function`s) add a small-buffer optimization: small objects are stored inside the wrapper itself, avoiding the heap allocation.",
+      "A moved-from wrapper holds a null `self_`: only assign to it or destroy it, or make the wrapper check for that state."
+    ],
+    "fa": [
+      "شما همین حالا هم از این ایدیوم استفاده می‌کنید: `std::function<void()>` «هر چیز قابل‌فراخوانی بدون آرگومان» را پاک می‌کند، `std::any` «هر چیز قابل‌کپی» را، و `std::move_only_function` در C++23 همین کار را برای callable‌های فقط‌انتقالی انجام می‌دهد.",
+      "آرگومان سازندهٔ template را by value بگیرید (مثل این مثال). یک `template <class T> Sensor(T&&)` بدون محدودیت، هنگام کپی کردن یک پوشانندهٔ غیر const به‌جای سازندهٔ کپی انتخاب می‌شود، چون `T&&` تطابق بهتری از `const Sensor&` دارد.",
+      "`T` را با یک concept در C++20 محدود کنید (`template <HasReading T>`) تا نوع نامناسب با یک خطای کوتاه در محل فراخوانی رد شود، نه در عمق `Model<T>`.",
+      "انتساب کپی را به شکل `return *this = Sensor(other);` بنویسید (اول کپی، بعد یک انتقال `noexcept`) تا ضمانت قوی استثنا (strong exception guarantee) را بی‌دردسر به دست آورید.",
+      "پیاده‌سازی‌های جدی (از جمله بیشتر پیاده‌سازی‌های `std::function`) از small-buffer optimization استفاده می‌کنند: اشیای کوچک داخل خود پوشاننده ذخیره می‌شوند و تخصیص heap حذف می‌شود.",
+      "پوشانندهٔ moved-from یک `self_` تهی دارد: فقط به آن مقدار جدید بدهید یا نابودش کنید، یا کاری کنید که پوشاننده این وضعیت را بررسی کند."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::function` and `std::move_only_function` store any callable; `std::any` stores any copyable value.",
+      "`std::shared_ptr<T>` erases the deleter and allocator: a `shared_ptr<Widget>` has the same type whatever deleter you gave it.",
+      "Sean Parent's talk \"Inheritance Is the Base Class of Evil\" popularized the Concept/Model form; Boost.TypeErasure and Folly's `Poly` generalize it.",
+      "Qt's `QVariant` holds values of many unrelated types behind one class."
+    ],
+    "fa": [
+      "`std::function` و `std::move_only_function` هر callable را نگه می‌دارند و `std::any` هر مقدار قابل‌کپی را.",
+      "`std::shared_ptr<T>` نوع deleter و allocator را پاک می‌کند: نوع `shared_ptr<Widget>` به deleter آن بستگی ندارد.",
+      "سخنرانی Sean Parent با عنوان «Inheritance Is the Base Class of Evil» شکل Concept/Model را مشهور کرد؛ Boost.TypeErasure و `Poly` در Folly آن را عمومی‌تر کرده‌اند.",
+      "`QVariant` در Qt مقادیری از انواع نامرتبط زیادی را پشت یک کلاس واحد نگه می‌دارد."
+    ]
+  },
+  "related": [
+    {
+      "id": "adapter",
+      "note": {
+        "en": "`Model<T>` is an adapter generated by the compiler: one class template adapts every `T` to the `Concept` interface instead of one hand-written adapter per type.",
+        "fa": "`Model<T>` در واقع یک adapter است که کامپایلر تولیدش می‌کند: یک کلاس template هر `T` را با رابط `Concept` سازگار می‌کند، به‌جای این‌که برای هر نوع یک adapter دستی بنویسید."
+      }
+    },
+    {
+      "id": "prototype",
+      "note": {
+        "en": "The virtual `clone()` inside the Concept is the Prototype pattern; it is what gives the wrapper deep-copy value semantics.",
+        "fa": "متد virtual به نام `clone()` در Concept همان الگوی Prototype است و همین است که به پوشاننده معنای مقداری با کپی عمیق می‌دهد."
+      }
+    },
+    {
+      "id": "strategy",
+      "note": {
+        "en": "In modern C++ strategies are often passed as `std::function` — a type-erased wrapper — so any lambda can serve as a strategy without a class hierarchy.",
+        "fa": "در C++ مدرن استراتژی‌ها اغلب به شکل `std::function` پاس داده می‌شوند (که خودش یک پوشانندهٔ type-erased است)، پس هر lambda بدون سلسله‌مراتب کلاس می‌تواند نقش استراتژی را بازی کند."
+      }
+    },
+    {
+      "id": "policy-based-design",
+      "note": {
+        "en": "Both accept arbitrary types that fit an interface, but policies are bound at compile time (zero overhead, a different type per configuration) while type erasure binds at runtime behind one type.",
+        "fa": "هر دو انواع دلخواهی را که با یک رابط جور باشند می‌پذیرند، اما policyها در زمان کامپایل انتخاب می‌شوند (بدون سربار و با یک نوع متفاوت برای هر پیکربندی)، در حالی که Type Erasure در زمان اجرا و پشت یک نوع واحد انتخاب می‌کند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Smart-home sensors from different vendors", "fa": "سنسورهای خانهٔ هوشمند از تولیدکنندگان مختلف" },
+    "description": {
+      "en": "`Thermometer`, `DoorContact` and `AirQuality` share no base class, yet all three live in one `std::vector<Sensor>`. Notice that copying the vector yields a truly independent snapshot: opening the door and adding a fridge sensor afterwards leave it untouched.",
+      "fa": "`Thermometer`، `DoorContact` و `AirQuality` هیچ کلاس پایهٔ مشترکی ندارند، اما هر سه در یک `std::vector<Sensor>` کنار هم قرار می‌گیرند. دقت کنید که کپی کردن vector یک snapshot واقعاً مستقل می‌سازد: باز شدن در و اضافه شدن سنسور یخچال بعد از آن، روی snapshot اثری ندارد."
+    },
+    "output": "live:     [21 C] [closed] [AQI 42]\nlive:     [21 C] [open] [AQI 42] [4 C]\nsnapshot: [21 C] [closed] [AQI 42]",
+    "highlights": [
+      {
+        "lines": [10, 22],
+        "note": {
+          "en": "Three vendor types with the same shape (`reading()`) but no common base class and no `virtual` functions. We never modify them.",
+          "fa": "سه نوع از تولیدکنندگان مختلف با شکل یکسان (`reading()`) اما بدون کلاس پایهٔ مشترک و بدون تابع `virtual`. ما هیچ‌وقت آن‌ها را تغییر نمی‌دهیم."
+        }
+      },
+      {
+        "lines": [31, 33],
+        "note": {
+          "en": "The erasure point: the templated constructor accepts any `T` that satisfies `HasReading`, wraps it in a `Model<T>` and stores it as a `Concept`. After this line nobody knows `T` any more.",
+          "fa": "نقطهٔ پاک‌سازی: سازندهٔ template هر `T` را که `HasReading` را برآورده کند می‌پذیرد، آن را در یک `Model<T>` می‌پیچد و به‌عنوان `Concept` ذخیره می‌کند. بعد از این خط دیگر هیچ‌کس `T` را نمی‌شناسد."
+        }
+      },
+      {
+        "lines": [35, 39],
+        "note": {
+          "en": "Value semantics: copying calls the virtual `clone()`, so each `Sensor` owns its own device. Copy assignment reuses the copy constructor plus the cheap `noexcept` move.",
+          "fa": "معنای مقداری: کپی کردن، متد virtual `clone()` را صدا می‌زند، پس هر `Sensor` دستگاه خودش را دارد. انتساب کپی از سازندهٔ کپی به‌همراه انتقال ارزان و `noexcept` استفاده می‌کند."
+        }
+      },
+      {
+        "lines": [44, 58],
+        "note": {
+          "en": "The heart of the idiom: the private `Concept` interface and the `Model<T>` template that implements it by forwarding to the stored object. The compiler generates one `Model` per erased type.",
+          "fa": "قلب این ایدیوم: رابط خصوصی `Concept` و template‌ای به نام `Model<T>` که آن را با ارجاع به شیء ذخیره‌شده پیاده‌سازی می‌کند. کامپایلر برای هر نوع پاک‌شده یک `Model` جداگانه تولید می‌کند."
+        }
+      },
+      {
+        "lines": [70, 79],
+        "note": {
+          "en": "Client code: unrelated types go into one vector by value. The snapshot is a deep copy, so later changes affect only `home`.",
+          "fa": "کد کلاینت: انواع نامرتبط به‌صورت مقدار در یک vector قرار می‌گیرند. snapshot یک کپی عمیق است، پس تغییرات بعدی فقط روی `home` اثر می‌گذارند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem does type erasure primarily solve?",
+        "fa": "Type Erasure در اصل چه مشکلی را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "It strips type information so programs compile faster",
+          "It lets you convert any object to `void*` safely",
+          "It lets unrelated types with the same operations be used through one value type, without a common base class",
+          "It replaces templates with macros to reduce code bloat"
+        ],
+        "fa": [
+          "اطلاعات نوع را حذف می‌کند تا برنامه سریع‌تر کامپایل شود",
+          "اجازه می‌دهد هر شیئی را به‌صورت امن به `void*` تبدیل کنید",
+          "اجازه می‌دهد انواع نامرتبطی که عملیات یکسانی دارند، بدون کلاس پایهٔ مشترک و از طریق یک نوع مقداری واحد استفاده شوند",
+          "template‌ها را با ماکرو جایگزین می‌کند تا حجم کد کم شود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "The goal is runtime polymorphism without intrusive inheritance: any `T` that offers the required operations fits in the same wrapper, and the wrapper itself behaves like an ordinary, copyable value.",
+        "fa": "هدف، چندریختی زمان اجرا بدون وراثت مداخله‌گر است: هر `T` که عملیات لازم را داشته باشد در همان پوشاننده جا می‌گیرد و خود پوشاننده مثل یک مقدار معمولی و قابل‌کپی رفتار می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "In the Concept/Model technique, why does `Concept` declare a virtual `clone()`?",
+        "fa": "در تکنیک Concept/Model چرا `Concept` یک متد virtual به نام `clone()` تعریف می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "The wrapper's copy constructor no longer knows the real type, so only `Model<T>` can copy itself",
+          "So the compiler can generate a default copy constructor for the wrapper",
+          "Because `std::unique_ptr` can only be copied through `clone()`",
+          "To prevent the destructor from running twice"
+        ],
+        "fa": [
+          "سازندهٔ کپی پوشاننده دیگر نوع واقعی را نمی‌داند، پس فقط `Model<T>` می‌تواند از خودش کپی بگیرد",
+          "تا کامپایلر بتواند سازندهٔ کپی پیش‌فرض را برای پوشاننده تولید کند",
+          "چون `std::unique_ptr` فقط از طریق `clone()` کپی می‌شود",
+          "تا جلوی دو بار اجرا شدن مخرب گرفته شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Inside the wrapper `T` has been erased — all it holds is a `Concept` pointer. Only `Model<T>` still knows `T`, so copying must be delegated to it through a virtual call: `self_(other.self_->clone())`. That single call turns pointer semantics into value semantics.",
+        "fa": "داخل پوشاننده، `T` پاک شده و تنها چیزی که نگه می‌دارد یک اشاره‌گر به `Concept` است. فقط `Model<T>` هنوز `T` را می‌شناسد، پس کپی باید از طریق یک فراخوانی virtual به آن سپرده شود: `self_(other.self_->clone())`. همین یک فراخوانی، معنای اشاره‌گری را به معنای مقداری تبدیل می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "When is type erasure a poor choice?",
+        "fa": "چه زمانی Type Erasure انتخاب بدی است؟"
+      },
+      "options": {
+        "en": [
+          "When the types come from a third-party library",
+          "When different types must be stored in one container",
+          "When callers expect value semantics",
+          "In a hot loop where all types are known at compile time and an allocation plus an indirect call per object matter"
+        ],
+        "fa": [
+          "وقتی انواع از یک کتابخانهٔ ثالث می‌آیند",
+          "وقتی انواع مختلف باید در یک کانتینر ذخیره شوند",
+          "وقتی فراخوان‌ها انتظار معنای مقداری دارند",
+          "در یک حلقهٔ داغ (hot loop) که همهٔ انواع در زمان کامپایل معلوم‌اند و یک تخصیص حافظه و یک فراخوانی غیرمستقیم برای هر شیء اهمیت دارد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Type erasure pays a heap allocation (without small-buffer optimization) and an indirect call per operation. If the set of types is closed and known at compile time, a template, `std::variant` or policy classes avoid that overhead. The other three options are exactly where type erasure shines.",
+        "fa": "Type Erasure هزینهٔ یک تخصیص heap (بدون small-buffer optimization) و یک فراخوانی غیرمستقیم برای هر عملیات را می‌پردازد. اگر مجموعهٔ انواع بسته و در زمان کامپایل معلوم باشد، template، `std::variant` یا کلاس‌های policy این سربار را ندارند. سه گزینهٔ دیگر دقیقاً جاهایی هستند که Type Erasure می‌درخشد."
+      }
+    },
+    {
+      "question": {
+        "en": "Classic OOP would need an `ISensor` base class and one hand-written adapter per vendor type. What does type erasure change?",
+        "fa": "در OOP کلاسیک به یک کلاس پایهٔ `ISensor` و یک adapter دستی برای هر نوع تولیدکننده نیاز دارید. Type Erasure چه چیزی را تغییر می‌دهد؟"
+      },
+      "options": {
+        "en": [
+          "Nothing — it is just another name for the Adapter pattern",
+          "The compiler generates the adapters (`Model<T>`) from one template, hides them inside the wrapper, and clients get copyable values instead of `unique_ptr<ISensor>`",
+          "It removes virtual functions from the program entirely",
+          "It requires every vendor type to derive from `Concept`"
+        ],
+        "fa": [
+          "هیچ؛ فقط نام دیگری برای الگوی Adapter است",
+          "کامپایلر adapterها (`Model<T>`) را از یک template تولید می‌کند و داخل پوشاننده پنهانشان می‌کند، و کلاینت‌ها به‌جای `unique_ptr<ISensor>` مقادیر قابل‌کپی می‌گیرند",
+          "توابع virtual را به‌کلی از برنامه حذف می‌کند",
+          "لازم است هر نوع تولیدکننده از `Concept` ارث ببرد"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Internally the idiom still uses a base class and virtual calls, but they are private details. What changes is that the adapters are generated, user types stay untouched (no inheritance), and clients work with a value type instead of owning pointers.",
+        "fa": "این ایدیوم در درون هنوز از کلاس پایه و فراخوانی virtual استفاده می‌کند، اما این‌ها جزئیات خصوصی هستند. تفاوت این است که adapterها تولید می‌شوند، انواع کاربر دست‌نخورده می‌مانند (بدون وراثت) و کلاینت‌ها به‌جای اشاره‌گرهای مالک با یک نوع مقداری کار می‌کنند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A drawing app's document holds shapes from three different geometry libraries; undo needs cheap, independent copies of the whole document, and none of the library types can be changed to share a base class.",
+      "fa": "سند یک برنامهٔ طراحی، شکل‌هایی از سه کتابخانهٔ هندسی مختلف را نگه می‌دارد؛ قابلیت undo به کپی‌های مستقل و ارزان از کل سند نیاز دارد و هیچ‌کدام از انواع کتابخانه‌ها را نمی‌توان تغییر داد تا کلاس پایهٔ مشترک داشته باشند."
+    },
+    {
+      "en": "An event system must keep a list of handlers written by different teams — lambdas, function objects, free functions — and copy that list when a window is duplicated, without forcing anyone to inherit from a framework class.",
+      "fa": "یک سیستم رویداد باید فهرستی از handlerهایی را نگه دارد که تیم‌های مختلف نوشته‌اند (lambda، شیء تابعی، تابع آزاد) و وقتی پنجره‌ای تکثیر می‌شود آن فهرست را کپی کند، بدون این‌که کسی مجبور شود از یک کلاس فریم‌ورک ارث ببرد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A checkout for products with no common base", "fa": "صندوق فروش برای محصولاتی بدون کلاس پایهٔ مشترک" },
+    "task": {
+      "en": "The bookstore's `CartItem` already erases the product type, but it only really knows `name()`, so every price prints as `$0.00`. Add a `price()` operation through all three layers — `Concept`, `Model<T>` and the wrapper — then put the brand-new `Stickers{3}` product into the cart without changing `CartItem` at all. The output should end with `3 stickers: $4.50` and `total: $47.48`.",
+      "fa": "کلاس `CartItem` در کتاب‌فروشی از قبل نوع محصول را پاک می‌کند، اما در عمل فقط `name()` را می‌شناسد و به همین دلیل همهٔ قیمت‌ها `$0.00` چاپ می‌شوند. عملیات `price()` را به هر سه لایه اضافه کنید (`Concept`، `Model<T>` و خود پوشاننده)، سپس محصول تازه‌وارد `Stickers{3}` را بدون هیچ تغییری در `CartItem` به سبد خرید اضافه کنید. خروجی باید با `3 stickers: $4.50` و `total: $47.48` تمام شود."
+    },
+    "hints": {
+      "en": [
+        "In type erasure every operation lives in three places: a pure virtual in `Concept`, an `override` in `Model<T>` that calls the wrapped object, and a public wrapper function that calls `self_`.",
+        "In `Concept`: `virtual int price() const = 0;` — in `Model<T>`: `int price() const override { return item.price(); }`.",
+        "The wrapper becomes `int price() const { return self_->price(); }`, and in `main()` add `cart.push_back(Stickers{3});` — the templated constructor does the rest."
+      ],
+      "fa": [
+        "در Type Erasure هر عملیات در سه جا زندگی می‌کند: یک تابع pure virtual در `Concept`، یک `override` در `Model<T>` که شیء پیچیده‌شده را صدا می‌زند، و یک تابع عمومی در پوشاننده که `self_` را صدا می‌زند.",
+        "در `Concept`: `virtual int price() const = 0;` و در `Model<T>`: `int price() const override { return item.price(); }`.",
+        "تابع پوشاننده می‌شود `int price() const { return self_->price(); }` و در `main()` خط `cart.push_back(Stickers{3});` را اضافه کنید؛ بقیه‌اش کار سازندهٔ template است."
+      ]
+    },
+    "expectedOutput": "Book \"Dune\": $12.99\nE-book \"Neuromancer\": $4.99\nGift card: $25.00\n3 stickers: $4.50\ntotal: $47.48"
+  }
+}

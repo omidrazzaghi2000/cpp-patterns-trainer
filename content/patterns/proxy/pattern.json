@@ -1,0 +1,447 @@
+{
+  "id": "proxy",
+  "category": "structural",
+  "order": 7,
+  "difficulty": 2,
+  "icon": "shield-check",
+  "name": {
+    "en": "Proxy",
+    "fa": "پراکسی (نماینده)"
+  },
+  "aka": {
+    "en": "Surrogate",
+    "fa": "Surrogate (جانشین)"
+  },
+  "tagline": {
+    "en": "A stand-in that controls access to the real object.",
+    "fa": "جانشینی که دسترسی به شیء اصلی را کنترل می‌کند."
+  },
+  "intent": {
+    "en": "Provide a surrogate or placeholder for another object to control access to it — with the same interface, so clients cannot tell the difference.",
+    "fa": "برای شیئی دیگر یک جانشین فراهم می‌کند تا دسترسی به آن را کنترل کند؛ جانشینی با همان رابط شیء اصلی، طوری که کلاینت تفاوتی احساس نکند."
+  },
+  "problem": {
+    "en": "Your trading dashboard gets stock prices from a remote quote service. Creating the service client opens a network connection, and every `price()` call is a slow HTTP request that also eats into a strict rate limit. Many screens ask for the same symbols again and again, and some sessions never need a quote at all. You could sprinkle caching and lazy-connection checks into every caller, but that duplicates the same logic everywhere — and you cannot change the service class itself, because it ships in a vendor's SDK.",
+    "fa": "داشبورد معاملاتی شما قیمت سهام را از یک سرویس راه‌دور می‌گیرد. ساختن کلاینت این سرویس یک اتصال شبکه باز می‌کند و هر فراخوانی `price()` یک درخواست HTTP زمان‌بر است که بخشی از سهمیهٔ محدود درخواست‌ها را هم مصرف می‌کند. صفحه‌های مختلف مدام قیمت همان نمادها را می‌خواهند و بعضی نشست‌ها اصلاً به هیچ قیمتی نیاز پیدا نمی‌کنند. می‌توانید منطق کش و اتصال تنبل را در همهٔ کدهای فراخوان پخش کنید، اما این یعنی تکرار یک منطق در همه‌جا؛ خود کلاس سرویس را هم نمی‌توانید تغییر دهید، چون بخشی از SDK یک شرکت دیگر است."
+  },
+  "solution": {
+    "en": "Create a proxy class that implements the same interface as the real service and holds a pointer to it. Clients receive the proxy and call it exactly as they would call the real object. Inside each method the proxy first does its extra job — creating the real object on first use (**virtual proxy**), checking permissions (**protection proxy**), caching results (**caching proxy**) or forwarding the call over a network (**remote proxy**) — and then delegates to the real object, or answers on its behalf.",
+    "fa": "یک کلاس پراکسی بسازید که همان رابط سرویس اصلی را پیاده‌سازی کند و یک اشاره‌گر به شیء اصلی نگه دارد. کلاینت‌ها پراکسی را می‌گیرند و آن را دقیقاً مثل شیء اصلی صدا می‌زنند. پراکسی در هر متد اول کار اضافهٔ خودش را انجام می‌دهد، مثل ساختن شیء اصلی در اولین استفاده (**virtual proxy**)، بررسی مجوز (**protection proxy**)، کش کردن نتیجه (**caching proxy**) یا ارسال فراخوانی از طریق شبکه (**remote proxy**)، و بعد کار را به شیء اصلی می‌سپارد یا خودش از طرف آن جواب می‌دهد."
+  },
+  "analogy": {
+    "en": "A bank card is a proxy for your bank account. A shop accepts it wherever it would accept cash — same interface: \"pay this amount\" — but behind the scenes the card system checks your PIN, your daily limit and fraud rules before any money actually leaves the account.",
+    "fa": "کارت بانکی نمایندهٔ حساب بانکی شماست. فروشگاه آن را همان‌جایی می‌پذیرد که پول نقد را می‌پذیرد (رابط یکسان: «این مبلغ را پرداخت کن»)، اما پشت صحنه سیستم کارت پیش از این‌که حتی یک ریال از حساب خارج شود، رمز، سقف روزانه و قواعد تشخیص تقلب را بررسی می‌کند."
+  },
+  "participants": [
+    {
+      "name": "Subject",
+      "role": {
+        "en": "The common interface (`QuoteService`) that both the real object and the proxy implement, so they are interchangeable.",
+        "fa": "رابط مشترک (`QuoteService`) که هم شیء اصلی و هم پراکسی آن را پیاده‌سازی می‌کنند تا بتوانند جای هم بنشینند."
+      }
+    },
+    {
+      "name": "RealSubject",
+      "role": {
+        "en": "The object that does the actual work (`RemoteQuoteService`); often expensive, remote or sensitive.",
+        "fa": "شیئی که کار واقعی را انجام می‌دهد (`RemoteQuoteService`)؛ معمولاً پرهزینه، راه‌دور یا حساس است."
+      }
+    },
+    {
+      "name": "Proxy",
+      "role": {
+        "en": "Implements the Subject interface, holds the real subject (`CachingQuoteProxy`), controls access to it and delegates the real work.",
+        "fa": "رابط Subject را پیاده‌سازی می‌کند، شیء اصلی را نگه می‌دارد (`CachingQuoteProxy`)، دسترسی به آن را کنترل می‌کند و کار اصلی را به آن می‌سپارد."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Works through the Subject interface (`showPortfolio()`) and never knows whether it holds the proxy or the real object.",
+        "fa": "از طریق رابط Subject کار می‌کند (`showPortfolio()`) و هیچ‌وقت نمی‌داند پراکسی در دست دارد یا شیء اصلی."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      {
+        "id": "Client",
+        "kind": "client",
+        "col": 0,
+        "row": 0
+      },
+      {
+        "id": "Subject",
+        "kind": "interface",
+        "col": 2,
+        "row": 0,
+        "members": [
+          "+ request()"
+        ]
+      },
+      {
+        "id": "Proxy",
+        "kind": "concrete",
+        "col": 1,
+        "row": 1,
+        "members": [
+          "- real_ : unique_ptr<Real>",
+          "+ request()"
+        ]
+      },
+      {
+        "id": "RealSubject",
+        "kind": "concrete",
+        "col": 3,
+        "row": 1,
+        "members": [
+          "+ request()"
+        ]
+      },
+      {
+        "id": "Proxy::request()",
+        "kind": "note",
+        "col": 1,
+        "row": 2,
+        "members": [
+          "check access / cache first",
+          "if (!real_) create it",
+          "return real_->request()"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "Client",
+        "to": "Subject",
+        "type": "uses",
+        "label": "request()"
+      },
+      {
+        "from": "Proxy",
+        "to": "Subject",
+        "type": "implements"
+      },
+      {
+        "from": "RealSubject",
+        "to": "Subject",
+        "type": "implements"
+      },
+      {
+        "from": "Proxy",
+        "to": "RealSubject",
+        "type": "refs",
+        "label": "delegates"
+      }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Extract (or reuse) an interface that both the real object and the proxy will implement, and make clients depend only on it.",
+      "Write the proxy class: it implements that interface and holds the real object — a `std::unique_ptr` if it owns it, a reference or `std::shared_ptr` if it shares it.",
+      "In every method add the control logic (lazy creation, permission check, cache lookup, logging…) and then forward the call to the real object.",
+      "Decide who creates the proxy: a factory or the composition root hands clients the proxy instead of the real object, so client code does not change.",
+      "Keep the proxy transparent: same pre-conditions, results and exceptions as the real object — unless refusing access is exactly its job."
+    ],
+    "fa": [
+      "یک رابط استخراج کنید (یا از رابط موجود استفاده کنید) که هم شیء اصلی و هم پراکسی آن را پیاده‌سازی کنند، و کلاینت‌ها را فقط به همین رابط وابسته کنید.",
+      "کلاس پراکسی را بنویسید: همان رابط را پیاده‌سازی می‌کند و شیء اصلی را نگه می‌دارد؛ اگر مالک آن است با `std::unique_ptr` و اگر آن را با دیگران شریک است با مرجع یا `std::shared_ptr`.",
+      "در هر متد منطق کنترلی (ساخت تنبل، بررسی مجوز، جست‌وجو در کش، لاگ و…) را اضافه کنید و بعد فراخوانی را به شیء اصلی بسپارید.",
+      "مشخص کنید چه کسی پراکسی را می‌سازد: یک factory یا ریشهٔ ترکیب برنامه (composition root) به‌جای شیء اصلی، پراکسی را به کلاینت‌ها می‌دهد تا کد کلاینت تغییری نکند.",
+      "پراکسی را شفاف نگه دارید: همان پیش‌شرط‌ها، نتیجه‌ها و استثناهای شیء اصلی را داشته باشد؛ مگر این‌که کارش دقیقاً رد کردن دسترسی باشد."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Lazy initialization (virtual proxy): a heavyweight object that is expensive to create and not always needed.",
+      "Access control (protection proxy): only some clients or roles may use certain operations.",
+      "A local representative for an object that lives in another process or on another machine (remote proxy).",
+      "Caching, logging or metering calls without touching the real class or its callers.",
+      "Smart references: counting the users of an object, or releasing it when nobody needs it anymore."
+    ],
+    "fa": [
+      "مقداردهی تنبل (virtual proxy): شیئی سنگین که ساختنش پرهزینه است و همیشه هم لازم نمی‌شود.",
+      "کنترل دسترسی (protection proxy): فقط بعضی کلاینت‌ها یا نقش‌ها اجازهٔ استفاده از برخی عملیات را دارند.",
+      "نمایندهٔ محلی برای شیئی که در پردازهٔ دیگری یا روی ماشین دیگری قرار دارد (remote proxy).",
+      "کش کردن، لاگ گرفتن یا شمارش فراخوانی‌ها بدون دست زدن به کلاس اصلی یا فراخوان‌هایش.",
+      "ارجاع هوشمند (smart reference): شمردن استفاده‌کنندگان یک شیء یا آزاد کردن آن وقتی دیگر کسی لازمش ندارد."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Controls the real object without clients noticing — they keep using the same interface.",
+      "Open/Closed: add security, caching or logging without modifying the real class.",
+      "Can manage the real object's lifecycle: create it late, share it, or release it early.",
+      "Keeps cross-cutting concerns out of the business logic: `RemoteQuoteService` knows nothing about caching."
+    ],
+    "fa": [
+      "شیء اصلی را بدون این‌که کلاینت‌ها متوجه شوند کنترل می‌کند؛ آن‌ها همچنان از همان رابط استفاده می‌کنند.",
+      "اصل باز/بسته (Open/Closed): می‌توانید امنیت، کش یا لاگ اضافه کنید بدون این‌که کلاس اصلی را تغییر دهید.",
+      "می‌تواند چرخهٔ عمر شیء اصلی را مدیریت کند: دیرتر بسازدش، به اشتراکش بگذارد یا زودتر آزادش کند.",
+      "دغدغه‌های جانبی (cross-cutting concerns) را از منطق اصلی جدا نگه می‌دارد: `RemoteQuoteService` هیچ چیزی دربارهٔ کش نمی‌داند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "One more level of indirection: an extra (virtual) call per request, and responses may be delayed.",
+      "More classes to maintain; every change to the interface must be mirrored in the proxy.",
+      "Transparency can mislead: a caching proxy may serve stale data, and a remote proxy hides latency and network failures behind an innocent-looking method call."
+    ],
+    "fa": [
+      "یک لایهٔ واسط اضافه: هر درخواست یک فراخوانی (virtual) بیشتر دارد و ممکن است پاسخ با تأخیر برسد.",
+      "کلاس‌های بیشتری برای نگه‌داری؛ هر تغییری در رابط باید در پراکسی هم اعمال شود.",
+      "شفافیت می‌تواند گمراه‌کننده باشد: پراکسی کش ممکن است دادهٔ کهنه برگرداند و پراکسی راه‌دور، تأخیر و خطاهای شبکه را پشت یک فراخوانی ساده‌نما پنهان می‌کند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Own the real subject with `std::unique_ptr` and create it with `std::make_unique` on the first call — an empty pointer simply means \"not created yet\".",
+      "A caching proxy changes state inside logically read-only calls. If the interface method is `const`, mark the cache `mutable` — and protect it with a `std::mutex` if the proxy is shared between threads.",
+      "Use a transparent comparator — `std::map<std::string, V, std::less<>>` — so lookups with a `std::string_view` don't allocate a temporary `std::string`.",
+      "Overloading `operator->` and `operator*` is the C++ way to build smart-reference proxies: `std::shared_ptr` forwards to the object while counting owners behind the scenes.",
+      "To wrap **any** implementation (even another proxy), hold a `std::unique_ptr<Subject>` — the interface — instead of the concrete class."
+    ],
+    "fa": [
+      "مالکیت شیء اصلی را با `std::unique_ptr` نگه دارید و آن را در اولین فراخوانی با `std::make_unique` بسازید؛ اشاره‌گر خالی یعنی «هنوز ساخته نشده».",
+      "پراکسی کش در فراخوانی‌هایی که از نظر منطقی فقط‌خواندنی هستند وضعیت را تغییر می‌دهد. اگر متد رابط `const` است، کش را `mutable` کنید و اگر پراکسی بین چند نخ (thread) مشترک است، با `std::mutex` از آن محافظت کنید.",
+      "از مقایسه‌گر شفاف (transparent comparator) یعنی `std::map<std::string, V, std::less<>>` استفاده کنید تا جست‌وجو با `std::string_view` یک `std::string` موقت نسازد.",
+      "سربارگذاری `operator->` و `operator*` روش C++ برای ساختن پراکسی‌های ارجاع هوشمند است: `std::shared_ptr` فراخوانی‌ها را به شیء می‌رساند و پشت صحنه تعداد مالکان را می‌شمارد.",
+      "برای این‌که پراکسی بتواند **هر** پیاده‌سازی (حتی یک پراکسی دیگر) را بپوشاند، به‌جای کلاس مشخص، `std::unique_ptr<Subject>` یعنی خود رابط را نگه دارید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::shared_ptr` / `std::weak_ptr` are smart-reference proxies, and `std::vector<bool>::reference` is a proxy object standing in for a single bit.",
+      "RPC frameworks such as gRPC generate client stubs: local objects with the service's interface that forward each call over the network (remote proxy).",
+      "Qt's `QSortFilterProxyModel` presents a sorted, filtered view of another model through the same `QAbstractItemModel` interface.",
+      "Lazy-loaded entities in ORMs and copy-on-write handles defer expensive work until it is really needed."
+    ],
+    "fa": [
+      "`std::shared_ptr` و `std::weak_ptr` پراکسی‌های ارجاع هوشمندند و `std::vector<bool>::reference` یک شیء پراکسی است که به‌جای یک بیت منفرد عمل می‌کند.",
+      "فریم‌ورک‌های RPC مثل gRPC کلاس‌های stub سمت کلاینت تولید می‌کنند: اشیای محلی با رابط سرویس که هر فراخوانی را از طریق شبکه ارسال می‌کنند (remote proxy).",
+      "کلاس `QSortFilterProxyModel` در Qt نمای مرتب‌شده و فیلترشده‌ای از یک مدل دیگر را از طریق همان رابط `QAbstractItemModel` ارائه می‌دهد.",
+      "بارگذاری تنبل موجودیت‌ها (lazy loading) در ORMها و دستگیره‌های copy-on-write، کار پرهزینه را تا وقتی واقعاً لازم شود به تعویق می‌اندازند."
+    ]
+  },
+  "related": [
+    {
+      "id": "decorator",
+      "note": {
+        "en": "Both wrap an object behind the same interface. A decorator adds responsibilities and is usually stacked by the client; a proxy controls access to the object and often manages its lifetime itself.",
+        "fa": "هر دو شیئی را پشت همان رابط می‌پوشانند. دکوراتور مسئولیت تازه اضافه می‌کند و معمولاً کلاینت چند لایه از آن را روی هم می‌چیند؛ پراکسی دسترسی به شیء را کنترل می‌کند و اغلب چرخهٔ عمر آن را خودش مدیریت می‌کند."
+      }
+    },
+    {
+      "id": "adapter",
+      "note": {
+        "en": "An adapter gives the wrapped object a different interface; a proxy keeps exactly the same one.",
+        "fa": "آداپتر به شیء پوشانده‌شده رابط متفاوتی می‌دهد؛ پراکسی دقیقاً همان رابط را حفظ می‌کند."
+      }
+    },
+    {
+      "id": "facade",
+      "note": {
+        "en": "A facade offers a new, simpler interface to a whole subsystem; a proxy stands in for a single object with the same interface.",
+        "fa": "نما (Facade) یک رابط جدید و ساده‌تر برای یک زیرسیستم کامل ارائه می‌دهد؛ پراکسی با همان رابط، جانشین فقط یک شیء است."
+      }
+    }
+  ],
+  "example": {
+    "title": {
+      "en": "A lazy, caching stock-quote service",
+      "fa": "سرویس قیمت سهام با اتصال تنبل و کش"
+    },
+    "description": {
+      "en": "`CachingQuoteProxy` implements the same `QuoteService` interface as the slow `RemoteQuoteService`. Watch the output: no connection is made until the first quote is requested, the second refresh never touches the network, and `showPortfolio()` has no idea it is talking to a proxy.",
+      "fa": "`CachingQuoteProxy` همان رابط `QuoteService` را پیاده‌سازی می‌کند که سرویس زمان‌بر `RemoteQuoteService` پیاده‌سازی کرده است. به خروجی دقت کنید: تا اولین درخواست قیمت هیچ اتصالی برقرار نمی‌شود، به‌روزرسانی دوم اصلاً به شبکه نمی‌رسد و `showPortfolio()` اصلاً نمی‌داند که با یک پراکسی حرف می‌زند."
+    },
+    "output": "app started, no connection yet\nfirst refresh:\n  [remote] connecting to exchange...\n  [remote] GET /quote/ACME\nACME = 42.5\n  [remote] GET /quote/GLOBEX\nGLOBEX = 17.25\nsecond refresh:\n  [proxy] cache hit ACME\nACME = 42.5\n  [proxy] cache hit GLOBEX\nGLOBEX = 17.25\nrequests served: 4",
+    "highlights": [
+      {
+        "lines": [
+          9,
+          14
+        ],
+        "note": {
+          "en": "The Subject. Client code depends only on this interface — that is what lets the proxy slip in unnoticed.",
+          "fa": "رابط Subject: کد کلاینت فقط به همین رابط وابسته است و همین اجازه می‌دهد پراکسی بی‌سروصدا جای شیء اصلی بنشیند."
+        }
+      },
+      {
+        "lines": [
+          16,
+          25
+        ],
+        "note": {
+          "en": "The RealSubject: constructing it opens a connection, and every call is a network round trip.",
+          "fa": "RealSubject: ساختنش یک اتصال باز می‌کند و هر فراخوانی آن یک رفت‌وبرگشت شبکه است."
+        }
+      },
+      {
+        "lines": [
+          32,
+          35
+        ],
+        "note": {
+          "en": "Caching proxy: a cache hit is answered by the proxy itself — the real object is never bothered.",
+          "fa": "پراکسی کش: اگر جواب در کش باشد، خود پراکسی پاسخ می‌دهد و اصلاً سراغ شیء اصلی نمی‌رود."
+        }
+      },
+      {
+        "lines": [
+          36,
+          41
+        ],
+        "note": {
+          "en": "Virtual proxy: the real object is created on first use; then the call is delegated to it and the result is cached.",
+          "fa": "پراکسی مجازی (virtual proxy): شیء اصلی در اولین استفاده ساخته می‌شود، سپس فراخوانی به آن سپرده و نتیجه در کش ذخیره می‌شود."
+        }
+      },
+      {
+        "lines": [
+          53,
+          58
+        ],
+        "note": {
+          "en": "The client is written against `QuoteService&`. Passing a `RemoteQuoteService` instead would compile just as well.",
+          "fa": "کلاینت با `QuoteService&` نوشته شده است؛ اگر به‌جای پراکسی یک `RemoteQuoteService` پاس بدهید هم بدون مشکل کامپایل می‌شود."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Which problem is the Proxy pattern designed to solve?",
+        "fa": "الگوی پراکسی برای حل کدام مسئله طراحی شده است؟"
+      },
+      "options": {
+        "en": [
+          "Clients need a different interface than the one a class provides",
+          "Many small objects waste memory by duplicating shared state",
+          "Access to an object must be controlled (delayed, checked, cached or made remote) without changing the object or its clients",
+          "An algorithm must be chosen at runtime from a family of alternatives"
+        ],
+        "fa": [
+          "کلاینت‌ها به رابطی متفاوت با رابط فعلی یک کلاس نیاز دارند",
+          "اشیای کوچک زیادی با تکرار وضعیت مشترک، حافظه را هدر می‌دهند",
+          "دسترسی به یک شیء باید کنترل شود (به تعویق بیفتد، بررسی شود، کش شود یا از راه دور انجام شود) بدون تغییر خود شیء یا کلاینت‌هایش",
+          "یک الگوریتم باید در زمان اجرا از میان خانواده‌ای از گزینه‌ها انتخاب شود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A proxy has the same interface as the real object and sits in front of it to control access. The other options describe Adapter, Flyweight and Strategy.",
+        "fa": "پراکسی همان رابط شیء اصلی را دارد و جلوی آن می‌نشیند تا دسترسی را کنترل کند. گزینه‌های دیگر به‌ترتیب آداپتر، فلای‌ویت و استراتژی را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "In `CachingQuoteProxy`, why is the real service held in a `std::unique_ptr` that starts out empty?",
+        "fa": "در `CachingQuoteProxy` چرا سرویس اصلی در یک `std::unique_ptr` نگه داشته می‌شود که در ابتدا خالی است؟"
+      },
+      "options": {
+        "en": [
+          "So the expensive object is created only on first use and destroyed automatically with the proxy",
+          "Because virtual functions can only be called through smart pointers",
+          "To make the proxy copyable",
+          "So that several proxies can share one connection"
+        ],
+        "fa": [
+          "تا شیء پرهزینه فقط در اولین استفاده ساخته شود و همراه پراکسی خودکار نابود شود",
+          "چون توابع virtual فقط از طریق اشاره‌گرهای هوشمند قابل فراخوانی هستند",
+          "تا پراکسی قابل کپی شود",
+          "تا چند پراکسی بتوانند یک اتصال را به اشتراک بگذارند"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "The empty `unique_ptr` doubles as a \"not created yet\" flag; `std::make_unique` runs on the first cache miss, and the destructor frees the object. A `unique_ptr` member actually makes the proxy move-only, and sharing would need `std::shared_ptr`.",
+        "fa": "`unique_ptr` خالی نقش پرچم «هنوز ساخته نشده» را هم بازی می‌کند؛ `std::make_unique` در اولین cache miss اجرا می‌شود و مخرب، شیء را آزاد می‌کند. عضو `unique_ptr` در واقع پراکسی را فقط قابل انتقال (move-only) می‌کند و برای اشتراک به `std::shared_ptr` نیاز است."
+      }
+    },
+    {
+      "question": {
+        "en": "When is putting a caching proxy in front of a service a poor idea?",
+        "fa": "چه زمانی قرار دادن یک پراکسی کش جلوی یک سرویس ایدهٔ خوبی نیست؟"
+      },
+      "options": {
+        "en": [
+          "When the real object is slow to create",
+          "When many clients ask for the same data repeatedly",
+          "When the service already has an abstract interface",
+          "When callers always need up-to-the-second data, so cached answers would be wrong and the extra layer only adds indirection"
+        ],
+        "fa": [
+          "وقتی ساختن شیء اصلی زمان‌بر است",
+          "وقتی کلاینت‌های زیادی بارها همان داده را درخواست می‌کنند",
+          "وقتی سرویس از قبل یک رابط انتزاعی دارد",
+          "وقتی فراخوان‌ها همیشه به دادهٔ لحظه‌ای نیاز دارند؛ پس پاسخ کش‌شده غلط است و لایهٔ اضافه فقط واسطه‌گری بیشتری می‌آورد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "A cache trades freshness for speed. For live order books or real-time sensor values a stale answer is a bug; you would need expiry rules or no cache at all. Slow creation and repeated requests are exactly when a proxy shines.",
+        "fa": "کش، تازگی داده را فدای سرعت می‌کند. برای دفتر سفارش زنده یا مقادیر لحظه‌ای حسگرها، پاسخ کهنه یعنی باگ؛ یا باید قاعدهٔ انقضا داشته باشید یا اصلاً کش نکنید. ساخت زمان‌بر و درخواست‌های تکراری دقیقاً همان جایی است که پراکسی می‌درخشد."
+      }
+    },
+    {
+      "question": {
+        "en": "Proxy and Decorator both wrap an object behind the same interface. What typically distinguishes them?",
+        "fa": "پراکسی و دکوراتور هر دو یک شیء را پشت همان رابط می‌پوشانند. معمولاً چه چیزی آن‌ها را از هم متمایز می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "A decorator changes the interface, while a proxy keeps it",
+          "A proxy controls access to the object (and often its lifetime); a decorator adds behaviour and is stacked by the client",
+          "A proxy can only be used for remote objects",
+          "A decorator must use inheritance while a proxy must use templates"
+        ],
+        "fa": [
+          "دکوراتور رابط را تغییر می‌دهد ولی پراکسی آن را حفظ می‌کند",
+          "پراکسی دسترسی به شیء (و اغلب چرخهٔ عمرش) را کنترل می‌کند؛ دکوراتور رفتار اضافه می‌کند و کلاینت لایه‌هایش را روی هم می‌چیند",
+          "پراکسی فقط برای اشیای راه‌دور کاربرد دارد",
+          "دکوراتور حتماً باید از وراثت استفاده کند و پراکسی از template"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Structurally they look alike; the intent differs. A proxy usually decides whether and when the real object is used and may create it itself, while decorators are composed freely by clients to add features.",
+        "fa": "از نظر ساختار شبیه هم هستند، اما هدفشان فرق دارد. پراکسی معمولاً تصمیم می‌گیرد که آیا و چه زمانی از شیء اصلی استفاده شود و ممکن است خودش آن را بسازد، در حالی که کلاینت‌ها دکوراتورها را آزادانه ترکیب می‌کنند تا قابلیت اضافه کنند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A photo gallery lists thousands of pictures, but each full-resolution image should be read from disk only when the user actually opens it — while the gallery code keeps treating every entry as an ordinary `Image`.",
+      "fa": "یک گالری عکس هزاران تصویر را فهرست می‌کند، اما هر تصویر با وضوح کامل فقط وقتی باید از دیسک خوانده شود که کاربر واقعاً آن را باز کند؛ در حالی که کد گالری همچنان با هر مورد مثل یک `Image` معمولی رفتار می‌کند."
+    },
+    {
+      "en": "Only users with the admin role may call `deleteAccount()` on the account service, but neither the service class nor its many callers may be modified to add the check.",
+      "fa": "فقط کاربرانی با نقش admin اجازه دارند `deleteAccount()` را روی سرویس حساب‌ها صدا بزنند، اما برای افزودن این بررسی نه کلاس سرویس را می‌شود تغییر داد و نه فراخوان‌های متعددش را."
+    }
+  ],
+  "exercise": {
+    "title": {
+      "en": "Role checks for the payroll database",
+      "fa": "بررسی نقش برای پایگاه دادهٔ حقوق"
+    },
+    "task": {
+      "en": "`SecurePayroll` already implements the `Payroll` interface and forwards every call to the shared `PayrollDatabase` — so right now even the intern can give raises and read salaries. Turn it into a **protection proxy**: only a `Manager` or `HrAdmin` may read salaries, only an `HrAdmin` may give raises, and denied calls must print a message and never reach the database. `session()` and `main()` must stay unchanged.",
+      "fa": "`SecurePayroll` از قبل رابط `Payroll` را پیاده‌سازی می‌کند و هر فراخوانی را به `PayrollDatabase` مشترک می‌فرستد؛ برای همین فعلاً حتی کارآموز هم می‌تواند حقوق‌ها را ببیند و افزایش حقوق بدهد. آن را به یک **protection proxy** تبدیل کنید: فقط `Manager` یا `HrAdmin` حق خواندن حقوق را دارند، فقط `HrAdmin` می‌تواند افزایش حقوق بدهد و فراخوانی‌های ردشده باید پیامی چاپ کنند و هرگز به پایگاه داده نرسند. `session()` و `main()` نباید تغییر کنند."
+    },
+    "hints": {
+      "en": [
+        "All the work happens inside `SecurePayroll`; the database and the client code stay untouched.",
+        "`Role` is declared from least to most rights, so `role_ < Role::Manager` means \"intern\".",
+        "In `giveRaise`, if `role_ != Role::HrAdmin` print `  denied: raise for <name>` and `return;` before forwarding. In `salaryOf`, print the message and `return std::nullopt;`."
+      ],
+      "fa": [
+        "همهٔ کار داخل `SecurePayroll` انجام می‌شود؛ پایگاه داده و کد کلاینت دست نمی‌خورند.",
+        "`Role` از کمترین به بیشترین سطح دسترسی تعریف شده است، پس `role_ < Role::Manager` یعنی «کارآموز».",
+        "در `giveRaise` اگر `role_ != Role::HrAdmin` بود، پیام `  denied: raise for <name>` را چاپ کنید و پیش از ارسال به شیء اصلی `return;` کنید. در `salaryOf` پیام را چاپ کنید و `return std::nullopt;` برگردانید."
+      ]
+    },
+    "expectedOutput": "intern:\n  denied: raise for omid\n  denied: salary of omid\nlead:\n  denied: raise for omid\n  omid earns 4800\nhr:\n  omid earns 5100"
+  }
+}

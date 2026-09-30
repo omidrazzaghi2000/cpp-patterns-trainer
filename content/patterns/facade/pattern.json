@@ -1,0 +1,370 @@
+{
+  "id": "facade",
+  "category": "structural",
+  "order": 5,
+  "difficulty": 1,
+  "icon": "door-open",
+  "name": { "en": "Facade", "fa": "فاساد (نما)" },
+  "tagline": {
+    "en": "One simple front door to a complicated subsystem.",
+    "fa": "یک درِ ورودی ساده برای یک زیرسیستم پیچیده."
+  },
+  "intent": {
+    "en": "Provide a unified, simplified interface to a set of interfaces in a subsystem. The facade defines a higher-level interface that makes the subsystem easier to use.",
+    "fa": "یک رابط یکپارچه و ساده برای مجموعه‌ای از رابط‌های یک زیرسیستم فراهم می‌کند. Facade رابطی سطح بالاتر تعریف می‌کند که استفاده از زیرسیستم را آسان‌تر می‌کند."
+  },
+  "problem": {
+    "en": "Placing an order in an online shop touches four subsystems: reserve stock, charge the card, book a courier, send a confirmation email — in exactly that order, and the reservation must be released if the payment fails. If every caller (the web controller, the mobile API, the admin panel) orchestrates those classes itself, the sequence is copy-pasted in three places, each caller depends on four classes, and one forgotten rollback leaves stock locked forever. Switching payment providers means hunting down every call site.",
+    "fa": "ثبت سفارش در یک فروشگاه اینترنتی با چهار زیرسیستم سروکار دارد: رزرو موجودی، برداشت از کارت، رزرو پیک و ارسال ایمیل تأیید؛ آن هم دقیقاً با همین ترتیب، و اگر پرداخت ناموفق بود رزرو باید آزاد شود. اگر هر فراخوان (کنترلر وب، API موبایل، پنل ادمین) خودش این کلاس‌ها را هماهنگ کند، این توالی در سه جا کپی می‌شود، هر فراخوان به چهار کلاس وابسته است و فراموش کردن یک rollback موجودی را برای همیشه قفل می‌کند. عوض کردن درگاه پرداخت هم یعنی گشتن دنبال تک‌تک جاهایی که صدایش زده‌اند."
+  },
+  "solution": {
+    "en": "Introduce a **facade** class, `CheckoutService`, whose `placeOrder()` does the orchestration once: it talks to `Inventory`, `PaymentGateway`, `Shipping` and `Mailer` in the right order and handles the rollback. Clients depend on one small interface instead of four classes. The subsystem stays as it is and can still be used directly by the rare client that needs fine-grained control. A facade adds no new capabilities — it packages existing ones into the few operations clients actually need.",
+    "fa": "یک کلاس **facade** به نام `CheckoutService` معرفی کنید که متد `placeOrder()` آن هماهنگی را یک بار برای همیشه انجام دهد: با ترتیب درست با `Inventory`، `PaymentGateway`، `Shipping` و `Mailer` صحبت می‌کند و rollback را هم مدیریت می‌کند. کلاینت‌ها به‌جای چهار کلاس به یک رابط کوچک وابسته می‌شوند. زیرسیستم همان‌طور که هست باقی می‌ماند و کلاینت‌های معدودی که کنترل جزئی‌تری لازم دارند هنوز می‌توانند مستقیم از آن استفاده کنند. Facade قابلیت جدیدی اضافه نمی‌کند؛ قابلیت‌های موجود را در قالب همان چند عملیاتی که کلاینت‌ها واقعاً لازم دارند بسته‌بندی می‌کند."
+  },
+  "analogy": {
+    "en": "Ordering at a restaurant. You tell the waiter \"one kebab and a salad\"; behind the kitchen door the grill cook, the salad station, the dishwasher and the cashier all coordinate. You don't need to know who does what or in which order — yet the kitchen staff still exist, and the head chef can talk to any of them directly.",
+    "fa": "سفارش دادن در رستوران را در نظر بگیرید. به گارسون می‌گویید «یک کباب و یک سالاد»؛ پشت در آشپزخانه، کباب‌پز، مسئول سالاد، ظرف‌شور و صندوق‌دار همه با هم هماهنگ می‌شوند. لازم نیست بدانید چه کسی چه کاری را با چه ترتیبی انجام می‌دهد؛ با این حال کارکنان آشپزخانه سر جایشان هستند و سرآشپز می‌تواند مستقیم با هر کدامشان حرف بزند."
+  },
+  "participants": [
+    {
+      "name": "Facade",
+      "role": {
+        "en": "`CheckoutService`: offers a small high-level API, knows which subsystem classes handle a request and calls them in the right order.",
+        "fa": "`CheckoutService`: یک API کوچک و سطح بالا ارائه می‌دهد، می‌داند کدام کلاس‌های زیرسیستم مسئول هر درخواست‌اند و آن‌ها را با ترتیب درست صدا می‌زند."
+      }
+    },
+    {
+      "name": "Subsystem classes",
+      "role": {
+        "en": "`Inventory`, `PaymentGateway`, `Shipping`, `Mailer`: do the real work and have no idea the facade exists.",
+        "fa": "`Inventory`، `PaymentGateway`، `Shipping` و `Mailer`: کار اصلی را انجام می‌دهند و هیچ خبری از وجود facade ندارند."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Calls the facade instead of coordinating the subsystem objects itself.",
+        "fa": "به‌جای این‌که خودش اشیای زیرسیستم را هماهنگ کند، facade را صدا می‌زند."
+      }
+    },
+    {
+      "name": "Additional Facade",
+      "role": {
+        "en": "Optional: a second facade for an unrelated use case (e.g. `ReturnsService`), so that one facade doesn't swell into a god object.",
+        "fa": "اختیاری: یک facade دوم برای یک کاربرد نامرتبط (مثلاً `ReturnsService`) تا یک facade به یک «god object» تبدیل نشود."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 1 },
+      { "id": "Facade", "kind": "concrete", "col": 1, "row": 1, "members": ["+ placeOrder(order) : bool"] },
+      { "id": "Inventory", "kind": "concrete", "col": 3, "row": 0, "members": ["+ reserve(sku, qty)", "+ release(sku, qty)"] },
+      { "id": "PaymentGateway", "kind": "concrete", "col": 3, "row": 1, "members": ["+ charge(card, amount)"] },
+      { "id": "Shipping", "kind": "concrete", "col": 3, "row": 2, "members": ["+ schedule(city) : string"] },
+      { "id": "Mailer", "kind": "concrete", "col": 3, "row": 3, "members": ["+ send(to, text)"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Facade", "type": "uses", "label": "placeOrder()" },
+      { "from": "Facade", "to": "Inventory", "type": "owns" },
+      { "from": "Facade", "to": "PaymentGateway", "type": "owns" },
+      { "from": "Facade", "to": "Shipping", "type": "owns" },
+      { "from": "Facade", "to": "Mailer", "type": "owns" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "List the few use cases clients really need from the subsystem (\"place an order\", \"cancel an order\").",
+      "Create a facade class that owns — or receives references to — the subsystem objects it coordinates.",
+      "Implement one high-level method per use case that calls the subsystem classes in the right order and handles errors and rollback.",
+      "Switch clients to the facade; leave the subsystem accessible for advanced clients if they need it.",
+      "When the facade grows too big, split it into several facades by use case."
+    ],
+    "fa": [
+      "آن چند کاربردی را که کلاینت‌ها واقعاً از زیرسیستم لازم دارند فهرست کنید («ثبت سفارش»، «لغو سفارش»).",
+      "یک کلاس facade بسازید که مالک اشیای زیرسیستمیِ تحت هماهنگی‌اش باشد یا ارجاعی به آن‌ها دریافت کند.",
+      "برای هر کاربرد یک متد سطح بالا بنویسید که کلاس‌های زیرسیستم را با ترتیب درست صدا بزند و خطاها و rollback را مدیریت کند.",
+      "کلاینت‌ها را به استفاده از facade منتقل کنید؛ اگر کلاینت‌های پیشرفته لازم دارند، زیرسیستم را همچنان در دسترس بگذارید.",
+      "وقتی facade بیش از حد بزرگ شد، آن را بر اساس کاربرد به چند facade تقسیم کنید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A subsystem is complex, but most clients only need a handful of common operations.",
+      "The same multi-step orchestration is duplicated across several callers.",
+      "You are layering a system and want each layer to reach the one below only through a single entry point.",
+      "You want to isolate your code from a third-party library so it can be replaced later."
+    ],
+    "fa": [
+      "زیرسیستم پیچیده است، اما بیشتر کلاینت‌ها فقط به چند عملیات رایج نیاز دارند.",
+      "همان هماهنگی چندمرحله‌ای در چند فراخوان مختلف تکرار شده است.",
+      "سیستم را لایه‌بندی می‌کنید و می‌خواهید هر لایه فقط از طریق یک نقطهٔ ورود به لایهٔ پایینی دسترسی داشته باشد.",
+      "می‌خواهید کد خودتان را از یک کتابخانهٔ شخص ثالث جدا کنید تا بعداً بتوان آن را عوض کرد."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Clients become simpler and depend on one class instead of many.",
+      "Orchestration logic — ordering, error handling, rollback — lives in one place.",
+      "Looser coupling: subsystem internals can change without touching clients.",
+      "It doesn't forbid direct access for clients that need the full power of the subsystem."
+    ],
+    "fa": [
+      "کلاینت‌ها ساده‌تر می‌شوند و به‌جای چندین کلاس فقط به یک کلاس وابسته‌اند.",
+      "منطق هماهنگی (ترتیب، مدیریت خطا، rollback) در یک جا متمرکز است.",
+      "وابستگی کمتر: جزئیات داخلی زیرسیستم بدون دست زدن به کلاینت‌ها قابل تغییر است.",
+      "مانع دسترسی مستقیم کلاینت‌هایی که به تمام توان زیرسیستم نیاز دارند نمی‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "A facade can grow into a god object coupled to every class in the application.",
+      "It may hide options some clients need; if they keep bypassing it, the chosen operations are wrong.",
+      "One more layer to keep in sync whenever the subsystem changes."
+    ],
+    "fa": [
+      "facade ممکن است به یک god object تبدیل شود که به همهٔ کلاس‌های برنامه وابسته است.",
+      "ممکن است گزینه‌هایی را که بعضی کلاینت‌ها لازم دارند پنهان کند؛ اگر مدام دورش می‌زنند، عملیات انتخاب‌شده اشتباه است.",
+      "یک لایهٔ دیگر که با هر تغییر زیرسیستم باید هماهنگ نگه داشته شود."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "For testability, let the facade receive references (or `std::unique_ptr`s) to subsystem interfaces in its constructor instead of hard-wiring concrete members.",
+      "Combine it with the **Pimpl idiom** to hide the subsystem headers completely: the facade's header then includes nothing heavy, which also speeds up builds.",
+      "Name the API in the client's vocabulary (`placeOrder()`), not the subsystem's (`reserve()`, `charge()`).",
+      "Report failures with a rich result — `std::optional`, a result struct, or `std::expected` in C++23 — so callers learn *why* without reaching into the subsystem.",
+      "Don't make every facade a Singleton by reflex; a normal object passed to whoever needs it is easier to test."
+    ],
+    "fa": [
+      "برای تست‌پذیری، بگذارید facade به‌جای اعضای مشخصِ سیم‌کشی‌شده، ارجاع‌ها (یا `std::unique_ptr`هایی) به رابط‌های زیرسیستم را از سازنده‌اش بگیرد.",
+      "آن را با **Pimpl idiom** ترکیب کنید تا هدرهای زیرسیستم کاملاً پنهان شوند: آن‌وقت هدر facade هیچ چیز سنگینی include نمی‌کند و build هم سریع‌تر می‌شود.",
+      "API را با واژگان کلاینت نام‌گذاری کنید (`placeOrder()`)، نه واژگان زیرسیستم (`reserve()`، `charge()`).",
+      "شکست را با نتیجه‌ای پرمحتوا گزارش کنید (`std::optional`، یک struct نتیجه یا `std::expected` در C++23) تا فراخوان بدون سرک کشیدن به زیرسیستم بفهمد *چرا* شکست خورده است.",
+      "هر facade را از روی عادت Singleton نکنید؛ یک شیء معمولی که به هر کسی لازمش دارد پاس داده می‌شود راحت‌تر تست می‌شود."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::filesystem::copy` and `std::filesystem::remove_all`: one call hides directory walking, permissions and OS-specific system calls.",
+      "`std::async` hides thread creation, `std::promise` and `std::future` plumbing behind a single function call.",
+      "libcurl's easy interface (`curl_easy_perform`) is a facade over sockets, TLS, redirects and its multi-transfer engine.",
+      "Compiler drivers: `g++ main.cpp` runs the preprocessor, compiler, assembler and linker for you."
+    ],
+    "fa": [
+      "`std::filesystem::copy` و `std::filesystem::remove_all`: یک فراخوانی، پیمایش پوشه‌ها، مجوزها و فراخوانی‌های سیستمیِ مخصوص هر سیستم‌عامل را پنهان می‌کند.",
+      "`std::async` ساخت نخ و سیم‌کشی `std::promise` و `std::future` را پشت یک فراخوانی تابع پنهان می‌کند.",
+      "رابط easy در libcurl (`curl_easy_perform`) یک facade روی سوکت‌ها، TLS، ریدایرکت‌ها و موتور انتقال چندگانهٔ آن است.",
+      "درایورهای کامپایلر: `g++ main.cpp` پیش‌پردازنده، کامپایلر، اسمبلر و لینکر را برایتان اجرا می‌کند."
+    ]
+  },
+  "related": [
+    {
+      "id": "adapter",
+      "note": {
+        "en": "Adapter converts one existing interface into the one a client expects; Facade defines a new, simpler interface over many classes.",
+        "fa": "Adapter یک رابط موجود را به رابطی که کلاینت انتظار دارد تبدیل می‌کند؛ Facade یک رابط جدید و ساده‌تر روی چندین کلاس تعریف می‌کند."
+      }
+    },
+    {
+      "id": "mediator",
+      "note": {
+        "en": "Both coordinate several objects, but a facade is one-way — the subsystem doesn't know it exists — whereas mediator colleagues communicate through the mediator.",
+        "fa": "هر دو چند شیء را هماهنگ می‌کنند، اما facade یک‌طرفه است (زیرسیستم از وجودش خبر ندارد)، در حالی که اعضای Mediator از طریق خود mediator با هم ارتباط می‌گیرند."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "Usually one facade instance is enough, so it is sometimes made a singleton — though passing a single instance around is often cleaner.",
+        "fa": "معمولاً یک نمونه از facade کافی است، برای همین گاهی سینگلتون می‌شود؛ هرچند پاس دادن یک نمونهٔ واحد به جاهای لازم اغلب تمیزتر است."
+      }
+    },
+    {
+      "id": "abstract-factory",
+      "note": {
+        "en": "An Abstract Factory can work alongside a facade to hide how the subsystem objects are created for a given platform.",
+        "fa": "یک Abstract Factory می‌تواند کنار facade به کار برود تا نحوهٔ ساخته شدن اشیای زیرسیستم برای هر پلتفرم را پنهان کند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "One-call checkout for an online shop", "fa": "تسویه‌حساب یک‌مرحله‌ای در فروشگاه اینترنتی" },
+    "description": {
+      "en": "The client calls only `CheckoutService::placeOrder()`. The facade drives four subsystem classes in the right order, and when a card is declined it releases the reserved stock — a rollback the client never has to know about.",
+      "fa": "کلاینت فقط `CheckoutService::placeOrder()` را صدا می‌زند. facade چهار کلاس زیرسیستم را با ترتیب درست به کار می‌گیرد و وقتی کارت رد می‌شود، موجودی رزروشده را آزاد می‌کند؛ کلاینت اصلاً لازم نیست از این rollback خبر داشته باشد."
+    },
+    "output": "order 1:\n  inventory: reserved 1 x KEYBOARD-7\n  payment: charged $49\n  shipping: courier booked to Tabriz\n  email to sara@mail.com: order shipped, tracking TRK-1001\n  -> success\norder 2:\n  inventory: reserved 2 x MOUSE-3\n  payment: card declined\n  inventory: released 2 x MOUSE-3\n  -> failed",
+    "highlights": [
+      {
+        "lines": [6, 16],
+        "note": {
+          "en": "Subsystem classes such as `Inventory` each do one job and know nothing about the facade. The three classes below are the same kind of building block.",
+          "fa": "هر کلاس زیرسیستم، مثل `Inventory`، فقط یک کار انجام می‌دهد و هیچ چیزی دربارهٔ facade نمی‌داند. سه کلاس بعدی هم از همین جنس‌اند."
+        }
+      },
+      {
+        "lines": [56, 65],
+        "note": {
+          "en": "The facade's single high-level operation: reserve, charge, ship, notify — the correct order is written down exactly once.",
+          "fa": "تنها عملیات سطح بالای facade: رزرو، پرداخت، ارسال، اطلاع‌رسانی؛ ترتیب درست دقیقاً یک بار نوشته شده است."
+        }
+      },
+      {
+        "lines": [58, 61],
+        "note": {
+          "en": "Error handling that every caller would otherwise have to remember: if the payment fails, the stock reservation is released.",
+          "fa": "مدیریت خطایی که در غیر این صورت هر فراخوانی باید به خاطر می‌سپرد: اگر پرداخت ناموفق باشد، رزرو موجودی آزاد می‌شود."
+        }
+      },
+      {
+        "lines": [67, 71],
+        "note": {
+          "en": "The facade owns its subsystem objects here. In production code you'd often inject references to interfaces instead, so tests can pass fakes.",
+          "fa": "در این مثال facade مالک اشیای زیرسیستم است. در کد واقعی اغلب به‌جای آن ارجاع به رابط‌ها را تزریق می‌کنید تا تست‌ها بتوانند نمونه‌های جعلی بدهند."
+        }
+      },
+      {
+        "lines": [74, 85],
+        "note": {
+          "en": "The client: one object, one call per order. It never mentions `Inventory`, `PaymentGateway`, `Shipping` or `Mailer`.",
+          "fa": "کلاینت: یک شیء و برای هر سفارش یک فراخوانی. هیچ اسمی از `Inventory`، `PaymentGateway`، `Shipping` یا `Mailer` نمی‌برد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What is the main purpose of a Facade?",
+        "fa": "هدف اصلی Facade چیست؟"
+      },
+      "options": {
+        "en": [
+          "Convert one incompatible interface into another that a client expects",
+          "Control access to an expensive object and create it lazily",
+          "Provide a simple, higher-level interface to a complex subsystem",
+          "Let many objects talk to each other through a central hub"
+        ],
+        "fa": [
+          "تبدیل یک رابط ناسازگار به رابطی که کلاینت انتظار دارد",
+          "کنترل دسترسی به یک شیء پرهزینه و ساختن تنبل آن",
+          "فراهم کردن یک رابط ساده و سطح بالاتر برای یک زیرسیستم پیچیده",
+          "امکان گفت‌وگوی اشیای متعدد با یکدیگر از طریق یک هاب مرکزی"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "A facade wraps a whole subsystem behind a few convenient operations such as `placeOrder()`. The other options describe Adapter, Proxy and Mediator.",
+        "fa": "facade یک زیرسیستم کامل را پشت چند عملیات راحت مثل `placeOrder()` قرار می‌دهد. گزینه‌های دیگر به ترتیب Adapter، Proxy و Mediator را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "`CheckoutService` stores `Inventory inventory_;` and friends by value. Which change best lets you unit-test it with fake subsystems?",
+        "fa": "`CheckoutService` عضوهایی مثل `Inventory inventory_;` را به‌صورت مقداری نگه می‌دارد. کدام تغییر به بهترین شکل اجازه می‌دهد آن را با زیرسیستم‌های جعلی تست واحد کنید؟"
+      },
+      "options": {
+        "en": [
+          "Accept references (or `std::unique_ptr`s) to subsystem interfaces in the constructor",
+          "Make all the subsystem member functions `static`",
+          "Turn `CheckoutService` into a Singleton",
+          "Declare `placeOrder()` as `constexpr`"
+        ],
+        "fa": [
+          "ارجاع‌ها (یا `std::unique_ptr`هایی) به رابط‌های زیرسیستم را در سازنده دریافت کند",
+          "همهٔ توابع عضو زیرسیستم `static` شوند",
+          "`CheckoutService` به یک Singleton تبدیل شود",
+          "`placeOrder()` به‌صورت `constexpr` اعلان شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Dependency injection lets a test pass a fake `PaymentGateway` that, say, always declines — and then assert the stock was released. Static functions and singletons make substitution harder, not easier; `constexpr` is irrelevant.",
+        "fa": "تزریق وابستگی به تست اجازه می‌دهد یک `PaymentGateway` جعلی بدهد که مثلاً همیشه پرداخت را رد می‌کند و بعد بررسی کند موجودی آزاد شده باشد. توابع static و سینگلتون جایگزینی را سخت‌تر می‌کنند، نه آسان‌تر؛ `constexpr` هم ربطی به موضوع ندارد."
+      }
+    },
+    {
+      "question": {
+        "en": "Which is a warning sign that a facade has gone wrong?",
+        "fa": "کدام نشانه می‌گوید یک facade مسیر اشتباهی رفته است؟"
+      },
+      "options": {
+        "en": [
+          "A few advanced clients still use one subsystem class directly",
+          "Some facade methods forward a call almost unchanged",
+          "The subsystem classes don't know that the facade exists",
+          "It has grown dozens of methods and depends on nearly every class in the application"
+        ],
+        "fa": [
+          "چند کلاینت پیشرفته هنوز مستقیماً از یکی از کلاس‌های زیرسیستم استفاده می‌کنند",
+          "بعضی متدهای facade یک فراخوانی را تقریباً بدون تغییر عبور می‌دهند",
+          "کلاس‌های زیرسیستم نمی‌دانند facade وجود دارد",
+          "ده‌ها متد پیدا کرده و تقریباً به همهٔ کلاس‌های برنامه وابسته است"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "A facade that knows everything has become a god object: every change anywhere touches it. Split it by use case. Direct subsystem access for power users is allowed, thin forwarding is normal, and subsystems not knowing the facade is the whole point.",
+        "fa": "اگر facade همه‌چیز را بداند، به یک god object تبدیل شده است: هر تغییری در هر جای برنامه به آن هم می‌رسد. آن را بر اساس کاربرد تقسیم کنید. دسترسی مستقیم کاربران حرفه‌ای به زیرسیستم مجاز است، forward کردن ساده طبیعی است و بی‌خبری زیرسیستم از facade دقیقاً هدف الگوست."
+      }
+    },
+    {
+      "question": {
+        "en": "How does a Facade differ from a Mediator?",
+        "fa": "Facade چه تفاوتی با Mediator دارد؟"
+      },
+      "options": {
+        "en": [
+          "A facade is always a singleton; a mediator never is",
+          "A facade is one-way — the subsystem doesn't know it — while mediator colleagues communicate through the mediator",
+          "A mediator simplifies an interface; a facade adds new behavior to objects",
+          "There is no difference apart from the name"
+        ],
+        "fa": [
+          "facade همیشه سینگلتون است و mediator هرگز",
+          "facade یک‌طرفه است (زیرسیستم آن را نمی‌شناسد)، در حالی که اعضای mediator از طریق خود mediator با هم ارتباط می‌گیرند",
+          "mediator یک رابط را ساده می‌کند و facade به اشیا رفتار جدید اضافه می‌کند",
+          "به‌جز اسم هیچ تفاوتی ندارند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "`Inventory` never calls `CheckoutService`; requests only flow from the client, through the facade, into the subsystem. In a Mediator, colleagues actively notify the mediator, which then coordinates the others — communication goes both ways.",
+        "fa": "`Inventory` هیچ‌وقت `CheckoutService` را صدا نمی‌زند؛ درخواست‌ها فقط از کلاینت، از طریق facade، به زیرسیستم می‌رسند. در Mediator اعضا خودشان فعالانه به mediator خبر می‌دهند و او بقیه را هماهنگ می‌کند؛ یعنی ارتباط دوطرفه است."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A video editor's \"Export to MP4\" button must drive a demuxer, an audio resampler, a video encoder and a muxer from a huge codec library, yet the UI code should call just one `exportVideo(path, preset)` function.",
+      "fa": "دکمهٔ «خروجی MP4» در یک ویرایشگر ویدیو باید یک demuxer، یک resampler صدا، یک encoder ویدیو و یک muxer را از یک کتابخانهٔ عظیم کدک به کار بگیرد، اما کد رابط کاربری فقط باید یک تابع `exportVideo(path, preset)` را صدا بزند."
+    },
+    {
+      "en": "Product teams keep misusing a sprawling cloud SDK (auth tokens, buckets, retries, multipart uploads), so the platform team offers a tiny `uploadReport(file)` API that does all of it correctly.",
+      "fa": "تیم‌های محصول مدام از یک SDK ابری گسترده (توکن‌های احراز هویت، bucketها، تلاش مجدد، آپلود چندبخشی) اشتباه استفاده می‌کنند؛ برای همین تیم پلتفرم یک API کوچک به نام `uploadReport(file)` ارائه می‌دهد که همهٔ این کارها را درست انجام می‌دهد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Start the meeting with one call", "fa": "شروع جلسه با یک فراخوانی" },
+    "task": {
+      "en": "Starting a video meeting means driving four devices in a precise order — and the display rejects an input change while it is off. Implement the facade methods `MeetingRoom::startMeeting()` and `MeetingRoom::endMeeting()` so that the client in `main()` needs nothing else. Don't change the subsystem classes.",
+      "fa": "شروع یک جلسهٔ ویدیویی یعنی راه انداختن چهار دستگاه با ترتیبی دقیق؛ و نمایشگر وقتی خاموش است تغییر ورودی را رد می‌کند. متدهای facade یعنی `MeetingRoom::startMeeting()` و `MeetingRoom::endMeeting()` را پیاده‌سازی کنید تا کلاینت در `main()` به چیز دیگری نیاز نداشته باشد. کلاس‌های زیرسیستم را تغییر ندهید."
+    },
+    "hints": {
+      "en": [
+        "The facade already owns the four devices (`lights_`, `display_`, `camera_`, `call_`); its methods just call them in the right order.",
+        "`display_.selectInput(\"HDMI 1\")` only works after `display_.powerOn()` — otherwise it prints an error.",
+        "startMeeting: `lights_.setLevel(40); display_.powerOn(); display_.selectInput(\"HDMI 1\"); camera_.wake(); call_.join(meetingId);`",
+        "endMeeting mirrors it: `call_.leave(); camera_.sleep(); display_.standby(); lights_.setLevel(100);`"
+      ],
+      "fa": [
+        "facade از قبل مالک چهار دستگاه است (`lights_`، `display_`، `camera_` و `call_`)؛ متدهایش فقط باید آن‌ها را با ترتیب درست صدا بزنند.",
+        "`display_.selectInput(\"HDMI 1\")` فقط بعد از `display_.powerOn()` کار می‌کند؛ وگرنه پیام خطا چاپ می‌کند.",
+        "برای startMeeting: `lights_.setLevel(40); display_.powerOn(); display_.selectInput(\"HDMI 1\"); camera_.wake(); call_.join(meetingId);`",
+        "endMeeting برعکس همان است: `call_.leave(); camera_.sleep(); display_.standby(); lights_.setLevel(100);`"
+      ]
+    },
+    "expectedOutput": "room: starting 842-117\nlights: 40%\ndisplay: on\ndisplay: input HDMI 1\ncamera: on\ncall: joined 842-117\nroom: ending\ncall: left 842-117\ncamera: off\ndisplay: standby\nlights: 100%"
+  }
+}

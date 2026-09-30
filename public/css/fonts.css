@@ -1,0 +1,15 @@
+/* Self-hosted fonts (via @fontsource) so the trainer also works offline. */
+@import url('../vendor/fonts/fredoka/500.css');
+@import url('../vendor/fonts/fredoka/600.css');
+@import url('../vendor/fonts/fredoka/700.css');
+@import url('../vendor/fonts/nunito/400.css');
+@import url('../vendor/fonts/nunito/600.css');
+@import url('../vendor/fonts/nunito/700.css');
+@import url('../vendor/fonts/nunito/800.css');
+@import url('../vendor/fonts/vazirmatn/400.css');
+@import url('../vendor/fonts/vazirmatn/500.css');
+@import url('../vendor/fonts/vazirmatn/700.css');
+@import url('../vendor/fonts/vazirmatn/800.css');
+@import url('../vendor/fonts/vazirmatn/900.css');
+@import url('../vendor/fonts/jetbrains-mono/400.css');
+@import url('../vendor/fonts/jetbrains-mono/600.css');

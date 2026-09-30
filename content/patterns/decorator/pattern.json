@@ -1,0 +1,381 @@
+{
+  "id": "decorator",
+  "category": "structural",
+  "order": 4,
+  "difficulty": 2,
+  "icon": "layers",
+  "name": { "en": "Decorator", "fa": "دکوراتور (تزئین‌گر)" },
+  "aka": { "en": "Wrapper", "fa": "Wrapper (پوشاننده)" },
+  "tagline": {
+    "en": "Wrap an object to give it new behavior — without touching its class.",
+    "fa": "یک شیء را بپوشانید تا رفتار تازه بگیرد؛ بدون دست زدن به کلاسش."
+  },
+  "intent": {
+    "en": "Attach additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.",
+    "fa": "مسئولیت‌های اضافه را به‌صورت پویا به یک شیء متصل می‌کند. Decoratorها جایگزینی انعطاف‌پذیر برای زیرکلاس‌سازی در گسترش قابلیت‌ها هستند."
+  },
+  "problem": {
+    "en": "Your backup tool writes data to files. Some users want the data compressed, others encrypted, others both — and next month someone asks for checksums and network targets too. With inheritance you write `CompressedFileSink`, `EncryptedFileSink`, `CompressedEncryptedFileSink`, then the same set again for `NetworkSink`… The number of classes explodes with every combination, the choice is frozen at compile time, and even the order of the steps (compress before encrypting?) is baked into class names.",
+    "fa": "ابزار پشتیبان‌گیری شما داده‌ها را در فایل می‌نویسد. بعضی کاربرها داده را فشرده می‌خواهند، بعضی رمزنگاری‌شده و بعضی هر دو؛ ماه بعد هم کسی checksum و مقصد شبکه‌ای می‌خواهد. با ارث‌بری باید `CompressedFileSink`، `EncryptedFileSink` و `CompressedEncryptedFileSink` را بنویسید و بعد همین مجموعه را از نو برای `NetworkSink`. تعداد کلاس‌ها با هر ترکیب تازه منفجر می‌شود، انتخاب در زمان کامپایل قفل می‌شود و حتی ترتیب مراحل (اول فشرده‌سازی یا اول رمزنگاری؟) در اسم کلاس‌ها حک می‌شود."
+  },
+  "solution": {
+    "en": "Write a **decorator** that implements the same interface as the object it wraps (`DataSink`) and holds a pointer to another `DataSink`. Its methods forward to the wrapped object, doing extra work before or after. Because a decorator *is* a `DataSink`, it can wrap another decorator: `Compress(Encrypt(FileSink))` forms a chain in which each layer adds one responsibility. Clients only see the `DataSink` interface, combinations are assembled at runtime, and each feature lives in exactly one small class.",
+    "fa": "یک **decorator** بنویسید که همان رابطِ شیء پوشانده‌شده (`DataSink`) را پیاده‌سازی کند و اشاره‌گری به یک `DataSink` دیگر نگه دارد. متدهای آن فراخوانی را به شیء درونی می‌رسانند و قبل یا بعد از آن کار اضافه‌ای انجام می‌دهند. چون هر decorator خودش یک `DataSink` است، می‌تواند decorator دیگری را بپوشاند: `Compress(Encrypt(FileSink))` زنجیره‌ای می‌سازد که هر لایه‌اش یک مسئولیت اضافه می‌کند. کلاینت‌ها فقط رابط `DataSink` را می‌بینند، ترکیب‌ها در زمان اجرا سرهم می‌شوند و هر قابلیت دقیقاً در یک کلاس کوچک زندگی می‌کند."
+  },
+  "analogy": {
+    "en": "Camera lens filters. You screw a UV filter onto the lens, a polarizer onto that, and an ND filter on top. Every filter uses the same thread, so the camera still just sees \"a lens\"; each one changes the light in its own way, you can remove any of them when the scene changes, and the order you stack them in can affect the photo.",
+    "fa": "فیلترهای لنز دوربین را در نظر بگیرید. یک فیلتر UV روی لنز پیچ می‌کنید، یک پلاریزه روی آن و یک فیلتر ND روی همه. همهٔ فیلترها همان رزوه را دارند، پس دوربین هنوز فقط «یک لنز» می‌بیند؛ هر فیلتر نور را به شیوهٔ خودش تغییر می‌دهد، هر وقت صحنه عوض شد می‌توانید هر کدام را باز کنید و ترتیب چیدنشان هم می‌تواند روی عکس اثر بگذارد."
+  },
+  "participants": [
+    {
+      "name": "Component",
+      "role": {
+        "en": "`DataSink`: the interface shared by the real object and all decorators.",
+        "fa": "`DataSink`: رابط مشترک شیء اصلی و همهٔ decoratorها."
+      }
+    },
+    {
+      "name": "ConcreteComponent",
+      "role": {
+        "en": "`FileSink`: the core object that does the basic work and knows nothing about decorators.",
+        "fa": "`FileSink`: شیء اصلی که کار پایه را انجام می‌دهد و هیچ خبری از decoratorها ندارد."
+      }
+    },
+    {
+      "name": "Decorator",
+      "role": {
+        "en": "`SinkDecorator`: implements the Component interface, owns a wrapped Component and forwards every call to it by default.",
+        "fa": "`SinkDecorator`: رابط Component را پیاده‌سازی می‌کند، مالک یک Component درونی است و به‌طور پیش‌فرض هر فراخوانی را به آن می‌رساند."
+      }
+    },
+    {
+      "name": "ConcreteDecorator",
+      "role": {
+        "en": "`Compress`, `Encrypt`: override operations to add behavior before or after delegating to the wrapped object.",
+        "fa": "`Compress` و `Encrypt`: عملیات را override می‌کنند تا قبل یا بعد از سپردن کار به شیء درونی، رفتاری اضافه کنند."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Assembles the stack of decorators and then uses it only through the Component interface.",
+        "fa": "پشتهٔ decoratorها را سرهم می‌کند و از آن به بعد فقط از طریق رابط Component با آن کار می‌کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Component", "kind": "interface", "col": 2, "row": 0, "members": ["+ write(data)"] },
+      { "id": "ConcreteComponent", "kind": "concrete", "col": 1, "row": 1, "members": ["+ write(data)"] },
+      { "id": "Decorator", "kind": "abstract", "col": 3, "row": 1, "members": ["- inner : Component (owned)", "+ write(data)"] },
+      { "id": "ConcreteDecoratorA", "kind": "concrete", "col": 2, "row": 2, "members": ["+ write(data)"] },
+      { "id": "ConcreteDecoratorB", "kind": "concrete", "col": 3, "row": 2, "members": ["+ write(data)"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Component", "type": "uses" },
+      { "from": "ConcreteComponent", "to": "Component", "type": "implements" },
+      { "from": "Decorator", "to": "Component", "type": "implements" },
+      { "from": "Decorator", "to": "Component", "type": "owns", "label": "wraps" },
+      { "from": "ConcreteDecoratorA", "to": "Decorator", "type": "inherits" },
+      { "from": "ConcreteDecoratorB", "to": "Decorator", "type": "inherits" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Make sure there is a small Component interface that both the core object and the add-ons can implement.",
+      "Implement the concrete component with the basic behavior.",
+      "Write a base decorator that implements the interface, owns a `std::unique_ptr<Component>` and forwards every call.",
+      "Derive concrete decorators that override only the operations they change, doing work before and/or after calling the base version.",
+      "Assemble the stack in client code (or a factory), outermost layer first: `std::make_unique<A>(std::make_unique<B>(core))`."
+    ],
+    "fa": [
+      "مطمئن شوید یک رابط Component کوچک وجود دارد که هم شیء اصلی و هم افزونه‌ها بتوانند پیاده‌سازی‌اش کنند.",
+      "Component مشخص را با رفتار پایه پیاده‌سازی کنید.",
+      "یک decorator پایه بنویسید که رابط را پیاده‌سازی کند، مالک یک `std::unique_ptr<Component>` باشد و هر فراخوانی را به آن برساند.",
+      "decoratorهای مشخص را مشتق کنید؛ هر کدام فقط عملیاتی را که تغییر می‌دهد override کند و قبل و/یا بعد از صدا زدن نسخهٔ پایه کارش را انجام دهد.",
+      "پشته را در کد کلاینت (یا یک factory) سرهم کنید، از بیرونی‌ترین لایه: `std::make_unique<A>(std::make_unique<B>(core))`."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "You need to add responsibilities to individual objects at runtime, in any combination (compression, encryption, caching, logging, retries).",
+      "Subclassing would require a new class for every combination of features.",
+      "You can't or don't want to modify the wrapped class (third-party or `final`), but clients already depend on an interface.",
+      "The order of cross-cutting steps must be configurable."
+    ],
+    "fa": [
+      "باید در زمان اجرا و با هر ترکیبی به اشیای منفرد مسئولیت اضافه کنید (فشرده‌سازی، رمزنگاری، کش، لاگ، تلاش مجدد).",
+      "زیرکلاس‌سازی به ازای هر ترکیب از قابلیت‌ها یک کلاس جدید لازم دارد.",
+      "نمی‌توانید یا نمی‌خواهید کلاس اصلی را تغییر دهید (کتابخانهٔ شخص ثالث یا کلاس `final`)، اما کلاینت‌ها از قبل به یک رابط وابسته‌اند.",
+      "ترتیب مراحلِ مشترک بین بخش‌ها (cross-cutting) باید قابل پیکربندی باشد."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Mix and match features at runtime; the same decorator works with every component.",
+      "Single Responsibility: each concern lives in one small class.",
+      "Open/Closed: add behavior without changing existing classes.",
+      "Clients are unaware of the decoration — they still program against the original interface."
+    ],
+    "fa": [
+      "قابلیت‌ها را در زمان اجرا هر طور بخواهید ترکیب کنید؛ یک decorator با همهٔ Componentها کار می‌کند.",
+      "اصل تک‌مسئولیتی: هر دغدغه در یک کلاس کوچک زندگی می‌کند.",
+      "اصل باز/بسته: بدون تغییر کلاس‌های موجود رفتار اضافه می‌کنید.",
+      "کلاینت‌ها از پوشانده شدن شیء بی‌خبرند و همچنان با همان رابط اصلی کار می‌کنند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Many small objects: a long chain is harder to debug and clutters stack traces.",
+      "Order matters and is easy to get wrong — encrypting before compressing leaves nothing to compress.",
+      "Removing or inspecting one layer in the middle of a stack is awkward, and identity checks see the outer wrapper, not the core object.",
+      "Every operation of the interface must be forwarded; wide interfaces mean a lot of boilerplate."
+    ],
+    "fa": [
+      "اشیای کوچک زیاد: زنجیرهٔ طولانی سخت‌تر دیباگ می‌شود و stack trace را شلوغ می‌کند.",
+      "ترتیب مهم است و اشتباه کردن در آن آسان: اگر قبل از فشرده‌سازی رمزنگاری کنید، چیزی برای فشرده کردن باقی نمی‌ماند.",
+      "حذف یا بررسی یک لایه در وسط پشته دست‌وپاگیر است و مقایسهٔ هویت اشیا، پوستهٔ بیرونی را می‌بیند نه شیء اصلی را.",
+      "همهٔ عملیات رابط باید forward شوند؛ رابط‌های بزرگ یعنی کد تکراری زیاد."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Write the forwarding boilerplate once in a base decorator; concrete decorators then override only what they change and call `Base::op()` to delegate.",
+      "Own the wrapped object with `std::unique_ptr`: the whole stack becomes one unit, and destroying the outermost layer destroys every layer beneath it.",
+      "Inherit constructors with `using SinkDecorator::SinkDecorator;` instead of repeating the same constructor in every decorator.",
+      "For compile-time stacks, a template decorator (`template <class Inner> class Logged : public Inner`) removes virtual calls — but the combination can no longer change at runtime.",
+      "Often a function wrapper is enough: a lambda that wraps another callable (`withRetry(fetch)`) is the functional form of Decorator."
+    ],
+    "fa": [
+      "کد تکراری forward کردن را یک بار در decorator پایه بنویسید؛ آن‌وقت decoratorهای مشخص فقط چیزی را که تغییر می‌دهند override می‌کنند و برای سپردن کار `Base::op()` را صدا می‌زنند.",
+      "شیء درونی را با `std::unique_ptr` در مالکیت بگیرید: کل پشته یک واحد می‌شود و نابود کردن بیرونی‌ترین لایه همهٔ لایه‌های زیرین را هم نابود می‌کند.",
+      "به‌جای تکرار یک سازندهٔ یکسان در هر decorator، سازنده‌ها را با `using SinkDecorator::SinkDecorator;` به ارث ببرید.",
+      "برای پشته‌های زمان کامپایل، یک decorator از نوع template (`template <class Inner> class Logged : public Inner`) فراخوانی‌های virtual را حذف می‌کند؛ اما دیگر نمی‌توان ترکیب را در زمان اجرا عوض کرد.",
+      "خیلی وقت‌ها یک پوشانندهٔ تابعی کافی است: یک lambda که callable دیگری را می‌پوشاند (مثل `withRetry(fetch)`) شکل تابعیِ Decorator است."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Boost.Iostreams: a `filtering_stream` stacks filters such as `gzip_compressor` onto any device — the example in production form.",
+      "Qt's `QSortFilterProxyModel` wraps another `QAbstractItemModel` and adds sorting and filtering while exposing the same interface.",
+      "Java I/O, the textbook case: `new BufferedReader(new InputStreamReader(socketStream))`.",
+      "HTTP middleware and gRPC interceptors: logging, authentication and compression layers each wrap the next handler."
+    ],
+    "fa": [
+      "Boost.Iostreams: یک `filtering_stream` فیلترهایی مثل `gzip_compressor` را روی هر device می‌چیند؛ همان مثال این درس در نسخهٔ واقعی.",
+      "`QSortFilterProxyModel` در Qt یک `QAbstractItemModel` دیگر را می‌پوشاند و مرتب‌سازی و فیلتر اضافه می‌کند، در حالی که همان رابط را ارائه می‌دهد.",
+      "کلاس‌های I/O جاوا، مثال کتاب‌های درسی: `new BufferedReader(new InputStreamReader(socketStream))`.",
+      "middlewareهای HTTP و interceptorهای gRPC: لایه‌های لاگ، احراز هویت و فشرده‌سازی هر کدام handler بعدی را می‌پوشانند."
+    ]
+  },
+  "related": [
+    {
+      "id": "proxy",
+      "note": {
+        "en": "Nearly the same structure. A Proxy controls access to its subject (lazy loading, caching, permissions) and usually manages it itself; decorators are stacked by the client to add features.",
+        "fa": "ساختارشان تقریباً یکی است. Proxy دسترسی به شیء اصلی را کنترل می‌کند (بارگذاری تنبل، کش، مجوزها) و معمولاً خودش آن را مدیریت می‌کند؛ decoratorها را کلاینت روی هم می‌چیند تا قابلیت اضافه کند."
+      }
+    },
+    {
+      "id": "adapter",
+      "note": {
+        "en": "Adapter changes an object's interface; Decorator keeps the interface and enriches the behavior.",
+        "fa": "Adapter رابط یک شیء را تغییر می‌دهد؛ Decorator رابط را حفظ می‌کند و رفتار را غنی‌تر می‌کند."
+      }
+    },
+    {
+      "id": "strategy",
+      "note": {
+        "en": "Decorator changes an object's skin (wraps it from the outside); Strategy changes its guts (swaps an algorithm inside).",
+        "fa": "Decorator پوستهٔ شیء را عوض می‌کند (از بیرون می‌پوشاندش)؛ Strategy دل‌وروده‌اش را (الگوریتمی را در درونش عوض می‌کند)."
+      }
+    },
+    {
+      "id": "composite",
+      "note": {
+        "en": "Both use recursive composition, but a decorator has exactly one child and adds behavior, while a composite has many and aggregates their results.",
+        "fa": "هر دو از ترکیب بازگشتی استفاده می‌کنند، اما decorator دقیقاً یک فرزند دارد و رفتار اضافه می‌کند، در حالی که Composite چندین فرزند دارد و نتایجشان را تجمیع می‌کند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Compressed, encrypted backups", "fa": "پشتیبان‌های فشرده و رمزنگاری‌شده" },
+    "description": {
+      "en": "`Compress` and `Encrypt` wrap any `DataSink`, including each other. `FileSink` never changes; the client builds the stack at runtime, and swapping the order of the same two decorators produces different bytes.",
+      "fa": "`Compress` و `Encrypt` می‌توانند هر `DataSink` دلخواهی را بپوشانند، حتی همدیگر را. `FileSink` هیچ تغییری نمی‌کند؛ کلاینت پشته را در زمان اجرا می‌سازد و جابه‌جا کردن ترتیب همین دو decorator، بایت‌های متفاوتی تولید می‌کند."
+    },
+    "output": "plain:\n  log.txt <- aaaabbbcc\ncompress -> encrypt:\n  backup.bin <- b5c4d3\nencrypt -> compress:\n  backup.bin <- b4c3d2",
+    "highlights": [
+      {
+        "lines": [10, 14],
+        "note": {
+          "en": "The Component interface. Everything in the stack — the real file and every decorator — implements just this.",
+          "fa": "رابط Component. همه‌چیز در پشته، چه فایل واقعی و چه هر decorator، فقط همین را پیاده‌سازی می‌کند."
+        }
+      },
+      {
+        "lines": [29, 36],
+        "note": {
+          "en": "The base decorator IS-A `DataSink` (so it can be wrapped) and HAS-A `DataSink` (so it can wrap). It owns the inner object and forwards by default.",
+          "fa": "decorator پایه یک `DataSink` *است* (پس می‌توان آن را پوشاند) و یک `DataSink` *دارد* (پس می‌تواند بپوشاند). مالک شیء درونی است و به‌طور پیش‌فرض فراخوانی را به آن می‌رساند."
+        }
+      },
+      {
+        "lines": [42, 52],
+        "note": {
+          "en": "A concrete decorator transforms the data, then calls `SinkDecorator::write()`, which passes it to whatever is inside — another decorator or the file.",
+          "fa": "یک decorator مشخص داده را تبدیل می‌کند و بعد `SinkDecorator::write()` را صدا می‌زند که آن را به هر چیزی که داخلش است می‌رساند؛ decorator دیگر یا خود فایل."
+        }
+      },
+      {
+        "lines": [72, 76],
+        "note": {
+          "en": "Building the stack: the outermost decorator runs first. The client holds a plain `std::unique_ptr<DataSink>` and never knows how many layers there are.",
+          "fa": "ساختن پشته: بیرونی‌ترین decorator اول اجرا می‌شود. کلاینت فقط یک `std::unique_ptr<DataSink>` معمولی در دست دارد و نمی‌داند چند لایه وجود دارد."
+        }
+      },
+      {
+        "lines": [78, 82],
+        "note": {
+          "en": "The same two classes in the opposite order give a different result — the order of decorators is part of the behavior.",
+          "fa": "همان دو کلاس با ترتیب برعکس نتیجهٔ متفاوتی می‌دهند؛ ترتیب decoratorها بخشی از رفتار است."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Why use decorators instead of subclasses like `CompressedFileSink` and `EncryptedFileSink`?",
+        "fa": "چرا به‌جای زیرکلاس‌هایی مثل `CompressedFileSink` و `EncryptedFileSink` از decorator استفاده کنیم؟"
+      },
+      "options": {
+        "en": [
+          "Decorators are faster because they avoid virtual function calls",
+          "Features can be combined at runtime, in any order, without a class per combination",
+          "Subclasses cannot override virtual functions of `FileSink`",
+          "Decorators let you change the interface that clients see"
+        ],
+        "fa": [
+          "decoratorها سریع‌ترند چون از فراخوانی توابع virtual دوری می‌کنند",
+          "قابلیت‌ها را می‌توان در زمان اجرا و با هر ترتیبی ترکیب کرد، بدون یک کلاس برای هر ترکیب",
+          "زیرکلاس‌ها نمی‌توانند توابع virtual کلاس `FileSink` را override کنند",
+          "decoratorها اجازه می‌دهند رابطی را که کلاینت‌ها می‌بینند تغییر دهید"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "With N independent features, subclassing needs a class per combination and fixes the choice at compile time. N decorators can be stacked in any subset and order at runtime. Decorators actually add a virtual call per layer, and they keep — not change — the interface.",
+        "fa": "با N قابلیت مستقل، زیرکلاس‌سازی برای هر ترکیب یک کلاس می‌خواهد و انتخاب را در زمان کامپایل ثابت می‌کند. N decorator را می‌توان در زمان اجرا با هر زیرمجموعه و ترتیبی روی هم چید. در واقع decoratorها به ازای هر لایه یک فراخوانی virtual اضافه می‌کنند و رابط را حفظ می‌کنند، نه این‌که عوضش کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Inside `Compress::write()`, what does the call `SinkDecorator::write(out)` do?",
+        "fa": "داخل `Compress::write()`، فراخوانی `SinkDecorator::write(out)` چه کاری انجام می‌دهد؟"
+      },
+      "options": {
+        "en": [
+          "It calls `Compress::write()` again, recursing forever",
+          "It writes straight to the file, skipping any other decorators",
+          "It calls the pure virtual `DataSink::write()` and aborts",
+          "It runs the base-class version, which forwards `out` to the wrapped sink — whatever that is"
+        ],
+        "fa": [
+          "دوباره `Compress::write()` را صدا می‌زند و تا بی‌نهایت بازگشتی می‌شود",
+          "مستقیم در فایل می‌نویسد و decoratorهای دیگر را دور می‌زند",
+          "تابع pure virtual یعنی `DataSink::write()` را صدا می‌زند و برنامه abort می‌شود",
+          "نسخهٔ کلاس پایه را اجرا می‌کند که `out` را به sink درونی می‌رساند، هر چه که باشد"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "A qualified call (`Base::f()`) bypasses virtual dispatch and runs exactly that class's version. `SinkDecorator::write` then makes a normal virtual call `inner_->write(...)`, which reaches the next layer — `Encrypt` in the first stack, `FileSink` in the second.",
+        "fa": "فراخوانی با نام کامل (`Base::f()`) از dispatch مجازی عبور نمی‌کند و دقیقاً نسخهٔ همان کلاس را اجرا می‌کند. بعد `SinkDecorator::write` یک فراخوانی virtual معمولی یعنی `inner_->write(...)` انجام می‌دهد که به لایهٔ بعدی می‌رسد؛ در پشتهٔ اول `Encrypt` و در پشتهٔ دوم `FileSink`."
+      }
+    },
+    {
+      "question": {
+        "en": "Which of these is a real drawback of Decorator?",
+        "fa": "کدام‌یک از این‌ها یک عیب واقعی Decorator است؟"
+      },
+      "options": {
+        "en": [
+          "Behavior depends on stacking order, and long chains of small objects are harder to debug",
+          "You have to modify the source code of the wrapped class",
+          "Decorators can only be applied at compile time",
+          "An object can have at most one decorator"
+        ],
+        "fa": [
+          "رفتار به ترتیب چیدن بستگی دارد و زنجیره‌های طولانی از اشیای کوچک سخت‌تر دیباگ می‌شوند",
+          "باید کد منبع کلاس پوشانده‌شده را تغییر دهید",
+          "decoratorها فقط در زمان کامپایل قابل اعمال‌اند",
+          "هر شیء حداکثر می‌تواند یک decorator داشته باشد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "The example shows it: the same two decorators in a different order produce different output, and a bug may hide in any of many thin layers. The other options are exactly what Decorator avoids.",
+        "fa": "مثال همین را نشان می‌دهد: همان دو decorator با ترتیب متفاوت خروجی متفاوتی تولید می‌کنند و یک باگ ممکن است در هر کدام از لایه‌های نازک متعدد پنهان باشد. گزینه‌های دیگر دقیقاً چیزهایی هستند که Decorator از آن‌ها جلوگیری می‌کند."
+      }
+    },
+    {
+      "question": {
+        "en": "Decorator and Proxy have almost identical class diagrams. What mainly separates them?",
+        "fa": "نمودار کلاس Decorator و Proxy تقریباً یکسان است. چه چیزی اصلی‌ترین تفاوتشان است؟"
+      },
+      "options": {
+        "en": [
+          "A proxy implements a different interface from the object it stands for",
+          "Decorators can wrap only concrete components, never other decorators",
+          "Intent: a decorator adds responsibilities and is stacked by the client; a proxy controls access to its subject",
+          "A proxy must always be implemented with templates"
+        ],
+        "fa": [
+          "Proxy رابطی متفاوت با شیئی که جایش ایستاده پیاده‌سازی می‌کند",
+          "decoratorها فقط می‌توانند Componentهای مشخص را بپوشانند، نه decoratorهای دیگر را",
+          "هدف: decorator مسئولیت اضافه می‌کند و کلاینت آن را روی هم می‌چیند؛ proxy دسترسی به شیء اصلی را کنترل می‌کند",
+          "Proxy همیشه باید با template پیاده‌سازی شود"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Both implement the subject's interface and hold a reference to it. A proxy decides *whether and when* the real object is used (lazy creation, caching, permissions, remote calls) and often creates it itself; decorators are composed by the client to enrich *what* happens.",
+        "fa": "هر دو رابط شیء اصلی را پیاده‌سازی می‌کنند و ارجاعی به آن نگه می‌دارند. Proxy تصمیم می‌گیرد *آیا و چه زمانی* از شیء واقعی استفاده شود (ساخت تنبل، کش، مجوزها، فراخوانی از راه دور) و اغلب خودش آن را می‌سازد؛ decoratorها را کلاینت ترکیب می‌کند تا *آنچه اتفاق می‌افتد* غنی‌تر شود."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "An HTTP client library must let each app optionally add logging, retries, response caching and auth headers to requests — any subset, in a configurable order — without a class for every combination.",
+      "fa": "یک کتابخانهٔ HTTP client باید به هر برنامه اجازه دهد به‌دلخواه لاگ، تلاش مجدد، کش پاسخ و هدرهای احراز هویت را به درخواست‌ها اضافه کند؛ هر زیرمجموعه‌ای با ترتیب قابل تنظیم و بدون یک کلاس برای هر ترکیب."
+    },
+    {
+      "en": "In a UI toolkit, any text view can independently get a border, a scrollbar and a drop shadow, and the user can switch each of them on or off while the app is running.",
+      "fa": "در یک UI toolkit، هر نمای متنی می‌تواند مستقل از بقیه حاشیه، نوار پیمایش و سایه بگیرد و کاربر می‌تواند هر کدام را در حین اجرای برنامه روشن یا خاموش کند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Cloud server add-ons", "fa": "افزونه‌های سرور ابری" },
+    "task": {
+      "en": "`Backups` already shows how an add-on works. Finish `Monitoring` (+$3, appends `\" + monitoring\"`), write a `StaticIp` add-on (+$2, appends `\" + static IP\"`), and stack both on top of the `prod` plan so the program prints `prod: 2 vCPU server + backups + monitoring + static IP = $19`. Don't change `BasicServer` or `print()`.",
+      "fa": "`Backups` نشان می‌دهد یک افزونه چطور کار می‌کند. `Monitoring` را کامل کنید (۳ دلار اضافه و پسوند `\" + monitoring\"`)، یک افزونهٔ `StaticIp` بنویسید (۲ دلار اضافه و پسوند `\" + static IP\"`) و هر دو را روی پلن `prod` بچینید تا برنامه `prod: 2 vCPU server + backups + monitoring + static IP = $19` را چاپ کند. `BasicServer` و `print()` را تغییر ندهید."
+    },
+    "hints": {
+      "en": [
+        "Copy the shape of `Backups`: each add-on calls the base `AddOn` version and then adds its own part.",
+        "`Monitoring`: `return AddOn::monthlyPrice() + 3;` and `return AddOn::describe() + \" + monitoring\";`.",
+        "`StaticIp` needs `using AddOn::AddOn;` plus the same two overrides with `+ 2` and `\" + static IP\"`.",
+        "Wrap step by step: `prod = std::make_unique<Monitoring>(std::move(prod));`, then the same with `StaticIp`."
+      ],
+      "fa": [
+        "از شکل `Backups` الگو بگیرید: هر افزونه نسخهٔ پایهٔ `AddOn` را صدا می‌زند و بعد سهم خودش را اضافه می‌کند.",
+        "برای `Monitoring`: `return AddOn::monthlyPrice() + 3;` و `return AddOn::describe() + \" + monitoring\";`.",
+        "`StaticIp` به `using AddOn::AddOn;` و همان دو override با `+ 2` و `\" + static IP\"` نیاز دارد.",
+        "مرحله‌به‌مرحله بپوشانید: `prod = std::make_unique<Monitoring>(std::move(prod));` و بعد همین کار را با `StaticIp` تکرار کنید."
+      ]
+    },
+    "expectedOutput": "dev: 2 vCPU server = $10\nprod: 2 vCPU server + backups + monitoring + static IP = $19"
+  }
+}

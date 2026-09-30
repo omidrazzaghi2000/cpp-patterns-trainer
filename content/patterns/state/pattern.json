@@ -1,0 +1,358 @@
+{
+  "id": "state",
+  "category": "behavioral",
+  "order": 8,
+  "difficulty": 2,
+  "icon": "toggle-right",
+  "name": { "en": "State", "fa": "استیت (وضعیت)" },
+  "aka": { "en": "Objects for States", "fa": "Objects for States (یک شیء برای هر وضعیت)" },
+  "tagline": {
+    "en": "Same button, different behaviour — the current state decides.",
+    "fa": "همان دکمه، رفتاری متفاوت؛ وضعیت فعلی تصمیم می‌گیرد."
+  },
+  "intent": {
+    "en": "Allow an object to alter its behaviour when its internal state changes. The object will appear to change its class.",
+    "fa": "به یک شیء اجازه می‌دهد با تغییر وضعیت درونی‌اش رفتارش را عوض کند؛ طوری که انگار کلاسش تغییر کرده است."
+  },
+  "problem": {
+    "en": "A vending machine reacts to the same two events — a coin and a button press — in completely different ways depending on whether it is idle, already paid or sold out. The naive implementation stores an `enum` and puts a `switch` in every method. Each new state (maintenance mode, out of change…) means editing every `switch`, the rules of a single state are scattered across the whole class, and it is easy to forget a case or allow an illegal transition.",
+    "fa": "یک دستگاه فروش خودکار به دو رویداد یکسان (انداختن سکه و فشار دادن دکمه) بسته به این‌که بیکار باشد، پولش پرداخت شده باشد یا موجودی‌اش تمام شده باشد، واکنش‌های کاملاً متفاوتی نشان می‌دهد. پیاده‌سازی ساده‌لوحانه یک `enum` نگه می‌دارد و در هر متد یک `switch` می‌گذارد. هر وضعیت جدید (حالت تعمیر، تمام شدن پول خرد و…) یعنی ویرایش همهٔ `switch`ها، قوانین یک وضعیت در کل کلاس پخش می‌شوند و به‌راحتی ممکن است یک حالت از قلم بیفتد یا انتقالی غیرمجاز رخ دهد."
+  },
+  "solution": {
+    "en": "Move each state's behaviour into its own class implementing a common state interface with one handler per event. The **context** (`VendingMachine`) holds a pointer to the current state object and simply forwards every event to it. A transition means replacing that object: here each handler returns the next state (or `nullptr` to stay), and the context performs the switch in one place, so every transition is explicit and easy to log. Adding a state means adding a class, not editing `switch` statements.",
+    "fa": "رفتار هر وضعیت را به کلاس جداگانه‌ای منتقل کنید که یک اینترفیس مشترک با یک handler برای هر رویداد را پیاده‌سازی می‌کند. **context** (`VendingMachine`) یک اشاره‌گر به شیء وضعیت فعلی نگه می‌دارد و هر رویداد را به‌سادگی به آن می‌سپارد. انتقال یعنی جایگزین کردن همین شیء: در این مثال هر handler وضعیت بعدی را برمی‌گرداند (یا برای ماندن در همان وضعیت `nullptr`) و context تعویض را در یک جا انجام می‌دهد؛ بنابراین هر انتقال صریح است و لاگ گرفتن از آن آسان. اضافه کردن یک وضعیت یعنی اضافه کردن یک کلاس، نه ویرایش دستورهای `switch`."
+  },
+  "analogy": {
+    "en": "The power button of a phone: when the screen is on, a press locks it; when the phone is locked, the same press wakes the screen; during an incoming call it silences the ringer. The button never changes — the phone's state decides what the press means.",
+    "fa": "دکمهٔ پاور گوشی: وقتی صفحه روشن است، فشار دادنش گوشی را قفل می‌کند؛ وقتی گوشی قفل است، همان فشار صفحه را روشن می‌کند؛ و هنگام تماس ورودی صدای زنگ را قطع می‌کند. دکمه هیچ‌وقت عوض نمی‌شود؛ وضعیت گوشی است که معنای فشار دادن را تعیین می‌کند."
+  },
+  "participants": [
+    {
+      "name": "Context",
+      "role": {
+        "en": "Holds the current state object and the shared data; forwards each event to the state and applies the returned transition (`VendingMachine`).",
+        "fa": "شیء وضعیت فعلی و داده‌های مشترک را نگه می‌دارد؛ هر رویداد را به وضعیت می‌سپارد و انتقالی را که برگردانده می‌شود اعمال می‌کند (`VendingMachine`)."
+      }
+    },
+    {
+      "name": "State",
+      "role": {
+        "en": "Interface with one handler per event; each handler returns the next state or `nullptr` (`MachineState`).",
+        "fa": "اینترفیسی با یک handler برای هر رویداد؛ هر handler وضعیت بعدی یا `nullptr` را برمی‌گرداند (`MachineState`)."
+      }
+    },
+    {
+      "name": "ConcreteState",
+      "role": {
+        "en": "Implements the behaviour of one state and decides which state comes next (`Idle`, `HasCoin`, `SoldOut`).",
+        "fa": "رفتار یک وضعیت مشخص را پیاده‌سازی می‌کند و تصمیم می‌گیرد وضعیت بعدی چه باشد (`Idle`، `HasCoin`، `SoldOut`)."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "VendingMachine", "kind": "concrete", "col": 1, "row": 0, "members": ["- state_ : unique_ptr<State>", "- stock_ : int", "+ insertCoin()", "+ pressButton()"] },
+      { "id": "MachineState", "kind": "interface", "col": 3, "row": 0, "members": ["+ name() : string_view", "+ onCoin(m) : StatePtr", "+ onButton(m) : StatePtr"] },
+      { "id": "Idle", "kind": "concrete", "col": 1, "row": 1, "members": ["+ onCoin(m)", "+ onButton(m)"] },
+      { "id": "HasCoin", "kind": "concrete", "col": 2, "row": 1, "members": ["+ onCoin(m)", "+ onButton(m)"] },
+      { "id": "SoldOut", "kind": "concrete", "col": 3, "row": 1, "members": ["+ onCoin(m)", "+ onButton(m)"] },
+      { "id": "Transitions", "kind": "note", "col": 2, "row": 2, "members": ["Idle --coin--> HasCoin", "HasCoin --button--> Idle", "HasCoin --last--> SoldOut"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "VendingMachine", "type": "uses", "label": "events" },
+      { "from": "VendingMachine", "to": "MachineState", "type": "owns", "label": "current state" },
+      { "from": "Idle", "to": "MachineState", "type": "implements" },
+      { "from": "HasCoin", "to": "MachineState", "type": "implements" },
+      { "from": "SoldOut", "to": "MachineState", "type": "implements" },
+      { "from": "Idle", "to": "HasCoin", "type": "creates", "label": "coin" },
+      { "from": "HasCoin", "to": "SoldOut", "type": "creates", "label": "last snack" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "List the states and, for each one, how it reacts to every event; sketch the transitions as a small state diagram.",
+      "Declare a state interface with one virtual handler per event (plus `name()` for logging).",
+      "Write one concrete class per state that implements every handler — including the \"not allowed here\" cases.",
+      "Give the context a `std::unique_ptr<State>` for the current state and forward each public method to it.",
+      "Implement transitions: a handler returns the next state (or `nullptr`) and the context swaps it in, so switching happens in exactly one place.",
+      "Pass the context (or just the data the states need) into the handlers, so states can read and update shared data such as the stock."
+    ],
+    "fa": [
+      "وضعیت‌ها را فهرست کنید و برای هر کدام مشخص کنید به هر رویداد چه واکنشی نشان می‌دهد؛ انتقال‌ها را در یک نمودار وضعیت کوچک رسم کنید.",
+      "یک اینترفیس وضعیت با یک handler مجازی (virtual) برای هر رویداد تعریف کنید (به‌علاوهٔ `name()` برای لاگ).",
+      "برای هر وضعیت یک کلاس مشخص بنویسید که همهٔ handlerها را پیاده‌سازی کند؛ از جمله حالت‌های «اینجا مجاز نیست».",
+      "به context یک `std::unique_ptr<State>` برای وضعیت فعلی بدهید و هر متد عمومی را به آن بسپارید.",
+      "انتقال‌ها را پیاده‌سازی کنید: handler وضعیت بعدی (یا `nullptr`) را برمی‌گرداند و context آن را جایگزین می‌کند؛ به این ترتیب تعویض دقیقاً در یک جا انجام می‌شود.",
+      "context (یا فقط داده‌هایی را که وضعیت‌ها لازم دارند) به handlerها پاس بدهید تا وضعیت‌ها بتوانند داده‌های مشترک مثل موجودی را بخوانند و تغییر دهند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "An object behaves very differently depending on its current mode, and the number of modes is sizable or growing.",
+      "Methods are full of `switch` or `if` chains on the same state field.",
+      "Transitions must follow strict rules: workflows, network protocols, UI tools, game-character behaviour."
+    ],
+    "fa": [
+      "رفتار یک شیء بسته به حالت فعلی‌اش بسیار متفاوت است و تعداد حالت‌ها زیاد است یا در حال افزایش.",
+      "متدها پر از زنجیره‌های `switch` یا `if` روی یک فیلد وضعیت یکسان هستند.",
+      "انتقال‌ها باید از قوانین سخت‌گیرانه پیروی کنند: گردش‌کارها، پروتکل‌های شبکه، ابزارهای رابط کاربری، رفتار شخصیت‌های بازی."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Each state's behaviour lives in one class (Single Responsibility).",
+      "New states can be added without modifying the existing ones (Open/Closed).",
+      "Big conditional blocks disappear, and illegal actions are handled explicitly in each state.",
+      "Transitions are explicit, so they are easy to log, test and reason about."
+    ],
+    "fa": [
+      "رفتار هر وضعیت در یک کلاس قرار دارد (اصل تک‌مسئولیتی).",
+      "می‌توان بدون تغییر وضعیت‌های موجود، وضعیت جدید اضافه کرد (اصل باز/بسته).",
+      "بلوک‌های شرطی بزرگ حذف می‌شوند و کارهای غیرمجاز در هر وضعیت به‌صراحت مدیریت می‌شوند.",
+      "انتقال‌ها صریح‌اند؛ پس لاگ گرفتن، تست کردن و استدلال درباره‌شان آسان است."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Overkill for two or three states with simple rules — a `switch` over an `enum class` is clearer there.",
+      "More classes, and the transition logic is spread across them, so the whole machine is harder to see at a glance.",
+      "Allocating a new state object on every transition costs a little; stateless states can be shared instead."
+    ],
+    "fa": [
+      "برای دو یا سه وضعیت با قوانین ساده زیاده‌روی است؛ آنجا یک `switch` روی `enum class` خواناتر است.",
+      "تعداد کلاس‌ها بیشتر می‌شود و منطق انتقال بین آن‌ها پخش می‌شود؛ پس دیدن کل ماشین وضعیت در یک نگاه سخت‌تر است.",
+      "ساختن یک شیء وضعیت جدید در هر انتقال کمی هزینه دارد؛ وضعیت‌های بدون داده را می‌توان به‌جای آن به اشتراک گذاشت."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Beware of self-destruction: in the classic form a state calls `context.setState(std::make_unique<Next>())`, which destroys the very object whose member function is still running. Never touch `this` after that call — or, as in the example, return the next state and let the context do the switch.",
+      "Stateless states can be shared: keep one `static` instance per state (a flyweight) and store a `const State*` instead of allocating on every transition.",
+      "For a small, closed set of states, `std::variant<Idle, HasCoin, SoldOut>` plus `std::visit` gives a value-based state machine with no heap allocation and compile-time checks that every state is handled.",
+      "A plain `enum class` with a `switch` is perfectly fine for two or three states; `-Wswitch` (part of `-Wall`) warns when you forget an enumerator.",
+      "States that create each other form a dependency cycle. Declare the classes first and define the handlers that need a later class out-of-line, as `Idle::onCoin` does."
+    ],
+    "fa": [
+      "مراقب خودتخریبی باشید: در شکل کلاسیک، یک وضعیت `context.setState(std::make_unique<Next>())` را صدا می‌زند و این کار همان شیئی را نابود می‌کند که متدش هنوز در حال اجراست. بعد از این فراخوانی هرگز به `this` دست نزنید؛ یا مثل مثال، وضعیت بعدی را برگردانید و بگذارید context تعویض را انجام دهد.",
+      "وضعیت‌هایی که داده‌ای ندارند قابل اشتراک‌اند: برای هر وضعیت یک نمونهٔ `static` نگه دارید (مثل فلای‌ویت) و به‌جای ساختن شیء در هر انتقال، یک `const State*` ذخیره کنید.",
+      "برای مجموعهٔ کوچک و بستهٔ وضعیت‌ها، `std::variant<Idle, HasCoin, SoldOut>` همراه با `std::visit` یک ماشین وضعیت مقدارمحور می‌سازد؛ بدون تخصیص حافظه روی heap و با بررسی زمان کامپایل برای این‌که همهٔ وضعیت‌ها مدیریت شده باشند.",
+      "برای دو یا سه وضعیت، یک `enum class` ساده همراه با `switch` کاملاً کافی است؛ `-Wswitch` (که بخشی از `-Wall` است) اگر یکی از مقادیر enum را فراموش کنید هشدار می‌دهد.",
+      "وضعیت‌هایی که یکدیگر را می‌سازند وابستگی دوری (cyclic) ایجاد می‌کنند. ابتدا کلاس‌ها را تعریف کنید و handlerهایی را که به کلاس بعدی نیاز دارند بیرون از کلاس (out-of-line) پیاده‌سازی کنید؛ همان کاری که `Idle::onCoin` انجام می‌دهد."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "TCP connection handling (LISTEN, ESTABLISHED, CLOSE_WAIT …) — the original GoF example.",
+      "Game character controllers (idle, running, jumping, attacking) and editor tools whose mouse handling depends on the active tool.",
+      "State-machine libraries such as Boost.MSM, Boost.Statechart and `[Boost::ext].SML`.",
+      "Document workflows (draft → review → published) and order lifecycles in business software."
+    ],
+    "fa": [
+      "مدیریت اتصال TCP (وضعیت‌های LISTEN، ESTABLISHED، CLOSE_WAIT و…)؛ همان مثال اصلی کتاب GoF.",
+      "کنترلرهای شخصیت در بازی‌ها (ایستاده، دویدن، پریدن، حمله) و ابزارهای ویرایشگر که واکنششان به ماوس به ابزار فعال بستگی دارد.",
+      "کتابخانه‌های ماشین وضعیت مثل Boost.MSM، Boost.Statechart و `[Boost::ext].SML`.",
+      "گردش‌کار اسناد (پیش‌نویس ← بازبینی ← منتشرشده) و چرخهٔ عمر سفارش در نرم‌افزارهای تجاری."
+    ]
+  },
+  "related": [
+    {
+      "id": "strategy",
+      "note": {
+        "en": "Almost the same structure — a context delegating to an interchangeable object — but a different intent: the client picks a strategy and strategies don't know each other, while states switch themselves and know their successors.",
+        "fa": "ساختار تقریباً یکسان است (یک context که کار را به یک شیء قابل‌تعویض می‌سپارد) اما هدف متفاوت است: استراتژی را کلاینت انتخاب می‌کند و استراتژی‌ها از هم خبر ندارند، در حالی که وضعیت‌ها خودشان تعویض را انجام می‌دهند و وضعیت‌های بعدی را می‌شناسند."
+      }
+    },
+    {
+      "id": "flyweight",
+      "note": {
+        "en": "State objects without data of their own can be shared as flyweights, so transitions need no allocation.",
+        "fa": "اشیای وضعیتی که دادهٔ مخصوص به خود ندارند را می‌توان به‌صورت فلای‌ویت به اشتراک گذاشت تا انتقال‌ها به تخصیص حافظه نیاز نداشته باشند."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "Shared, stateless state objects are often exposed as singletons (one instance per state class).",
+        "fa": "اشیای وضعیت مشترک و بدون داده اغلب به شکل سینگلتون ارائه می‌شوند (یک نمونه برای هر کلاس وضعیت)."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A vending machine", "fa": "دستگاه فروش خودکار" },
+    "description": {
+      "en": "`VendingMachine` forwards every coin and button press to its current state object. Each state reacts in its own way and returns the next state (or `nullptr` to stay), and the context prints every transition. Follow the output: the same `insertCoin()` call is accepted in `Idle`, returned in `HasCoin` and refused in `SoldOut`.",
+      "fa": "`VendingMachine` هر سکه و هر فشار دکمه را به شیء وضعیت فعلی‌اش می‌سپارد. هر وضعیت به روش خودش واکنش نشان می‌دهد و وضعیت بعدی را برمی‌گرداند (یا برای ماندن `nullptr`) و context هر انتقال را چاپ می‌کند. خروجی را دنبال کنید: همان فراخوانی `insertCoin()` در `Idle` پذیرفته می‌شود، در `HasCoin` سکه برگردانده می‌شود و در `SoldOut` رد می‌شود."
+    },
+    "output": "[Idle] press button\n  insert a coin first\n[Idle] insert coin\n  coin accepted\n  Idle -> HasCoin\n[HasCoin] insert coin\n  extra coin returned\n[HasCoin] press button\n  snack dispensed, 1 left\n  HasCoin -> Idle\n[Idle] insert coin\n  coin accepted\n  Idle -> HasCoin\n[HasCoin] press button\n  snack dispensed, 0 left\n  HasCoin -> SoldOut\n[SoldOut] insert coin\n  sold out, coin returned",
+    "highlights": [
+      {
+        "lines": [11, 24],
+        "note": {
+          "en": "The state interface: one handler per event, each returning the next state. The protected `stay()` helper prints a message and returns `nullptr`, meaning \"no transition\".",
+          "fa": "اینترفیس وضعیت: یک handler برای هر رویداد که وضعیت بعدی را برمی‌گرداند. تابع کمکی protected به نام `stay()` پیامی چاپ می‌کند و `nullptr` برمی‌گرداند، یعنی «بدون انتقال»."
+        }
+      },
+      {
+        "lines": [26, 44],
+        "note": {
+          "en": "The context has no `switch` at all: it forwards each event to `state_` and applies the result in `transitionTo()`, the single place where the state changes — and gets logged.",
+          "fa": "در context هیچ دستور `switch` وجود ندارد: هر رویداد را به `state_` می‌سپارد و نتیجه را در `transitionTo()` اعمال می‌کند؛ تنها جایی که وضعیت تغییر می‌کند و لاگ می‌شود."
+        }
+      },
+      {
+        "lines": [46, 59],
+        "note": {
+          "en": "The same events, different reactions. `Idle::onCoin` is only declared here because it creates a `HasCoin`, which is defined later (see lines 73–76).",
+          "fa": "همان رویدادها، واکنش‌های متفاوت. `Idle::onCoin` اینجا فقط اعلان شده، چون یک `HasCoin` می‌سازد که بعداً تعریف می‌شود (خطوط ۷۳ تا ۷۶ را ببینید)."
+        }
+      },
+      {
+        "lines": [61, 71],
+        "note": {
+          "en": "A conditional transition: `HasCoin` updates the shared stock through the context and then chooses between `Idle` and `SoldOut`.",
+          "fa": "یک انتقال شرطی: `HasCoin` موجودی مشترک را از طریق context به‌روز می‌کند و سپس بین `Idle` و `SoldOut` انتخاب می‌کند."
+        }
+      },
+      {
+        "lines": [81, 90],
+        "note": {
+          "en": "The client only calls `insertCoin()` and `pressButton()`; what actually happens depends entirely on the current state.",
+          "fa": "کلاینت فقط `insertCoin()` و `pressButton()` را صدا می‌زند؛ این‌که واقعاً چه اتفاقی می‌افتد کاملاً به وضعیت فعلی بستگی دارد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem does the State pattern mainly address?",
+        "fa": "الگوی استیت در اصل چه مشکلی را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Building a complex object step by step",
+          "Saving an object's data so it can be restored later",
+          "Large conditionals that pick behaviour based on the object's current mode, repeated in many methods",
+          "Informing other objects whenever a value changes"
+        ],
+        "fa": [
+          "ساختن یک شیء پیچیده به‌صورت گام‌به‌گام",
+          "ذخیرهٔ داده‌های یک شیء برای بازیابی در آینده",
+          "شرط‌های بزرگی که رفتار را بر اساس حالت فعلی شیء انتخاب می‌کنند و در متدهای زیادی تکرار شده‌اند",
+          "خبر دادن به اشیای دیگر هر بار که مقداری تغییر می‌کند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "State replaces `switch (state_)` blocks spread over many methods with polymorphism: each state class holds the behaviour for that mode. Step-by-step construction is Builder, saving data is Memento and change notification is Observer.",
+        "fa": "استیت بلوک‌های `switch (state_)` را که در متدهای زیادی پخش شده‌اند با چندریختی جایگزین می‌کند: هر کلاس وضعیت رفتار مربوط به همان حالت را در خود دارد. ساخت گام‌به‌گام کار بیلدر است، ذخیرهٔ داده کار ممنتو و اعلان تغییرات کار آبزرور."
+      }
+    },
+    {
+      "question": {
+        "en": "In the classic form, a state's handler runs `machine.setState(std::make_unique<Idle>());` and then logs `name()`. What is wrong?",
+        "fa": "در شکل کلاسیک، handler یک وضعیت ابتدا `machine.setState(std::make_unique<Idle>());` را اجرا می‌کند و سپس `name()` را لاگ می‌کند. مشکل چیست؟"
+      },
+      "options": {
+        "en": [
+          "`setState` destroys the current state object, so calling `name()` afterwards uses a dead object (undefined behaviour)",
+          "`std::make_unique` cannot create an object of a derived class",
+          "Nothing — the `unique_ptr` keeps the old state alive until the handler returns",
+          "It leaks memory because the old state is never deleted"
+        ],
+        "fa": [
+          "`setState` شیء وضعیت فعلی را نابود می‌کند، پس صدا زدن `name()` بعد از آن از یک شیء مرده استفاده می‌کند (رفتار تعریف‌نشده)",
+          "`std::make_unique` نمی‌تواند شیئی از کلاس مشتق‌شده بسازد",
+          "هیچ مشکلی ندارد؛ `unique_ptr` وضعیت قبلی را تا پایان handler زنده نگه می‌دارد",
+          "نشت حافظه دارد، چون وضعیت قبلی هرگز پاک نمی‌شود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Assigning a new `unique_ptr` deletes the old object immediately — that object is `this`. Either make `setState` the very last thing the handler does, or return the next state and let the context switch, as in the example.",
+        "fa": "انتساب یک `unique_ptr` جدید، شیء قبلی را بلافاصله پاک می‌کند و آن شیء همان `this` است. یا `setState` را آخرین کار handler قرار دهید، یا مثل مثال وضعیت بعدی را برگردانید و بگذارید context تعویض را انجام دهد."
+      }
+    },
+    {
+      "question": {
+        "en": "A traffic light has exactly three colours and its rules never change. What is the most reasonable implementation?",
+        "fa": "یک چراغ راهنمایی دقیقاً سه رنگ دارد و قوانینش هیچ‌وقت تغییر نمی‌کند. معقول‌ترین پیاده‌سازی کدام است؟"
+      },
+      "options": {
+        "en": [
+          "The full State pattern with an abstract base class and three heap-allocated state classes",
+          "One singleton per colour",
+          "An observer that watches a timer and nothing else",
+          "An `enum class` with a `switch` (or a `std::variant`) — the full pattern would be overkill"
+        ],
+        "fa": [
+          "الگوی کامل استیت با یک کلاس پایهٔ انتزاعی و سه کلاس وضعیت که روی heap ساخته می‌شوند",
+          "یک سینگلتون برای هر رنگ",
+          "یک observer که فقط یک تایمر را زیر نظر دارد",
+          "یک `enum class` همراه با `switch` (یا یک `std::variant`)؛ الگوی کامل زیاده‌روی است"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "The pattern pays off when states are numerous, complex or growing. For a tiny, fixed machine the extra classes add indirection without benefit; a `switch` with compiler warnings for missing cases is simpler and just as safe.",
+        "fa": "این الگو وقتی ارزشمند است که وضعیت‌ها زیاد، پیچیده یا در حال افزایش باشند. برای یک ماشین کوچک و ثابت، کلاس‌های اضافه فقط لایهٔ غیرمستقیم اضافه می‌کنند و فایده‌ای ندارند؛ یک `switch` که کامپایلر برای حالت‌های فراموش‌شده‌اش هشدار می‌دهد ساده‌تر و به همان اندازه امن است."
+      }
+    },
+    {
+      "question": {
+        "en": "State and Strategy have nearly identical class diagrams. What is the key difference?",
+        "fa": "استیت و استراتژی نمودار کلاس تقریباً یکسانی دارند. تفاوت اصلی آن‌ها چیست؟"
+      },
+      "options": {
+        "en": [
+          "Strategy objects must be stateless while State objects must hold data",
+          "States usually know each other and trigger transitions themselves; strategies are chosen by the client and are independent of each other",
+          "State can only be implemented with templates",
+          "Strategy uses inheritance whereas State uses composition"
+        ],
+        "fa": [
+          "اشیای استراتژی باید بدون داده باشند و اشیای وضعیت باید داده نگه دارند",
+          "وضعیت‌ها معمولاً یکدیگر را می‌شناسند و خودشان انتقال را انجام می‌دهند؛ استراتژی‌ها را کلاینت انتخاب می‌کند و از هم مستقل‌اند",
+          "استیت فقط با template قابل پیاده‌سازی است",
+          "استراتژی از وراثت استفاده می‌کند و استیت از ترکیب (composition)"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "The difference is who changes the delegate and why. A navigation app's user picks \"bike\" or \"car\" (Strategy); a vending machine moves from `Idle` to `HasCoin` on its own because of an event (State). Both use composition plus polymorphism.",
+        "fa": "تفاوت در این است که چه کسی و به چه دلیلی شیء واگذارشده را عوض می‌کند. در یک اپ مسیریابی، کاربر «دوچرخه» یا «ماشین» را انتخاب می‌کند (استراتژی)؛ اما دستگاه فروش خودکار به‌خاطر یک رویداد، خودش از `Idle` به `HasCoin` می‌رود (استیت). هر دو از ترکیب به‌همراه چندریختی استفاده می‌کنند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A media player's play button starts, pauses or resumes playback depending on what the player is currently doing, and the stop button behaves differently again when nothing is loaded — with more modes (buffering, casting) on the roadmap.",
+      "fa": "دکمهٔ پخش یک پخش‌کنندهٔ رسانه بسته به این‌که پخش‌کننده در آن لحظه چه می‌کند، پخش را شروع می‌کند، موقتاً متوقف می‌کند یا از سر می‌گیرد و دکمهٔ توقف وقتی چیزی بارگذاری نشده رفتار دیگری دارد؛ و حالت‌های بیشتری (بافر کردن، ارسال به تلویزیون) هم در برنامه است."
+    },
+    {
+      "en": "A network client must accept `send()` only while connected, queue messages while reconnecting and reject them once closed, and the rules for each phase keep growing.",
+      "fa": "یک کلاینت شبکه باید `send()` را فقط در زمان اتصال بپذیرد، در حین اتصال مجدد پیام‌ها را در صف نگه دارد و پس از بسته شدن آن‌ها را رد کند؛ و قوانین هر مرحله مدام بیشتر می‌شود."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A publishing workflow", "fa": "گردش کار انتشار مقاله" },
+    "task": {
+      "en": "An `Article` starts as a `Draft`, is submitted for `Review` and is then either approved (`Published`) or rejected (back to `Draft`). The `Review` handlers are still placeholders, and `Article::transitionTo()` never actually switches the state, so the article is stuck in `Draft`. Complete TODO 1–3 so the article follows the workflow in the expected output.",
+      "fa": "یک `Article` ابتدا `Draft` است، برای `Review` فرستاده می‌شود و سپس یا تأیید می‌شود (`Published`) یا رد می‌شود (بازگشت به `Draft`). handlerهای `Review` هنوز موقتی‌اند و `Article::transitionTo()` هیچ‌وقت واقعاً وضعیت را عوض نمی‌کند؛ به همین دلیل مقاله در `Draft` گیر کرده است. TODOهای ۱ تا ۳ را کامل کنید تا مقاله گردش کار خروجی مورد انتظار را طی کند."
+    },
+    "hints": {
+      "en": [
+        "A handler moves to another state by returning a new state object instead of calling `stay()`.",
+        "`Published` and `Draft` are both defined above `Review`, so `return std::make_unique<Published>();` works right inside the handler.",
+        "`transitionTo`: `if (!next) return;`, print `\"  \" << state_->name() << \" -> \" << next->name()`, then `state_ = std::move(next);` — print before moving, or `next` will already be empty."
+      ],
+      "fa": [
+        "یک handler با برگرداندن یک شیء وضعیت جدید (به‌جای صدا زدن `stay()`) به وضعیت دیگری می‌رود.",
+        "`Published` و `Draft` هر دو بالاتر از `Review` تعریف شده‌اند، پس `return std::make_unique<Published>();` درست داخل handler کار می‌کند.",
+        "در `transitionTo`: ابتدا `if (!next) return;`، سپس `\"  \" << state_->name() << \" -> \" << next->name()` را چاپ کنید و بعد `state_ = std::move(next);`. قبل از move چاپ کنید، وگرنه `next` دیگر خالی است."
+      ]
+    },
+    "expectedOutput": "[Draft] approve\n  drafts cannot be approved\n[Draft] submit\n  sent to the editor\n  Draft -> Review\n[Review] reject\n  sent back for changes\n  Review -> Draft\n[Draft] submit\n  sent to the editor\n  Draft -> Review\n[Review] approve\n  approved by the editor\n  Review -> Published\n[Published] reject\n  too late, it is live"
+  }
+}

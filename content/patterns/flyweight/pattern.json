@@ -1,0 +1,365 @@
+{
+  "id": "flyweight",
+  "category": "structural",
+  "order": 6,
+  "difficulty": 2,
+  "icon": "feather",
+  "name": { "en": "Flyweight", "fa": "فلای‌ویت (سبک‌وزن)" },
+  "tagline": {
+    "en": "Share the heavy common part of many objects instead of copying it.",
+    "fa": "بخش سنگین و مشترک اشیای فراوان را به اشتراک بگذارید، نه این‌که کپی‌اش کنید."
+  },
+  "intent": {
+    "en": "Use sharing to support large numbers of fine-grained objects efficiently. Each object's state is split into intrinsic state, shared through a factory, and extrinsic state, kept by the context or passed in.",
+    "fa": "با اشتراک‌گذاری، نگهداری تعداد بسیار زیادی شیء ریزدانه را بهینه می‌کند. وضعیت هر شیء به دو بخش تقسیم می‌شود: وضعیت درونی (intrinsic) که از طریق یک factory به اشتراک گذاشته می‌شود و وضعیت بیرونی (extrinsic) که در context نگه داشته یا به متدها پاس داده می‌شود."
+  },
+  "problem": {
+    "en": "An open-world game map has 9,000 trees. If every `Tree` object carries its own copy of the species name, color, mesh and textures — hundreds of kilobytes each — the forest needs gigabytes of RAM, even though there are only three species. Almost all of that memory is identical data duplicated thousands of times; the only thing that really differs from tree to tree is its position.",
+    "fa": "نقشهٔ یک بازی جهان‌باز ۹۰۰۰ درخت دارد. اگر هر شیء `Tree` نسخهٔ خودش از نام گونه، رنگ، مش و بافت‌ها را همراه داشته باشد (هر کدام صدها کیلوبایت)، جنگل چندین گیگابایت RAM لازم دارد؛ در حالی که فقط سه گونه درخت وجود دارد. تقریباً تمام این حافظه دادهٔ یکسانی است که هزاران بار تکرار شده و تنها چیزی که واقعاً بین درخت‌ها فرق می‌کند موقعیتشان است."
+  },
+  "solution": {
+    "en": "Split the object's state in two. **Intrinsic** state — species, color, mesh — is the same for many trees, so move it into an immutable **flyweight** (`TreeType`) and create just one per distinct combination. **Extrinsic** state — the position — varies per tree, so keep it in a small **context** object (`Tree`) or pass it as an argument (`draw(x, y)`). A **flyweight factory** (`TreeTypeFactory`) guarantees the sharing: it looks the key up in its pool and creates a new flyweight only when none exists yet. Each tree now costs a few bytes plus one pointer.",
+    "fa": "وضعیت شیء را به دو بخش تقسیم کنید. وضعیت **درونی** (intrinsic) مثل گونه، رنگ و مش برای درخت‌های زیادی یکسان است؛ پس آن را به یک **flyweight** تغییرناپذیر (`TreeType`) منتقل کنید و برای هر ترکیب متمایز فقط یکی بسازید. وضعیت **بیرونی** (extrinsic) یعنی موقعیت، برای هر درخت فرق دارد؛ پس آن را در یک شیء **context** کوچک (`Tree`) نگه دارید یا به‌عنوان آرگومان پاس بدهید (`draw(x, y)`). یک **flyweight factory** (`TreeTypeFactory`) اشتراک‌گذاری را تضمین می‌کند: کلید را در pool خودش جست‌وجو می‌کند و فقط وقتی flyweight تازه‌ای می‌سازد که هنوز وجود نداشته باشد. حالا هر درخت فقط چند بایت به‌اضافهٔ یک اشاره‌گر هزینه دارد."
+  },
+  "analogy": {
+    "en": "A font defines the shape of the letter \"e\" once. A novel with 100,000 e's doesn't store 100,000 drawings of it; each occurrence only records where it sits on the page and points to the same shared design.",
+    "fa": "یک فونت شکل حرف «ب» را فقط یک بار تعریف می‌کند. رمانی که ۱۰۰ هزار حرف «ب» دارد، ۱۰۰ هزار نقاشی از آن ذخیره نمی‌کند؛ هر بار تکرار فقط جایش را در صفحه ثبت می‌کند و به همان طرح مشترک اشاره می‌کند."
+  },
+  "participants": [
+    {
+      "name": "Flyweight",
+      "role": {
+        "en": "`TreeType`: holds the intrinsic state, is immutable, and receives extrinsic state as method parameters (`draw(x, y)`).",
+        "fa": "`TreeType`: وضعیت درونی را نگه می‌دارد، تغییرناپذیر است و وضعیت بیرونی را به‌صورت پارامتر متد دریافت می‌کند (`draw(x, y)`)."
+      }
+    },
+    {
+      "name": "FlyweightFactory",
+      "role": {
+        "en": "`TreeTypeFactory`: owns the pool and returns the existing flyweight for a key, creating it only on first request.",
+        "fa": "`TreeTypeFactory`: مالک pool است و flyweight موجود برای هر کلید را برمی‌گرداند و فقط در اولین درخواست آن را می‌سازد."
+      }
+    },
+    {
+      "name": "Context",
+      "role": {
+        "en": "`Tree`: the small per-object part — extrinsic state plus a non-owning pointer to its shared flyweight.",
+        "fa": "`Tree`: بخش کوچکِ مخصوص هر شیء؛ وضعیت بیرونی به‌اضافهٔ یک اشاره‌گر بدون مالکیت به flyweight مشترکش."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Creates and stores contexts, and obtains flyweights only through the factory — never by constructing them directly.",
+        "fa": "contextها را می‌سازد و نگه می‌دارد و flyweightها را فقط از طریق factory به دست می‌آورد، نه با ساختن مستقیمشان."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 1 },
+      { "id": "FlyweightFactory", "kind": "concrete", "col": 1, "row": 0, "members": ["- pool : map<Key, unique_ptr>", "+ get(key) : const Flyweight&"] },
+      { "id": "Flyweight", "kind": "concrete", "col": 3, "row": 0, "members": ["- intrinsicState (const)", "+ draw(x, y) const"] },
+      { "id": "Context", "kind": "concrete", "col": 2, "row": 2, "members": ["- x, y : int", "- type : const Flyweight*"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "FlyweightFactory", "type": "uses", "label": "get(key)" },
+      { "from": "FlyweightFactory", "to": "Flyweight", "type": "owns", "label": "pool" },
+      { "from": "Client", "to": "Context", "type": "owns", "label": "thousands" },
+      { "from": "Context", "to": "Flyweight", "type": "refs", "label": "shared" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Confirm the problem: a huge number of similar objects, with memory as the bottleneck.",
+      "Split each object's fields into intrinsic state (identical across many objects) and extrinsic state (unique per object or per use).",
+      "Move the intrinsic state into an immutable flyweight class whose methods take the extrinsic state as parameters.",
+      "Write a factory that pools flyweights by key and returns an existing one whenever possible.",
+      "Replace the original objects with small contexts holding the extrinsic state plus a pointer to a flyweight obtained from the factory."
+    ],
+    "fa": [
+      "مطمئن شوید مشکل واقعی است: تعداد بسیار زیادی شیء مشابه که حافظه گلوگاهشان است.",
+      "فیلدهای هر شیء را به وضعیت درونی (یکسان بین اشیای زیاد) و وضعیت بیرونی (مخصوص هر شیء یا هر استفاده) تقسیم کنید.",
+      "وضعیت درونی را به یک کلاس flyweight تغییرناپذیر منتقل کنید که متدهایش وضعیت بیرونی را به‌صورت پارامتر می‌گیرند.",
+      "یک factory بنویسید که flyweightها را بر اساس کلید در یک pool نگه دارد و هر وقت ممکن است نمونهٔ موجود را برگرداند.",
+      "اشیای اصلی را با contextهای کوچکی جایگزین کنید که وضعیت بیرونی و یک اشاره‌گر به flyweight دریافت‌شده از factory را نگه می‌دارند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "The program creates a huge number of similar objects and memory (or cache misses) is the bottleneck.",
+      "Most of each object's state can be made extrinsic, leaving only a few distinct intrinsic combinations.",
+      "The program doesn't rely on the identity of the shared part — two trees of the same species may be the same `TreeType` object."
+    ],
+    "fa": [
+      "برنامه تعداد بسیار زیادی شیء مشابه می‌سازد و حافظه (یا cache miss) گلوگاه است.",
+      "بیشتر وضعیت هر شیء را می‌توان بیرونی کرد و فقط چند ترکیب متمایز از وضعیت درونی باقی می‌ماند.",
+      "برنامه به هویت بخش مشترک وابسته نیست؛ دو درخت از یک گونه ممکن است دقیقاً همان شیء `TreeType` را داشته باشند."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Huge memory savings when there are many objects but few distinct intrinsic states.",
+      "Heavy resources (textures, fonts, sprite sheets) are loaded once instead of per object.",
+      "Small contexts pack tightly in memory, which improves cache locality."
+    ],
+    "fa": [
+      "وقتی اشیا زیادند اما وضعیت‌های درونی متمایز کم، صرفه‌جویی بسیار زیادی در حافظه به دست می‌آید.",
+      "منابع سنگین (بافت‌ها، فونت‌ها، sprite sheetها) به‌جای هر شیء فقط یک بار بارگذاری می‌شوند.",
+      "contextهای کوچک فشرده کنار هم در حافظه قرار می‌گیرند و محلی بودن کش (cache locality) بهتر می‌شود."
+    ]
+  },
+  "cons": {
+    "en": [
+      "More complex code: the state lives in two places and extrinsic state has to be passed around.",
+      "Trades memory for CPU time: factory lookups and recomputing or passing extrinsic state cost cycles.",
+      "Flyweights must be immutable — if anyone modifies a shared object, every user sees the change.",
+      "Pooled objects usually live as long as the factory, so the pool can grow without bound unless you evict."
+    ],
+    "fa": [
+      "کد پیچیده‌تر می‌شود: وضعیت در دو جا نگه داشته می‌شود و وضعیت بیرونی باید مدام پاس داده شود.",
+      "حافظه را با زمان CPU معاوضه می‌کند: جست‌وجو در factory و محاسبه یا پاس دادن وضعیت بیرونی هزینه دارد.",
+      "flyweightها باید تغییرناپذیر باشند؛ اگر کسی یک شیء مشترک را تغییر دهد، همهٔ استفاده‌کننده‌ها تغییر را می‌بینند.",
+      "اشیای داخل pool معمولاً به اندازهٔ خود factory عمر می‌کنند؛ پس اگر سیاست حذف نداشته باشید، pool می‌تواند بی‌حد رشد کند."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Enforce immutability with the type system: pool `std::unique_ptr<const T>` and hand out `const T&`, so no client can modify shared state.",
+      "Keep pooled objects at stable addresses — `std::unique_ptr` elements or a node-based container such as `std::map`. Never pool a `std::vector<T>` of flyweights: reallocation would leave every context with a dangling pointer.",
+      "The factory must outlive every context that points into it; make ownership explicit (the factory owns, contexts hold raw non-owning pointers).",
+      "C++20's `bool operator==(const T&) const = default;` makes intrinsic-state keys trivial to compare; `std::unordered_map` additionally needs a hash.",
+      "Need unused flyweights to disappear? Let the pool keep `std::weak_ptr` and hand out `std::shared_ptr` — at the price of reference-counting overhead."
+    ],
+    "fa": [
+      "تغییرناپذیری را با سیستم نوع‌ها اجبار کنید: در pool از `std::unique_ptr<const T>` استفاده کنید و `const T&` تحویل بدهید تا هیچ کلاینتی نتواند وضعیت مشترک را تغییر دهد.",
+      "آدرس اشیای pool را ثابت نگه دارید: عناصر `std::unique_ptr` یا یک ظرف گره‌محور مثل `std::map`. هرگز flyweightها را مستقیم در `std::vector<T>` نگه ندارید؛ تخصیص مجدد حافظه اشاره‌گر همهٔ contextها را معلق (dangling) می‌کند.",
+      "factory باید بیشتر از همهٔ contextهایی که به آن اشاره می‌کنند عمر کند؛ مالکیت را صریح کنید (factory مالک است و contextها اشاره‌گر خام بدون مالکیت دارند).",
+      "در C++20، `bool operator==(const T&) const = default;` مقایسهٔ کلیدهای وضعیت درونی را بسیار ساده می‌کند؛ `std::unordered_map` علاوه بر آن به یک تابع hash هم نیاز دارد.",
+      "می‌خواهید flyweightهای بلااستفاده حذف شوند؟ بگذارید pool از `std::weak_ptr` نگه دارد و `std::shared_ptr` تحویل بدهد؛ به قیمت سربار شمارش ارجاع."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "Boost.Flyweight: `boost::flyweight<std::string>` transparently pools equal values behind a value-like handle.",
+      "Text renderers (FreeType-based engines, browsers) cache one rasterized glyph per font, size and character.",
+      "GPU instancing in game engines: thousands of meshes share one vertex buffer and material; each instance stores only its transform.",
+      "Identifier interning in compilers such as Clang (`IdentifierInfo`): each name is stored once and referenced everywhere."
+    ],
+    "fa": [
+      "Boost.Flyweight: `boost::flyweight<std::string>` مقادیر برابر را پشت یک handle شبیه مقدار، به‌طور شفاف در pool نگه می‌دارد.",
+      "موتورهای نمایش متن (موتورهای مبتنی بر FreeType و مرورگرها) برای هر ترکیب فونت، اندازه و کاراکتر فقط یک glyph رسترشده را کش می‌کنند.",
+      "GPU instancing در موتورهای بازی: هزاران مش یک vertex buffer و material مشترک دارند و هر نمونه فقط transform خودش را نگه می‌دارد.",
+      "intern کردن شناسه‌ها در کامپایلرهایی مثل Clang (`IdentifierInfo`): هر نام فقط یک بار ذخیره می‌شود و همه‌جا به آن ارجاع داده می‌شود."
+    ]
+  },
+  "related": [
+    {
+      "id": "object-pool",
+      "note": {
+        "en": "Both keep a pool, but an object pool lends mutable objects to one user at a time for reuse; flyweights are immutable and shared by everyone simultaneously.",
+        "fa": "هر دو یک pool دارند، اما Object Pool اشیای تغییرپذیر را برای استفادهٔ مجدد هر بار به یک کاربر قرض می‌دهد؛ flyweightها تغییرناپذیرند و هم‌زمان بین همه مشترک‌اند."
+      }
+    },
+    {
+      "id": "singleton",
+      "note": {
+        "en": "A singleton is exactly one shared instance; a flyweight factory manages many shared instances, one per distinct intrinsic state.",
+        "fa": "سینگلتون دقیقاً یک نمونهٔ مشترک است؛ flyweight factory تعداد زیادی نمونهٔ مشترک را مدیریت می‌کند، یکی برای هر وضعیت درونی متمایز."
+      }
+    },
+    {
+      "id": "composite",
+      "note": {
+        "en": "Leaves of a large composite tree can be flyweights, provided the parent pointer is treated as extrinsic state.",
+        "fa": "برگ‌های یک درخت Composite بزرگ می‌توانند flyweight باشند، به شرطی که اشاره‌گر به والد جزو وضعیت بیرونی حساب شود."
+      }
+    },
+    {
+      "id": "strategy",
+      "note": {
+        "en": "Stateless strategy (or state) objects are natural flyweights: one instance can serve every context.",
+        "fa": "اشیای strategy (یا state) بدون وضعیت، flyweightهای طبیعی‌اند: یک نمونه می‌تواند به همهٔ contextها خدمت کند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A forest of 9,000 trees", "fa": "جنگلی با ۹۰۰۰ درخت" },
+    "description": {
+      "en": "Each `Tree` stores only its position and a pointer; the heavy data lives in three `TreeType` flyweights that the factory creates the first time each species is requested. The last lines compare texture memory with and without sharing.",
+      "fa": "هر `Tree` فقط موقعیت خودش و یک اشاره‌گر را نگه می‌دارد؛ دادهٔ سنگین در سه flyweight از نوع `TreeType` است که factory اولین باری که هر گونه درخواست می‌شود آن را می‌سازد. خطوط آخر حافظهٔ بافت‌ها را با اشتراک‌گذاری و بدون آن مقایسه می‌کنند."
+    },
+    "output": "[factory] loading oak/green\n[factory] loading pine/dark green\n[factory] loading birch/white\noak (green) at 0,0\npine (dark green) at 7,13\nbirch (white) at 14,26\ntrees #0 and #3 share a type: true\ntrees: 9000, tree types: 3\ntexture memory without sharing: 5700000 KB\ntexture memory with sharing: 1900 KB",
+    "highlights": [
+      {
+        "lines": [11, 26],
+        "note": {
+          "en": "The flyweight holds only intrinsic state and has no setters. The extrinsic position arrives as parameters of `draw()`, so one object can draw any tree of its species.",
+          "fa": "flyweight فقط وضعیت درونی را نگه می‌دارد و هیچ متد setter ندارد. موقعیت (وضعیت بیرونی) به‌صورت پارامترهای `draw()` می‌رسد، پس یک شیء می‌تواند هر درختی از گونهٔ خودش را رسم کند."
+        }
+      },
+      {
+        "lines": [31, 40],
+        "note": {
+          "en": "The factory's lookup-or-create: an existing `TreeType` is returned immediately; a new one is created (and its texture \"loaded\") only once per key.",
+          "fa": "منطق «پیدا کن یا بساز» در factory: اگر `TreeType` موجود باشد فوراً برگردانده می‌شود و نمونهٔ جدید (همراه با «بارگذاری» بافتش) برای هر کلید فقط یک بار ساخته می‌شود."
+        }
+      },
+      {
+        "lines": [49, 49],
+        "note": {
+          "en": "`std::unique_ptr<const TreeType>` makes shared objects read-only and keeps their addresses stable, so the pointers stored in trees never dangle.",
+          "fa": "`std::unique_ptr<const TreeType>` اشیای مشترک را فقط‌خواندنی می‌کند و آدرسشان را ثابت نگه می‌دارد تا اشاره‌گرهای ذخیره‌شده در درخت‌ها هیچ‌وقت معلق نشوند."
+        }
+      },
+      {
+        "lines": [53, 56],
+        "note": {
+          "en": "The context: two ints and a pointer per tree. This tiny struct is all that is multiplied 9,000 times.",
+          "fa": "context: برای هر درخت دو عدد صحیح و یک اشاره‌گر. تنها چیزی که ۹۰۰۰ بار تکرار می‌شود همین struct کوچک است."
+        }
+      },
+      {
+        "lines": [66, 81],
+        "note": {
+          "en": "9,000 requests to the factory, yet only three \"loading\" lines in the output. Trees #0 and #3 point to the very same object, and texture memory drops from about 5.4 GB to under 2 MB.",
+          "fa": "۹۰۰۰ درخواست به factory، اما فقط سه خط «loading» در خروجی. درخت‌های شمارهٔ ۰ و ۳ دقیقاً به یک شیء اشاره می‌کنند و حافظهٔ بافت‌ها از حدود ۵٫۴ گیگابایت به کمتر از ۲ مگابایت می‌رسد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What problem does Flyweight solve?",
+        "fa": "Flyweight چه مشکلی را حل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Too many subclasses when a class varies along two dimensions",
+          "Excessive memory use when a huge number of objects repeat the same data",
+          "Slow creation of objects that are expensive to construct",
+          "Tight coupling between a client and a complex subsystem"
+        ],
+        "fa": [
+          "زیرکلاس‌های بیش از حد وقتی یک کلاس در دو بُعد تغییر می‌کند",
+          "مصرف بیش از حد حافظه وقتی تعداد بسیار زیادی شیء دادهٔ یکسانی را تکرار می‌کنند",
+          "کند بودن ساخت اشیایی که ساختنشان پرهزینه است",
+          "وابستگی شدید بین کلاینت و یک زیرسیستم پیچیده"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Flyweight removes duplicated intrinsic data by sharing it, so thousands of objects cost little more than their extrinsic state. The other options are the problems of Bridge, Prototype/Object Pool and Facade.",
+        "fa": "Flyweight دادهٔ درونیِ تکراری را با اشتراک‌گذاری حذف می‌کند تا هزاران شیء تقریباً فقط به اندازهٔ وضعیت بیرونی‌شان هزینه داشته باشند. گزینه‌های دیگر مشکلاتی هستند که Bridge، Prototype/Object Pool و Facade حل می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "Why does the factory keep `std::unique_ptr<const TreeType>` in a `std::map` rather than a plain `std::vector<TreeType>`?",
+        "fa": "چرا factory به‌جای یک `std::vector<TreeType>` ساده، `std::unique_ptr<const TreeType>` را در یک `std::map` نگه می‌دارد؟"
+      },
+      "options": {
+        "en": [
+          "`std::vector` cannot store classes that contain a `std::string`",
+          "`std::map` lookups are always faster than searching a vector",
+          "`std::unique_ptr` makes `TreeType` cheaper to copy",
+          "Trees hold pointers to their type; a vector may reallocate and move its elements, leaving those pointers dangling"
+        ],
+        "fa": [
+          "`std::vector` نمی‌تواند کلاس‌هایی را که `std::string` دارند ذخیره کند",
+          "جست‌وجو در `std::map` همیشه از جست‌وجو در vector سریع‌تر است",
+          "`std::unique_ptr` کپی کردن `TreeType` را ارزان‌تر می‌کند",
+          "درخت‌ها به نوعشان اشاره‌گر دارند؛ vector ممکن است حافظه را دوباره تخصیص دهد و عناصرش را جابه‌جا کند و آن اشاره‌گرها معلق شوند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Contexts store raw pointers into the pool, so pooled objects must never move. Heap objects owned by `unique_ptr` (and map nodes) keep their addresses; `const` additionally guarantees that nobody mutates shared state. For three keys, speed is not the point.",
+        "fa": "contextها اشاره‌گرهای خام به داخل pool نگه می‌دارند، پس اشیای pool هرگز نباید جابه‌جا شوند. اشیای روی heap که مالکشان `unique_ptr` است (و گره‌های map) آدرسشان را حفظ می‌کنند؛ `const` هم علاوه بر آن تضمین می‌کند کسی وضعیت مشترک را تغییر ندهد. برای سه کلید، سرعت اصلاً مسئله نیست."
+      }
+    },
+    {
+      "question": {
+        "en": "In which situation is Flyweight probably NOT worth it?",
+        "fa": "در کدام وضعیت احتمالاً Flyweight ارزشش را ندارد؟"
+      },
+      "options": {
+        "en": [
+          "A few hundred objects whose state is almost entirely unique",
+          "A particle system with millions of particles of five kinds",
+          "A document with a million characters but only a dozen distinct styles",
+          "A map showing 50,000 markers drawn with eight icon images"
+        ],
+        "fa": [
+          "چند صد شیء که وضعیتشان تقریباً کاملاً منحصربه‌فرد است",
+          "یک سیستم ذرات با میلیون‌ها ذره از پنج نوع",
+          "سندی با یک میلیون کاراکتر اما فقط دوازده استایل متمایز",
+          "نقشه‌ای که ۵۰ هزار نشانگر را با هشت تصویر آیکون نمایش می‌دهد"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Flyweight pays off when objects are numerous AND their intrinsic states repeat a lot. With few objects and little repetition you'd only add a factory, lookups and split state for almost no memory gain.",
+        "fa": "Flyweight وقتی ارزشش را دارد که اشیا زیاد باشند *و* وضعیت‌های درونی‌شان بسیار تکرار شود. با اشیای کم و تکرار ناچیز، فقط یک factory، جست‌وجو و وضعیت دوتکه اضافه کرده‌اید، بدون صرفه‌جویی محسوس در حافظه."
+      }
+    },
+    {
+      "question": {
+        "en": "Flyweight and Object Pool both keep a pool of objects. What is the key difference?",
+        "fa": "Flyweight و Object Pool هر دو مجموعه‌ای از اشیا را نگه می‌دارند. تفاوت اصلی‌شان چیست؟"
+      },
+      "options": {
+        "en": [
+          "An object pool shares one immutable object among all clients at the same time",
+          "Flyweights must be created with `new`, pooled objects with `std::make_unique`",
+          "Flyweights are immutable and shared by many users at once; pooled objects are mutable and lent to one user at a time",
+          "They are the same pattern — \"object pool\" is just the C++ name for it"
+        ],
+        "fa": [
+          "Object Pool یک شیء تغییرناپذیر را هم‌زمان بین همهٔ کلاینت‌ها به اشتراک می‌گذارد",
+          "flyweightها باید با `new` ساخته شوند و اشیای pool با `std::make_unique`",
+          "flyweightها تغییرناپذیرند و هم‌زمان بین کاربران زیادی مشترک‌اند؛ اشیای pool تغییرپذیرند و هر بار به یک کاربر قرض داده می‌شوند",
+          "هر دو یک الگو هستند؛ «object pool» فقط اسم آن در C++ است"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Object Pool saves construction cost by recycling objects: you acquire one, use it exclusively, and release it. Flyweight saves memory by sharing: every tree of a species uses the same `TreeType` at the same time, which is only safe because it is immutable.",
+        "fa": "Object Pool با بازیافت اشیا هزینهٔ ساخت را کم می‌کند: یک شیء را می‌گیرید، به‌طور انحصاری از آن استفاده می‌کنید و پسش می‌دهید. Flyweight با اشتراک‌گذاری در حافظه صرفه‌جویی می‌کند: همهٔ درخت‌های یک گونه هم‌زمان از همان `TreeType` استفاده می‌کنند و این فقط به این دلیل امن است که تغییرناپذیر است."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A particle system must animate two million sparks, smoke puffs and raindrops; each kind comes with large sprite sheets and physics settings, but only position and velocity differ per particle.",
+      "fa": "یک سیستم ذرات باید دو میلیون جرقه، دود و قطرهٔ باران را متحرک کند؛ هر نوع sprite sheet و تنظیمات فیزیکی حجیمی دارد، اما فقط موقعیت و سرعت هر ذره با بقیه فرق دارد."
+    },
+    {
+      "en": "A map app displays 80,000 restaurant and gas-station pins, and the phone runs out of memory because every pin loads its own copy of its category's detailed icon bitmap.",
+      "fa": "یک اپ نقشه ۸۰ هزار نشانگر رستوران و پمپ‌بنزین نمایش می‌دهد و گوشی کم می‌آورد، چون هر نشانگر نسخهٔ جداگانهٔ خودش از تصویر پرجزئیات آیکون دسته‌اش را بارگذاری می‌کند."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "Shared styles in a text editor", "fa": "استایل‌های مشترک در یک ویرایشگر متن" },
+    "task": {
+      "en": "The editor creates a new `TextStyle` for every character typed — 26 characters, 26 style objects — and it even stores the letter inside the style, so no two styles could ever be shared. Separate intrinsic from extrinsic state and turn `StylePool` into a real flyweight factory, so the whole document uses just 2 style objects.",
+      "fa": "ویرایشگر برای هر کاراکتری که تایپ می‌شود یک `TextStyle` تازه می‌سازد (۲۶ کاراکتر، ۲۶ شیء استایل) و حتی خود حرف را داخل استایل نگه می‌دارد، پس هیچ دو استایلی اصلاً نمی‌توانند مشترک باشند. وضعیت درونی را از بیرونی جدا کنید و `StylePool` را به یک flyweight factory واقعی تبدیل کنید تا کل سند فقط از ۲ شیء استایل استفاده کند."
+    },
+    "hints": {
+      "en": [
+        "Ask of each field: is it the same for many characters (intrinsic) or different for each one (extrinsic)? `letter` belongs in `Glyph`.",
+        "After moving it: `struct Glyph { char letter; const TextStyle* style; };`, `get(font, size, bold)`, `glyphs_.push_back({c, &pool_.get(font, size, bold)})` and `out += g.letter`.",
+        "Add `bool operator==(const TextStyle&) const = default;` to `TextStyle` so two styles can be compared.",
+        "In `get()`: `auto it = std::ranges::find_if(pool_, [&](const auto& s) { return *s == wanted; }); if (it != pool_.end()) return **it;`"
+      ],
+      "fa": [
+        "برای هر فیلد بپرسید: برای کاراکترهای زیادی یکسان است (درونی) یا برای هر کاراکتر فرق می‌کند (بیرونی)؟ جای `letter` در `Glyph` است.",
+        "بعد از جابه‌جایی: `struct Glyph { char letter; const TextStyle* style; };`، `get(font, size, bold)`، `glyphs_.push_back({c, &pool_.get(font, size, bold)})` و `out += g.letter`.",
+        "`bool operator==(const TextStyle&) const = default;` را به `TextStyle` اضافه کنید تا بتوان دو استایل را مقایسه کرد.",
+        "در `get()`: `auto it = std::ranges::find_if(pool_, [&](const auto& s) { return *s == wanted; }); if (it != pool_.end()) return **it;`"
+      ]
+    },
+    "expectedOutput": "text: MENU tea 3, cake 5, soup 4\nglyphs: 26, style objects: 2\n't' and 'c' share a style: true"
+  }
+}

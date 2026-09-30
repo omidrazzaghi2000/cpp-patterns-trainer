@@ -1,0 +1,359 @@
+{
+  "id": "builder",
+  "category": "creational",
+  "order": 4,
+  "difficulty": 2,
+  "icon": "hammer",
+  "name": { "en": "Builder", "fa": "بیلدر (سازنده)" },
+  "aka": { "en": "Fluent Builder (its most common C++ form)", "fa": "Fluent Builder (رایج‌ترین شکل آن در C++)" },
+  "tagline": {
+    "en": "Build complex objects step by step — and validate once at the end.",
+    "fa": "اشیای پیچیده را مرحله‌به‌مرحله بسازید و فقط یک بار، در پایان، اعتبارسنجی کنید."
+  },
+  "intent": {
+    "en": "Separate the construction of a complex object from its representation, so that the same step-by-step process can assemble different configurations — or even different representations — of the product.",
+    "fa": "ساختن یک شیء پیچیده را از نمایش آن جدا می‌کند تا همان فرایند مرحله‌به‌مرحله بتواند پیکربندی‌های متفاوت (یا حتی نمایش‌های متفاوتی) از محصول را سرهم کند."
+  },
+  "problem": {
+    "en": "An HTTP request has a URL, a method, any number of headers, an optional body and a timeout. A constructor taking all of them — `HttpRequest(url, \"POST\", headers, body, 5000, true)` — is unreadable, and every call site must spell out every default; overloads multiply (the **telescoping constructor** problem). Public setters are no better: the object lives in a half-configured, possibly invalid state, and nothing checks rules that span several fields, such as \"a GET request cannot have a body\".",
+    "fa": "یک درخواست HTTP یک URL، یک متد، تعداد دلخواهی header، یک body اختیاری و یک timeout دارد. سازنده‌ای که همهٔ این‌ها را بگیرد، مثل `HttpRequest(url, \"POST\", headers, body, 5000, true)`، ناخواناست و هر جایی که صدا زده شود باید همهٔ مقادیر پیش‌فرض را هم تکرار کند؛ تعداد overloadها هم مدام بیشتر می‌شود (مشکل معروف **telescoping constructor**). setterهای عمومی هم بهتر نیستند: شیء در وضعیتی نیمه‌پیکربندی‌شده و شاید نامعتبر زندگی می‌کند و هیچ چیز قوانینی را که به چند فیلد مربوط‌اند بررسی نمی‌کند، مثل «درخواست GET نمی‌تواند body داشته باشد»."
+  },
+  "solution": {
+    "en": "Move construction into a separate **builder** object. Each builder method sets one part and returns `*this`, so the calls chain into a readable sentence: `Builder(url).method(\"POST\").header(…).build()`. Parts you never mention keep sensible defaults. The final `build()` checks the rules that involve several parts and only then hands out the product, whose constructor is private — so an invalid or half-built request can never escape. An optional **director** packages frequently used step sequences (like \"JSON POST\") as reusable recipes.",
+    "fa": "ساختن شیء را به یک شیء جداگانه به نام **builder** منتقل کنید. هر متد builder یک بخش را تنظیم می‌کند و `*this` را برمی‌گرداند، پس فراخوانی‌ها مثل یک جملهٔ خوانا به هم زنجیر می‌شوند: `Builder(url).method(\"POST\").header(…).build()`. بخش‌هایی که به آن‌ها اشاره نکنید مقدار پیش‌فرض معقولشان را نگه می‌دارند. متد نهایی `build()` قوانینی را که به چند بخش مربوط‌اند بررسی می‌کند و فقط بعد از آن محصول را تحویل می‌دهد؛ محصولی که سازنده‌اش private است، پس هیچ درخواست نامعتبر یا نیمه‌کاره‌ای نمی‌تواند بیرون برود. یک **director** اختیاری هم دنباله‌های پرکاربرد مراحل (مثل «POST با JSON») را به شکل دستورالعمل‌های قابل استفادهٔ مجدد بسته‌بندی می‌کند."
+  },
+  "analogy": {
+    "en": "Ordering at a sandwich counter: you don't shout one long sentence with twelve parameters. You name the bread, then the fillings one by one, then the sauce, and simply skip what you don't want. Only when you say \"that's it\" does the staff check that it makes sense and wrap the finished sandwich. The \"classic club\" on the menu is a director: a named, fixed sequence of the same steps.",
+    "fa": "سفارش دادن در یک ساندویچی: یک جملهٔ طولانی با دوازده پارامتر فریاد نمی‌زنید. اول نان را می‌گویید، بعد مواد را یکی‌یکی و بعد سس را، و هر چیزی را که نمی‌خواهید اصلاً نمی‌گویید. فقط وقتی می‌گویید «همین کافی است»، فروشنده بررسی می‌کند که سفارش منطقی باشد و ساندویچ آماده را می‌پیچد. «کلاب‌ساندویچ کلاسیک» روی منو هم یک director است: دنباله‌ای ثابت و نام‌دار از همان مراحل."
+  },
+  "participants": [
+    {
+      "name": "Builder",
+      "role": {
+        "en": "Offers one method per construction step (`HttpRequest::Builder`); each stores a part and returns `*this`. Its `build()` validates and returns the product.",
+        "fa": "برای هر مرحلهٔ ساخت یک متد دارد (`HttpRequest::Builder`)؛ هر متد یک بخش را ذخیره می‌کند و `*this` را برمی‌گرداند. متد `build()` در پایان همه‌چیز را اعتبارسنجی می‌کند و محصول را برمی‌گرداند."
+      }
+    },
+    {
+      "name": "Product",
+      "role": {
+        "en": "The complex object being built (`HttpRequest`). Its constructor is private and it has no setters, so once it exists it is complete and valid.",
+        "fa": "شیء پیچیده‌ای که ساخته می‌شود (`HttpRequest`). سازنده‌اش private است و هیچ setterی ندارد، پس از لحظه‌ای که به وجود می‌آید کامل و معتبر است."
+      }
+    },
+    {
+      "name": "Director",
+      "role": {
+        "en": "Optional. Encapsulates a reusable sequence of builder steps — a recipe (`jsonPost()`). In C++ it is often just a free function.",
+        "fa": "اختیاری. یک دنبالهٔ قابل استفادهٔ مجدد از مراحل builder را کپسوله می‌کند؛ یعنی یک دستورالعمل (`jsonPost()`). در C++ اغلب فقط یک تابع آزاد است."
+      }
+    },
+    {
+      "name": "Client",
+      "role": {
+        "en": "Creates a builder, calls only the steps it needs (directly or through a director) and finally calls `build()`.",
+        "fa": "یک builder می‌سازد، فقط مراحلی را که لازم دارد صدا می‌زند (مستقیم یا از طریق director) و در پایان `build()` را صدا می‌زند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "Client", "kind": "client", "col": 0, "row": 0 },
+      { "id": "Director", "kind": "concrete", "col": 1, "row": 0, "members": ["+ jsonPost(url, json)"] },
+      { "id": "HttpRequest::Builder", "kind": "concrete", "col": 1, "row": 1, "members": ["+ method(m) : Builder&", "+ header(k, v) : Builder&", "+ body(b) : Builder&", "+ build() : HttpRequest"] },
+      { "id": "HttpRequest", "kind": "concrete", "col": 2, "row": 1, "members": ["- HttpRequest()", "+ print()"] }
+    ],
+    "edges": [
+      { "from": "Client", "to": "Director", "type": "uses", "label": "recipe" },
+      { "from": "Director", "to": "HttpRequest::Builder", "type": "uses", "label": "fixed steps" },
+      { "from": "Client", "to": "HttpRequest::Builder", "type": "uses", "label": "chained steps" },
+      { "from": "HttpRequest::Builder", "to": "HttpRequest", "type": "creates", "label": "build()" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Give the product a private constructor and a default for every optional part; nest the builder inside it (or make it a `friend`) so the builder can fill it in.",
+      "Take the mandatory parts in the builder's constructor (here: the URL).",
+      "Add one method per optional part; each stores its value and returns `*this` by reference.",
+      "Implement `build()`: check the rules that span several parts, throw on a violation, otherwise return the product.",
+      "Optionally wrap recurring step sequences in director functions so call sites stay short and consistent."
+    ],
+    "fa": [
+      "به محصول یک سازندهٔ private و برای هر بخش اختیاری یک مقدار پیش‌فرض بدهید؛ builder را داخل آن تعریف کنید (یا `friend` اعلامش کنید) تا بتواند محصول را پر کند.",
+      "بخش‌های اجباری را در سازندهٔ builder بگیرید (این‌جا: URL).",
+      "برای هر بخش اختیاری یک متد اضافه کنید که مقدارش را ذخیره می‌کند و `*this` را به‌صورت مرجع برمی‌گرداند.",
+      "`build()` را پیاده‌سازی کنید: قوانینی را که به چند بخش مربوط‌اند بررسی کنید، در صورت نقض، exception پرتاب کنید و در غیر این صورت محصول را برگردانید.",
+      "در صورت نیاز، دنباله‌های تکراری مراحل را در توابع director بپیچید تا کد فراخوان کوتاه و یکدست بماند."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "An object has many optional parts or parameters, and a constructor call would turn into an unreadable list of arguments.",
+      "Validity depends on combinations of fields, and you want one place that checks them before the object exists.",
+      "The finished object should be immutable, yet it is assembled gradually (parsing a config file, reading a form).",
+      "The same construction process must produce different representations (the GoF form), e.g. one document exported as HTML or Markdown by different builders."
+    ],
+    "fa": [
+      "یک شیء بخش‌ها یا پارامترهای اختیاری زیادی دارد و فراخوانی سازنده به فهرستی ناخوانا از آرگومان‌ها تبدیل می‌شود.",
+      "معتبر بودن شیء به ترکیب فیلدها بستگی دارد و می‌خواهید پیش از به وجود آمدن شیء، یک نقطهٔ واحد آن‌ها را بررسی کند.",
+      "شیء نهایی باید تغییرناپذیر (immutable) باشد، اما به‌تدریج سرهم می‌شود (مثلاً هنگام پارس یک فایل تنظیمات یا خواندن یک فرم).",
+      "همان فرایند ساخت باید نمایش‌های متفاوتی تولید کند (شکل GoF)؛ مثلاً یک سند که با builderهای مختلف به HTML یا Markdown تبدیل می‌شود."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Call sites read like a sentence; nobody has to guess what the fifth positional argument means.",
+      "Invalid or half-built objects never escape — validation happens once, in `build()`.",
+      "The product can be immutable (no setters) and still be assembled step by step.",
+      "Directors turn common configurations into named, reusable recipes."
+    ],
+    "fa": [
+      "کد فراخوان مثل یک جمله خوانده می‌شود و کسی لازم نیست حدس بزند آرگومان پنجم چه معنایی دارد.",
+      "هیچ شیء نامعتبر یا نیمه‌کاره‌ای بیرون نمی‌رود؛ اعتبارسنجی یک بار و در `build()` انجام می‌شود.",
+      "محصول می‌تواند تغییرناپذیر (بدون setter) باشد و در عین حال مرحله‌به‌مرحله ساخته شود.",
+      "directorها پیکربندی‌های رایج را به دستورالعمل‌های نام‌دار و قابل استفادهٔ مجدد تبدیل می‌کنند."
+    ]
+  },
+  "cons": {
+    "en": [
+      "More code: a second class that mirrors the product's fields.",
+      "Mistakes a constructor would catch at compile time (a missing argument) move to run time, inside `build()`.",
+      "Overkill for simple objects — a C++20 aggregate with designated initializers (`Options{.timeoutMs = 5000}`) is often enough."
+    ],
+    "fa": [
+      "کد بیشتر: یک کلاس دوم که فیلدهای محصول را تکرار می‌کند.",
+      "اشتباه‌هایی که سازنده در زمان کامپایل می‌گرفت (مثل جا افتادن یک آرگومان) به زمان اجرا و داخل `build()` منتقل می‌شوند.",
+      "برای اشیای ساده زیاده‌روی است؛ یک aggregate در C++20 با مقداردهی نام‌دار فیلدها (`Options{.timeoutMs = 5000}`) اغلب کافی است."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Return `Builder&` from every step so the calls chain. Temporaries live until the end of the full expression, so `Builder(url).body(b).build()` is safe.",
+      "Never keep the reference a chain returns on a temporary: `auto& b = Builder(url).body(x);` dangles as soon as the statement ends.",
+      "Take string parts by value and `std::move` them into place — callers passing temporaries pay no copy.",
+      "Make the product's constructor `private` and nest the builder inside the product: a nested class may access the enclosing class's private members.",
+      "If each builder is used only once, an rvalue-qualified `HttpRequest build() &&` can move the parts out instead of copying them.",
+      "In the classic GoF form, `Builder` is an interface with several concrete builders (e.g. `HtmlBuilder`, `MarkdownBuilder`) driven by the same director — use it when one process must yield different representations."
+    ],
+    "fa": [
+      "از هر مرحله `Builder&` برگردانید تا فراخوانی‌ها زنجیر شوند. اشیای موقت تا پایان عبارت کامل زنده‌اند، پس `Builder(url).body(b).build()` امن است.",
+      "مرجعی را که یک زنجیره روی شیء موقت برمی‌گرداند هرگز نگه ندارید: `auto& b = Builder(url).body(x);` بلافاصله بعد از پایان دستور به یک مرجع آویزان (dangling) تبدیل می‌شود.",
+      "بخش‌های رشته‌ای را by value بگیرید و با `std::move` در جایشان بگذارید؛ فراخوان‌هایی که شیء موقت پاس می‌دهند هیچ هزینهٔ کپی‌ای نمی‌پردازند.",
+      "سازندهٔ محصول را `private` کنید و builder را داخل خود محصول تعریف کنید: کلاس تو در تو (nested) به اعضای private کلاس بیرونی دسترسی دارد.",
+      "اگر هر builder فقط یک بار استفاده می‌شود، نسخهٔ مخصوص rvalue یعنی `HttpRequest build() &&` می‌تواند بخش‌ها را به‌جای کپی کردن، move کند.",
+      "در شکل کلاسیک GoF، `Builder` یک رابط است با چند builder مشخص (مثلاً `HtmlBuilder` و `MarkdownBuilder`) که همه را یک director هدایت می‌کند؛ وقتی یک فرایند باید نمایش‌های متفاوتی تولید کند، از این شکل استفاده کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "gRPC C++: `grpc::ServerBuilder` collects ports and services (`AddListeningPort()`, `RegisterService()`) before `BuildAndStart()` returns the server.",
+      "LLVM's `IRBuilder` appends instructions one call at a time (`CreateAdd()`, `CreateRet()`) to assemble a function's intermediate code.",
+      "`std::ostringstream` assembles a string piece by piece with chained `<<` and hands over the result with `str()`."
+    ],
+    "fa": [
+      "gRPC در C++: کلاس `grpc::ServerBuilder` پورت‌ها و سرویس‌ها را جمع می‌کند (`AddListeningPort()`، `RegisterService()`) و در پایان `BuildAndStart()` سرور را برمی‌گرداند.",
+      "`IRBuilder` در LLVM دستورالعمل‌ها را یکی‌یکی و با هر فراخوانی اضافه می‌کند (`CreateAdd()`، `CreateRet()`) تا کد میانی یک تابع ساخته شود.",
+      "`std::ostringstream` یک رشته را تکه‌تکه با `<<`های زنجیره‌ای سرهم می‌کند و نتیجه را با `str()` تحویل می‌دهد."
+    ]
+  },
+  "related": [
+    {
+      "id": "abstract-factory",
+      "note": {
+        "en": "Abstract Factory returns several related products, each from one call; Builder assembles one complex product over several calls and returns it at the end.",
+        "fa": "Abstract Factory چند محصول مرتبط برمی‌گرداند که هر کدام با یک فراخوانی ساخته می‌شوند؛ Builder یک محصول پیچیده را طی چند فراخوانی سرهم می‌کند و در پایان برمی‌گرداند."
+      }
+    },
+    {
+      "id": "composite",
+      "note": {
+        "en": "Builders are a natural way to assemble Composite trees — a document, a UI layout, an AST — node by node.",
+        "fa": "Builder راهی طبیعی برای سرهم کردن درخت‌های Composite است؛ مثل یک سند، چیدمان رابط کاربری یا یک AST که گره‌به‌گره ساخته می‌شوند."
+      }
+    },
+    {
+      "id": "factory-method",
+      "note": {
+        "en": "Factory Method decides which class to instantiate in a single call; Builder decides how one object is put together.",
+        "fa": "Factory Method با یک فراخوانی تصمیم می‌گیرد کدام کلاس نمونه‌سازی شود؛ Builder تصمیم می‌گیرد یک شیء چطور کنار هم قرار بگیرد."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "An HTTP request builder", "fa": "یک builder برای درخواست HTTP" },
+    "description": {
+      "en": "`HttpRequest` has a private constructor, so the nested `Builder` is the only way to create one. `ping` sets nothing but the URL; `order` starts from the `jsonPost()` director recipe and then adds a header and a timeout. The last request breaks a cross-field rule and is rejected by `build()`.",
+      "fa": "`HttpRequest` سازندهٔ private دارد، پس `Builder` تو در تو تنها راه ساختن آن است. `ping` جز URL چیزی تنظیم نمی‌کند؛ `order` از دستورالعمل director یعنی `jsonPost()` شروع می‌شود و بعد یک header و یک timeout اضافه می‌کند. درخواست آخر یک قانون چندفیلدی را نقض می‌کند و `build()` آن را رد می‌کند."
+    },
+    "output": "GET https://api.shop.test/health\n  timeout: 30000 ms\nPOST https://api.shop.test/orders\n  Authorization: Bearer abc123\n  Content-Type: application/json\n  body: {\"sku\":\"A7\",\"qty\":2}\n  timeout: 5000 ms\nrejected: a GET request cannot have a body",
+    "highlights": [
+      {
+        "lines": [8, 28],
+        "note": {
+          "en": "The product: every optional part has a default, there are no setters, and the private constructor forces everyone through the Builder.",
+          "fa": "محصول: هر بخش اختیاری مقدار پیش‌فرض دارد، هیچ setterی وجود ندارد و سازندهٔ private همه را مجبور می‌کند از Builder استفاده کنند."
+        }
+      },
+      {
+        "lines": [30, 41],
+        "note": {
+          "en": "The mandatory URL goes into the constructor; every optional step stores one part and returns `*this`, which is what makes chaining possible.",
+          "fa": "URL که اجباری است در سازنده گرفته می‌شود؛ هر مرحلهٔ اختیاری یک بخش را ذخیره می‌کند و `*this` را برمی‌گرداند، و همین است که زنجیر کردن را ممکن می‌کند."
+        }
+      },
+      {
+        "lines": [43, 48],
+        "note": {
+          "en": "`build()` is the single checkpoint. It validates a rule that involves two parts — method and body — before any `HttpRequest` escapes.",
+          "fa": "`build()` تنها نقطهٔ بازرسی است. قانونی را که به دو بخش (متد و body) مربوط است بررسی می‌کند، پیش از آن‌که هیچ `HttpRequest`ی بیرون برود."
+        }
+      },
+      {
+        "lines": [54, 61],
+        "note": {
+          "en": "A director as a plain function: it runs a fixed sequence of steps and returns the builder, so callers can keep customizing before `build()`.",
+          "fa": "یک director در قالب یک تابع ساده: دنباله‌ای ثابت از مراحل را اجرا می‌کند و خود builder را برمی‌گرداند تا فراخوان بتواند پیش از `build()` تنظیمات بیشتری انجام دهد."
+        }
+      },
+      {
+        "lines": [63, 80],
+        "note": {
+          "en": "Three uses: defaults only, a recipe plus extra steps, and a request that `build()` rejects with an exception.",
+          "fa": "سه نوع استفاده: فقط با مقادیر پیش‌فرض، یک دستورالعمل به‌علاوهٔ مراحل اضافه، و درخواستی که `build()` با یک exception ردش می‌کند."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "Which problem is Builder primarily designed to solve?",
+        "fa": "بیلدر در اصل برای حل کدام مشکل طراحی شده است؟"
+      },
+      "options": {
+        "en": [
+          "A class must have exactly one instance with a global access point",
+          "Several related objects must always be created from the same family",
+          "An object with many optional parts must be created without telescoping constructors or half-initialized states",
+          "An existing class must be used through an interface it does not implement"
+        ],
+        "fa": [
+          "یک کلاس باید دقیقاً یک نمونه با یک نقطهٔ دسترسی سراسری داشته باشد",
+          "چند شیء مرتبط باید همیشه از یک خانواده ساخته شوند",
+          "شیئی با بخش‌های اختیاری زیاد باید بدون telescoping constructor و بدون وضعیت نیمه‌مقداردهی‌شده ساخته شود",
+          "یک کلاس موجود باید از طریق رابطی استفاده شود که آن را پیاده‌سازی نکرده است"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Builder replaces an unreadable constructor (or a set of setters) with named steps, and `build()` guarantees the object is complete and valid before anyone sees it. The other options describe Singleton, Abstract Factory and Adapter.",
+        "fa": "بیلدر به‌جای یک سازندهٔ ناخوانا (یا مجموعه‌ای از setterها) مراحل نام‌دار می‌گذارد و `build()` تضمین می‌کند شیء پیش از آن‌که کسی آن را ببیند کامل و معتبر باشد. گزینه‌های دیگر به ترتیب Singleton، Abstract Factory و Adapter را توصیف می‌کنند."
+      }
+    },
+    {
+      "question": {
+        "en": "What is wrong with `auto& b = HttpRequest::Builder(url).body(\"x\");` followed later by `b.build();`?",
+        "fa": "چه اشکالی در نوشتن `auto& b = HttpRequest::Builder(url).body(\"x\");` و بعداً `b.build();` وجود دارد؟"
+      },
+      "options": {
+        "en": [
+          "`b` refers to a temporary builder that is destroyed at the end of the first statement, so `b.build()` is undefined behavior",
+          "Nothing — binding the result to a reference extends the builder's lifetime",
+          "It does not compile, because `body()` returns a reference",
+          "It silently copies the builder, so the body set in the first line is lost"
+        ],
+        "fa": [
+          "`b` به یک builder موقت اشاره می‌کند که در پایان دستور اول نابود می‌شود، پس `b.build()` رفتار تعریف‌نشده دارد",
+          "هیچ اشکالی ندارد؛ مقید کردن نتیجه به یک مرجع، عمر builder را طولانی می‌کند",
+          "کامپایل نمی‌شود، چون `body()` یک مرجع برمی‌گرداند",
+          "بی‌صدا از builder کپی می‌گیرد، پس body تنظیم‌شده در خط اول از دست می‌رود"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "Lifetime extension only applies when a temporary is bound directly to a reference. Here `b` binds to the `Builder&` returned by `body()`, so the temporary dies at the `;` and `b` dangles. Chain all the way to `build()` in one expression, or give the builder a name first.",
+        "fa": "طولانی شدن عمر شیء موقت فقط وقتی رخ می‌دهد که خودِ شیء موقت مستقیماً به یک مرجع مقید شود. این‌جا `b` به `Builder&`ی مقید شده که `body()` برگردانده، پس شیء موقت در `;` نابود می‌شود و `b` آویزان می‌ماند. یا زنجیره را در همان عبارت تا `build()` ادامه دهید، یا اول برای builder یک متغیر نام‌دار بسازید."
+      }
+    },
+    {
+      "question": {
+        "en": "When is a builder most likely unnecessary in modern C++?",
+        "fa": "در C++ مدرن، چه زمانی به احتمال زیاد به بیلدر نیازی نیست؟"
+      },
+      "options": {
+        "en": [
+          "When cross-field rules must be checked before the object exists",
+          "When the same construction steps must produce HTML and Markdown documents",
+          "When the object is assembled gradually while a config file is being parsed",
+          "When the object is a simple aggregate that `Options{.timeoutMs = 5000}` can initialize directly"
+        ],
+        "fa": [
+          "وقتی قوانین چندفیلدی باید پیش از به وجود آمدن شیء بررسی شوند",
+          "وقتی همان مراحل ساخت باید سندهای HTML و Markdown تولید کنند",
+          "وقتی شیء به‌تدریج و هم‌زمان با پارس یک فایل تنظیمات سرهم می‌شود",
+          "وقتی شیء یک aggregate ساده است که `Options{.timeoutMs = 5000}` می‌تواند مستقیماً مقداردهی‌اش کند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "C++20 designated initializers already give you named fields: you set only the ones you need (in declaration order) and the rest keep their defaults. If there are no invariants to enforce and no gradual assembly, a builder only adds a class to maintain. The other three are classic reasons to use one.",
+        "fa": "مقداردهی نام‌دار در C++20 خودش فیلدهای نام‌دار فراهم می‌کند: فقط فیلدهای لازم را (به ترتیب تعریفشان) مقدار می‌دهید و بقیه مقدار پیش‌فرضشان را نگه می‌دارند. اگر هیچ قانونی برای اجبار و هیچ ساخت تدریجی‌ای در کار نباشد، بیلدر فقط یک کلاس اضافه برای نگهداری است. سه گزینهٔ دیگر دلایل کلاسیک استفاده از آن هستند."
+      }
+    },
+    {
+      "question": {
+        "en": "What is the main difference between Builder and Factory Method?",
+        "fa": "تفاوت اصلی بیلدر و فکتوری متد چیست؟"
+      },
+      "options": {
+        "en": [
+          "Builder lets subclasses choose which class to instantiate; Factory Method assembles one object in several steps",
+          "Factory Method picks the class of a product in a single call; Builder controls how one complex product is assembled over several calls",
+          "Builder can only produce immutable objects, while Factory Method can only produce objects that have setters",
+          "There is no real difference: Builder is simply Factory Method combined with method chaining"
+        ],
+        "fa": [
+          "بیلدر به زیرکلاس‌ها اجازه می‌دهد کلاس نمونه‌سازی‌شده را انتخاب کنند؛ فکتوری متد یک شیء را در چند مرحله سرهم می‌کند",
+          "فکتوری متد کلاس محصول را با یک فراخوانی انتخاب می‌کند؛ بیلدر کنترل می‌کند که یک محصول پیچیده طی چند فراخوانی چطور سرهم شود",
+          "بیلدر فقط اشیای تغییرناپذیر تولید می‌کند، در حالی که فکتوری متد فقط اشیایی تولید می‌کند که setter دارند",
+          "تفاوت واقعی‌ای ندارند: بیلدر صرفاً همان فکتوری متد است که با زنجیر کردن متدها ترکیب شده"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "Factory Method answers \"which class?\" in a single step; Builder answers \"how is this object put together?\" across many steps with a final `build()`. Option A swaps the two definitions.",
+        "fa": "فکتوری متد در یک مرحله به پرسش «کدام کلاس؟» پاسخ می‌دهد؛ بیلدر طی چند مرحله و با یک `build()` نهایی به پرسش «این شیء چطور کنار هم قرار می‌گیرد؟» پاسخ می‌دهد. گزینهٔ اول دقیقاً جای این دو تعریف را عوض کرده است."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A report needs a title, any number of sections, optional charts, a footer and a page size; most reports use only a few of these, and some combinations — a chart without a data source — must be rejected.",
+      "fa": "یک گزارش به عنوان، تعداد دلخواهی بخش، نمودارهای اختیاری، پانویس و اندازهٔ صفحه نیاز دارد؛ بیشتر گزارش‌ها فقط چند تا از این‌ها را دارند و بعضی ترکیب‌ها (مثل نمودار بدون منبع داده) باید رد شوند."
+    },
+    {
+      "en": "Your email API has sender, recipients, CC, BCC, subject, HTML and plain-text bodies, attachments and a priority; each call site should set only what it needs, and the finished message must be immutable.",
+      "fa": "API ایمیل شما فرستنده، گیرنده‌ها، CC، BCC، موضوع، متن HTML و متن ساده، پیوست‌ها و اولویت دارد؛ هر جای کد باید فقط چیزهایی را که لازم دارد تنظیم کند و پیام نهایی باید تغییرناپذیر باشد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A pizza order, step by step", "fa": "سفارش پیتزا، مرحله‌به‌مرحله" },
+    "task": {
+      "en": "`PizzaOrder::Builder` compiles, but `addTopping()` and `extraCheese()` ignore their input, `build()` accepts anything, and the `margherita()` recipe is empty. Make each step store its part and return `*this`, let `build()` reject orders with more than 3 toppings by throwing `std::invalid_argument(\"at most 3 toppings\")`, and complete the director recipe.",
+      "fa": "`PizzaOrder::Builder` کامپایل می‌شود، اما `addTopping()` و `extraCheese()` ورودی‌شان را نادیده می‌گیرند، `build()` هر سفارشی را قبول می‌کند و دستورالعمل `margherita()` خالی است. هر مرحله را طوری کامل کنید که بخش خودش را ذخیره کند و `*this` را برگرداند، کاری کنید که `build()` سفارش‌های بیشتر از ۳ تاپینگ را با پرتاب `std::invalid_argument(\"at most 3 toppings\")` رد کند و دستورالعمل director را کامل کنید."
+    },
+    "hints": {
+      "en": [
+        "Every step has the same shape: change one field of `order_`, then `return *this;`.",
+        "Give the parameter a name again and store it: `order_.toppings_.push_back(std::move(topping));`. For the cheese, `order_.extraCheese_ = true;` is enough.",
+        "In `build()` check `order_.toppings_.size() > 3` before returning. In `margherita()` chain `builder.addTopping(\"tomato\").addTopping(\"mozzarella\").addTopping(\"basil\");`."
+      ],
+      "fa": [
+        "همهٔ مراحل یک شکل دارند: یک فیلد از `order_` را تغییر دهید و بعد `return *this;`.",
+        "دوباره برای پارامتر نام بگذارید و ذخیره‌اش کنید: `order_.toppings_.push_back(std::move(topping));`. برای پنیر هم `order_.extraCheese_ = true;` کافی است.",
+        "در `build()` پیش از برگرداندن، شرط `order_.toppings_.size() > 3` را بررسی کنید. در `margherita()` هم این زنجیره را بنویسید: `builder.addTopping(\"tomato\").addTopping(\"mozzarella\").addTopping(\"basil\");`."
+      ]
+    },
+    "expectedOutput": "large, thin crust: mushrooms olives +extra cheese\nsmall, classic crust: plain\nlarge, classic crust: tomato mozzarella basil\nrejected: at most 3 toppings"
+  }
+}

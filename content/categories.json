@@ -1,0 +1,46 @@
+[
+  {
+    "id": "creational",
+    "order": 1,
+    "icon": "boxes",
+    "name": { "en": "Creational", "fa": "سازنده" },
+    "title": { "en": "Creational Patterns", "fa": "الگوهای سازنده" },
+    "description": {
+      "en": "How objects get created — hide construction details and make systems independent of the concrete classes they instantiate.",
+      "fa": "اشیا چگونه ساخته می‌شوند؛ جزئیات ساخت را پنهان می‌کنند تا سیستم به کلاس‌های مشخصی که نمونه‌سازی می‌کند وابسته نباشد."
+    }
+  },
+  {
+    "id": "structural",
+    "order": 2,
+    "icon": "layers",
+    "name": { "en": "Structural", "fa": "ساختاری" },
+    "title": { "en": "Structural Patterns", "fa": "الگوهای ساختاری" },
+    "description": {
+      "en": "How classes and objects are composed into larger structures while keeping those structures flexible and efficient.",
+      "fa": "کلاس‌ها و اشیا چگونه در ساختارهای بزرگ‌تر کنار هم قرار می‌گیرند، به‌طوری که این ساختارها انعطاف‌پذیر و کارآمد بمانند."
+    }
+  },
+  {
+    "id": "behavioral",
+    "order": 3,
+    "icon": "workflow",
+    "name": { "en": "Behavioral", "fa": "رفتاری" },
+    "title": { "en": "Behavioral Patterns", "fa": "الگوهای رفتاری" },
+    "description": {
+      "en": "How objects communicate and share responsibilities — algorithms, workflows and the flow of control between objects.",
+      "fa": "اشیا چگونه با هم ارتباط برقرار می‌کنند و مسئولیت‌ها را تقسیم می‌کنند؛ الگوریتم‌ها، گردش کارها و جریان کنترل بین اشیا."
+    }
+  },
+  {
+    "id": "idioms",
+    "order": 4,
+    "icon": "cpu",
+    "name": { "en": "Modern C++ Idioms", "fa": "ایدیوم‌های C++ مدرن" },
+    "title": { "en": "Modern C++ Idioms", "fa": "ایدیوم‌های C++ مدرن" },
+    "description": {
+      "en": "Patterns that are native to C++ — resource ownership, compile-time polymorphism and zero-overhead abstractions.",
+      "fa": "الگوهایی که مخصوص زبان C++ هستند؛ مالکیت منابع، چندریختی در زمان کامپایل و انتزاع‌های بدون سربار."
+    }
+  }
+]

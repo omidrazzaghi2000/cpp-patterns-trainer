@@ -1,0 +1,369 @@
+{
+  "id": "crtp",
+  "category": "idioms",
+  "order": 3,
+  "difficulty": 3,
+  "icon": "repeat",
+  "name": { "en": "CRTP", "fa": "CRTP (تمپلیت به‌طرز عجیب بازگشتی)" },
+  "aka": {
+    "en": "Curiously Recurring Template Pattern; static polymorphism; F-bounded polymorphism",
+    "fa": "Curiously Recurring Template Pattern؛ چندریختی ایستا (static polymorphism)"
+  },
+  "tagline": {
+    "en": "A class inherits from a template of itself — polymorphism resolved at compile time.",
+    "fa": "کلاسی که از تمپلیتی از خودش ارث می‌برد؛ چندریختی‌ای که در زمان کامپایل حل می‌شود."
+  },
+  "intent": {
+    "en": "Let a base class template know its derived class at compile time — `class D : public Base<D>` — so the base can call into the derived class without virtual functions (static polymorphism) or inject reusable behavior into it (mixins).",
+    "fa": "به یک کلاس پایهٔ تمپلیتی اجازه می‌دهد کلاس مشتقش را در زمان کامپایل بشناسد (`class D : public Base<D>`)، تا کلاس پایه بتواند بدون توابع virtual کلاس مشتق را صدا بزند (چندریختی ایستا) یا رفتار قابل استفادهٔ دوباره‌ای به آن تزریق کند (mixin)."
+  },
+  "problem": {
+    "en": "A firmware team has dozens of sensor classes that all read a raw register, scale the value and log it the same way. A virtual base class would remove the duplication, but on a microcontroller every sensor object then carries a vtable pointer, and every read is an indirect call the compiler cannot inline — in the 1 kHz sampling loop that hurts. Copy-pasting `read()` into each class avoids the overhead but duplicates the logic. Likewise, features such as \"count live objects per type\" must be rewritten in every class, because an ordinary base class does not know which class it is part of.",
+    "fa": "یک تیم firmware ده‌ها کلاس حسگر دارد که همه به یک شکل یک رجیستر خام را می‌خوانند، مقدار را مقیاس می‌کنند و لاگ می‌گیرند. یک کلاس پایهٔ virtual تکرار را حذف می‌کند، اما روی میکروکنترلر هر شیء حسگر یک اشاره‌گر vtable با خودش حمل می‌کند و هر خواندن یک فراخوانی غیرمستقیم است که کامپایلر نمی‌تواند inline کند؛ در حلقهٔ نمونه‌برداری با فرکانس ۱ کیلوهرتز این هزینه به چشم می‌آید. کپی کردن `read()` در تک‌تک کلاس‌ها سربار را حذف می‌کند، اما منطق را تکرار می‌کند. به همین ترتیب قابلیت‌هایی مثل «شمارش اشیای زنده برای هر نوع» باید در هر کلاس از نو نوشته شوند، چون یک کلاس پایهٔ معمولی نمی‌داند بخشی از کدام کلاس است."
+  },
+  "solution": {
+    "en": "Make the base a class template parameterized by the derived class, and derive as `class Thermometer : public Sensor<Thermometer>`. Inside the base, `static_cast<const Derived&>(*this)` is a safe compile-time downcast, so the base can call `derived().raw()` directly: the call is resolved at compile time and can be inlined — **static polymorphism** with zero overhead. The same trick gives **mixins**: `Counted<T>` adds a per-type counter, because `Counted<Thermometer>` and `Counted<Barometer>` are different classes with separate static members. Guard the pattern by making the base constructor private and befriending `Derived`, so a mismatched `class A : Base<B>` does not compile.",
+    "fa": "کلاس پایه را یک تمپلیت کلاس با پارامتر «کلاس مشتق» کنید و به شکل `class Thermometer : public Sensor<Thermometer>` ارث‌بری کنید. داخل کلاس پایه، `static_cast<const Derived&>(*this)` یک تبدیل رو به پایین (downcast) امن در زمان کامپایل است، پس کلاس پایه می‌تواند مستقیماً `derived().raw()` را صدا بزند: این فراخوانی در زمان کامپایل حل می‌شود و قابل inline شدن است؛ یعنی **چندریختی ایستا** بدون هیچ سرباری. همین ترفند **mixin** هم می‌سازد: `Counted<T>` برای هر نوع یک شمارندهٔ جدا اضافه می‌کند، چون `Counted<Thermometer>` و `Counted<Barometer>` دو کلاس متفاوت با اعضای static جداگانه هستند. با private کردن سازندهٔ کلاس پایه و friend کردن `Derived` از الگو محافظت کنید تا ارث‌بری اشتباهی مثل `class A : Base<B>` کامپایل نشود."
+  },
+  "analogy": {
+    "en": "A franchise contract template reads \"[Your company] promises to...\". Each company prints its own name into the blank before signing, so every signed copy knows exactly whom it binds — nobody has to look it up later. The template is written once; the name is fixed at printing time (compile time), not when the contract is read (runtime).",
+    "fa": "یک قرارداد نمونهٔ فرانچایز را تصور کنید که نوشته «[نام شرکت شما] متعهد می‌شود که...». هر شرکت پیش از امضا نام خودش را در جای خالی چاپ می‌کند، پس هر نسخهٔ امضاشده دقیقاً می‌داند چه کسی را متعهد می‌کند و لازم نیست کسی بعداً آن را جست‌وجو کند. متن نمونه یک بار نوشته می‌شود و نام در زمان چاپ (زمان کامپایل) ثابت می‌شود، نه هنگام خواندن قرارداد (زمان اجرا)."
+  },
+  "participants": [
+    {
+      "name": "Base template (Sensor<Derived>)",
+      "role": {
+        "en": "Implements the shared algorithm and reaches the derived class through `static_cast<const Derived&>(*this)`.",
+        "fa": "الگوریتم مشترک را پیاده‌سازی می‌کند و از طریق `static_cast<const Derived&>(*this)` به کلاس مشتق دسترسی پیدا می‌کند."
+      }
+    },
+    {
+      "name": "Mixin (Counted<T>)",
+      "role": {
+        "en": "A CRTP base that injects extra behavior — here a per-type live-object counter — into any class that inherits it.",
+        "fa": "یک کلاس پایهٔ CRTP که رفتاری اضافه (این‌جا شمارندهٔ اشیای زنده برای هر نوع) را به هر کلاسی که از آن ارث ببرد تزریق می‌کند."
+      }
+    },
+    {
+      "name": "Derived class (Thermometer, Barometer)",
+      "role": {
+        "en": "Inherits from the base instantiated with itself and supplies the functions the base calls: `raw()`, `scale()`, `name()`, `unit()`.",
+        "fa": "از کلاس پایه‌ای ارث می‌برد که با خودش نمونه‌سازی شده و توابعی را که کلاس پایه صدا می‌زند فراهم می‌کند: `raw()`، `scale()`، `name()` و `unit()`."
+      }
+    },
+    {
+      "name": "Client (logReading)",
+      "role": {
+        "en": "A function template that accepts any `Sensor<T>`; every call is bound at compile time.",
+        "fa": "یک تابع تمپلیتی که هر `Sensor<T>`ی را می‌پذیرد؛ هر فراخوانی در زمان کامپایل مقید می‌شود."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "logReading", "kind": "client", "col": 0, "row": 0, "members": ["template <typename T>", "f(const Sensor<T>&)"] },
+      { "id": "Sensor<Derived>", "kind": "abstract", "col": 1, "row": 0, "members": ["+ read() : double", "- Sensor()  (friend Derived)", "- derived() : const Derived&"] },
+      { "id": "Counted<T>", "kind": "abstract", "col": 2, "row": 0, "members": ["+ alive() : int", "# Counted() : ++count_", "- count_ : static int"] },
+      { "id": "CrtpNote", "label": "The recurring part", "kind": "note", "col": 3, "row": 0, "members": ["class Thermometer", "  : Sensor<Thermometer>", "base knows Derived", "at compile time"] },
+      { "id": "Thermometer", "kind": "concrete", "col": 1, "row": 2, "members": ["+ raw() : int", "+ scale() : double", "+ name(), unit()"] },
+      { "id": "Barometer", "kind": "concrete", "col": 2, "row": 2, "members": ["+ raw() : int", "+ scale() : double", "+ name(), unit()"] }
+    ],
+    "edges": [
+      { "from": "logReading", "to": "Sensor<Derived>", "type": "uses", "label": "read()" },
+      { "from": "Thermometer", "to": "Sensor<Derived>", "type": "inherits", "label": "<Thermometer>" },
+      { "from": "Thermometer", "to": "Counted<T>", "type": "inherits", "label": "<Thermometer>" },
+      { "from": "Barometer", "to": "Sensor<Derived>", "type": "inherits", "label": "<Barometer>" },
+      { "from": "Barometer", "to": "Counted<T>", "type": "inherits", "label": "<Barometer>" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Write the base as a template over the derived type: `template <typename Derived> class Sensor`.",
+      "Add a private helper `derived()` that returns `static_cast<const Derived&>(*this)` (plus a non-const overload if needed).",
+      "Implement the shared behavior in the base by calling `derived().step()` — no `virtual` anywhere.",
+      "Derive each class as `class X : public Base<X>` and provide the functions the base expects (a C++20 concept can document and check them).",
+      "Guard the base: a private constructor with `friend Derived;` rejects `class A : Base<B>`, and a protected non-virtual destructor stops deletion through `Base<X>*`.",
+      "Write clients as templates (`template <typename T> void f(const Base<T>&)`), since there is no common runtime base type."
+    ],
+    "fa": [
+      "کلاس پایه را به شکل تمپلیتی روی نوع مشتق بنویسید: `template <typename Derived> class Sensor`.",
+      "یک تابع کمکی خصوصی `derived()` اضافه کنید که `static_cast<const Derived&>(*this)` را برمی‌گرداند (و در صورت نیاز یک overload غیر const).",
+      "رفتار مشترک را در کلاس پایه با صدا زدن `derived().step()` پیاده‌سازی کنید؛ بدون هیچ `virtual`ی.",
+      "هر کلاس را به شکل `class X : public Base<X>` مشتق کنید و توابعی را که کلاس پایه انتظار دارد فراهم کنید (یک concept در C++20 می‌تواند آن‌ها را مستند و بررسی کند).",
+      "از کلاس پایه محافظت کنید: سازندهٔ private همراه با `friend Derived;` جلوی `class A : Base<B>` را می‌گیرد و یک مخرب protected و غیر virtual مانع delete کردن از طریق `Base<X>*` می‌شود.",
+      "کلاینت‌ها را به شکل تمپلیت بنویسید (`template <typename T> void f(const Base<T>&)`)، چون هیچ نوع پایهٔ مشترکی در زمان اجرا وجود ندارد."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "A virtual interface would work, but the calls sit in a hot path and should be resolved and inlined at compile time (embedded, numerics, game loops).",
+      "You want to inject the same reusable behavior — counters, logging, `clone()`, fluent setters — into many unrelated classes (mixins).",
+      "A base class needs the derived type itself, e.g. to return `Derived&` from chained setters or to create `Derived` copies.",
+      "The set of types is known at compile time and you never need to store them together in one heterogeneous container."
+    ],
+    "fa": [
+      "یک رابط virtual هم کار می‌کند، اما فراخوانی‌ها در مسیر داغ برنامه هستند و باید در زمان کامپایل حل و inline شوند (سیستم‌های نهفته، محاسبات عددی، حلقهٔ بازی).",
+      "می‌خواهید یک رفتار قابل استفادهٔ دوباره (شمارنده، لاگ، `clone()`، setterهای زنجیره‌ای) را به تعداد زیادی کلاس نامرتبط تزریق کنید (mixin).",
+      "کلاس پایه به خودِ نوع مشتق نیاز دارد؛ مثلاً برای برگرداندن `Derived&` از setterهای زنجیره‌ای یا ساختن کپی‌هایی از نوع `Derived`.",
+      "مجموعهٔ انواع در زمان کامپایل مشخص است و هیچ‌وقت لازم نیست آن‌ها را با هم در یک container ناهمگن نگه دارید."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Zero overhead: no vtable pointer, no indirect calls, and everything can be inlined.",
+      "Shared code lives once in the base while still using derived-specific parts.",
+      "Mixins compose: a class can inherit several CRTP bases to pick up independent features.",
+      "Every instantiation has its own static members, e.g. a separate counter or registry per type."
+    ],
+    "fa": [
+      "بدون سربار: نه اشاره‌گر vtable، نه فراخوانی غیرمستقیم، و همه‌چیز قابل inline شدن است.",
+      "کد مشترک فقط یک بار در کلاس پایه نوشته می‌شود و همچنان از بخش‌های مخصوص کلاس مشتق استفاده می‌کند.",
+      "mixinها با هم ترکیب می‌شوند: یک کلاس می‌تواند از چند پایهٔ CRTP ارث ببرد و قابلیت‌های مستقل را یک‌جا بگیرد.",
+      "هر نمونه‌سازی اعضای static مخصوص خودش را دارد؛ مثلاً یک شمارنده یا رجیستری جدا برای هر نوع."
+    ]
+  },
+  "cons": {
+    "en": [
+      "No common runtime base: `Sensor<Thermometer>` and `Sensor<Barometer>` are unrelated types and cannot share one `std::vector` without extra type erasure.",
+      "Everything is a template: code lives in headers, compile times grow and error messages get long.",
+      "The functions the derived class must provide form an implicit interface unless you spell it out with concepts or `static_assert`.",
+      "It looks strange to newcomers and is easy to misuse (`class A : Base<B>`) unless the base guards against it."
+    ],
+    "fa": [
+      "پایهٔ مشترک در زمان اجرا وجود ندارد: `Sensor<Thermometer>` و `Sensor<Barometer>` دو نوع نامرتبط‌اند و بدون type erasure اضافه نمی‌توانند در یک `std::vector` قرار بگیرند.",
+      "همه‌چیز تمپلیت است: کد در headerها قرار می‌گیرد، زمان کامپایل بیشتر و پیام‌های خطا طولانی می‌شوند.",
+      "توابعی که کلاس مشتق باید فراهم کند یک رابط ضمنی می‌سازند، مگر این‌که آن را با concept یا `static_assert` صریح کنید.",
+      "برای تازه‌کارها عجیب به نظر می‌رسد و اگر کلاس پایه از خودش محافظت نکند، به‌راحتی اشتباه استفاده می‌شود (`class A : Base<B>`)."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "C++23 \"deducing this\" (explicit object parameter) removes most of the boilerplate: `double read(this const auto& self) { return self.raw() * self.scale(); }` deduces the derived type, so the base needs no template parameter and no `static_cast` (GCC 14, Clang 18, recent MSVC).",
+      "Guard the base: `private: Base() = default; friend Derived;` turns `class A : Base<B>` into a compile error, and a `protected` non-virtual destructor prevents `delete` through a base pointer.",
+      "Beware name hiding: if the derived class forgets `raw()` but the base has a function of the same name, `derived().raw()` silently calls the base version — often infinite recursion. Use distinct names or a concept.",
+      "Make the expected interface explicit with a C++20 concept, e.g. `requires(const T& t) { { t.raw() } -> std::convertible_to<int>; }`, and check it where `Derived` is complete (in a function template or after the class), not inside the base's body.",
+      "Check the standard before writing a mixin: C++20's defaulted `operator<=>` and `operator==` replaced the classic \"comparison operators via CRTP\" base.",
+      "Need a heterogeneous container too? Put a small virtual interface on top of the CRTP layer, or use type erasure / `std::variant` for that part."
+    ],
+    "fa": [
+      "قابلیت «deducing this» در C++23 (پارامتر شیء صریح) بیشتر کد تکراری را حذف می‌کند: `double read(this const auto& self) { return self.raw() * self.scale(); }` نوع مشتق را استنتاج می‌کند، پس کلاس پایه نه پارامتر تمپلیت لازم دارد و نه `static_cast` (در GCC 14، Clang 18 و نسخه‌های جدید MSVC).",
+      "از کلاس پایه محافظت کنید: `private: Base() = default; friend Derived;` ارث‌بری اشتباه `class A : Base<B>` را به خطای کامپایل تبدیل می‌کند و یک مخرب `protected` و غیر virtual جلوی `delete` از طریق اشاره‌گر پایه را می‌گیرد.",
+      "مراقب پنهان شدن نام‌ها باشید: اگر کلاس مشتق `raw()` را فراموش کند ولی کلاس پایه تابعی با همین نام داشته باشد، `derived().raw()` بی‌صدا نسخهٔ پایه را صدا می‌زند که اغلب به بازگشت بی‌پایان می‌رسد. از نام‌های متفاوت یا یک concept استفاده کنید.",
+      "رابط مورد انتظار را با یک concept در C++20 صریح کنید، مثلاً `requires(const T& t) { { t.raw() } -> std::convertible_to<int>; }`، و آن را جایی بررسی کنید که `Derived` کامل است (در یک تابع تمپلیتی یا بعد از تعریف کلاس)، نه داخل بدنهٔ کلاس پایه.",
+      "قبل از نوشتن یک mixin استاندارد را بررسی کنید: `operator<=>` و `operator==` پیش‌فرض در C++20 جای پایهٔ کلاسیک «عملگرهای مقایسه با CRTP» را گرفته‌اند.",
+      "به container ناهمگن هم نیاز دارید؟ یک رابط virtual کوچک روی لایهٔ CRTP بگذارید یا برای آن بخش از type erasure یا `std::variant` استفاده کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::enable_shared_from_this<T>` is a CRTP base: `class Session : public std::enable_shared_from_this<Session>`.",
+      "C++20's `std::ranges::view_interface<Derived>` gives a view `empty()`, `front()`, `operator bool` and more, computed from its `begin()` / `end()`.",
+      "Eigen's `MatrixBase<Derived>` expression templates, Boost.Operators, `boost::iterator_facade`, and Microsoft's ATL/WTL."
+    ],
+    "fa": [
+      "`std::enable_shared_from_this<T>` یک پایهٔ CRTP است: `class Session : public std::enable_shared_from_this<Session>`.",
+      "`std::ranges::view_interface<Derived>` در C++20 به یک view توابعی مثل `empty()`، `front()` و `operator bool` می‌دهد که از روی `begin()` و `end()` خودش محاسبه می‌شوند.",
+      "expression templateهای `MatrixBase<Derived>` در Eigen، کتابخانهٔ Boost.Operators، `boost::iterator_facade` و ATL/WTL مایکروسافت."
+    ]
+  },
+  "related": [
+    {
+      "id": "template-method",
+      "note": {
+        "en": "CRTP is a compile-time Template Method: `Sensor::read()` is the skeleton and `derived().raw()` the primitive operation, bound without virtual calls.",
+        "fa": "CRTP یک تمپلیت متد در زمان کامپایل است: `Sensor::read()` اسکلت است و `derived().raw()` عملیات اولیه (primitive operation)، که بدون فراخوانی virtual به هم متصل می‌شوند."
+      }
+    },
+    {
+      "id": "policy-based-design",
+      "note": {
+        "en": "Both inject behavior through templates. With policies the host class receives behavior classes as template parameters; with CRTP the derived class passes itself to its base.",
+        "fa": "هر دو رفتار را از طریق تمپلیت تزریق می‌کنند. در policy-based design کلاس میزبان کلاس‌های رفتار را به‌عنوان پارامتر تمپلیت می‌گیرد؛ در CRTP کلاس مشتق خودش را به کلاس پایه‌اش می‌دهد."
+      }
+    },
+    {
+      "id": "prototype",
+      "note": {
+        "en": "A CRTP mixin can implement `clone()` once for a whole hierarchy: `return std::make_unique<Derived>(static_cast<const Derived&>(*this));`.",
+        "fa": "یک mixin از نوع CRTP می‌تواند `clone()` را یک بار برای کل سلسله‌مراتب پیاده‌سازی کند: `return std::make_unique<Derived>(static_cast<const Derived&>(*this));`."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "Sensors without a vtable", "fa": "حسگرها بدون vtable" },
+    "description": {
+      "en": "`Thermometer` and `Barometer` inherit `read()` from `Sensor<Derived>`, yet there is no `virtual` anywhere: the base knows its derived type and calls `raw()`, `scale()`, `name()` and `unit()` directly. `Counted<T>` is a mixin that adds a live-object counter per type. The last line shows the payoff: both bases are empty, so (with GCC and Clang) a `Thermometer` occupies a single byte, with no vtable pointer.",
+      "fa": "`Thermometer` و `Barometer` تابع `read()` را از `Sensor<Derived>` به ارث می‌برند، اما هیچ `virtual`ی در کار نیست: کلاس پایه نوع مشتقش را می‌شناسد و `raw()`، `scale()`، `name()` و `unit()` را مستقیماً صدا می‌زند. `Counted<T>` یک mixin است که برای هر نوع یک شمارندهٔ اشیای زنده اضافه می‌کند. خط آخر نتیجه را نشان می‌دهد: هر دو کلاس پایه خالی‌اند، پس (در GCC و Clang) یک `Thermometer` فقط یک بایت جا می‌گیرد و اشاره‌گر vtable ندارد."
+    },
+    "output": "thermometer: 22.5 C\nbarometer: 1013 hPa\nthermometers alive: 3\nthermometers alive: 1\nbarometers alive: 1\nsizeof(Thermometer): 1 (no vtable pointer)",
+    "highlights": [
+      {
+        "lines": [5, 14],
+        "note": {
+          "en": "The static interface: `read()` is written once in the base and calls functions that only the derived class provides. Each `Sensor<X>` is compiled separately, so every call is direct.",
+          "fa": "رابط ایستا: `read()` فقط یک بار در کلاس پایه نوشته شده و توابعی را صدا می‌زند که فقط کلاس مشتق فراهم می‌کند. هر `Sensor<X>` جداگانه کامپایل می‌شود، پس همهٔ فراخوانی‌ها مستقیم‌اند."
+        }
+      },
+      {
+        "lines": [16, 20],
+        "note": {
+          "en": "`derived()` is the CRTP downcast — safe because a `Sensor<D>` only ever exists as part of a `D`. The private constructor plus `friend Derived` enforces exactly that.",
+          "fa": "`derived()` همان downcast در CRTP است؛ امن است چون یک `Sensor<D>` فقط به‌عنوان بخشی از یک `D` وجود دارد. سازندهٔ private به همراه `friend Derived` دقیقاً همین را اجبار می‌کند."
+        }
+      },
+      {
+        "lines": [22, 36],
+        "note": {
+          "en": "A mixin. `T` is never used inside — it only makes `Counted<Thermometer>` and `Counted<Barometer>` distinct classes, each with its own `count_`.",
+          "fa": "یک mixin. از `T` در بدنه استفاده نمی‌شود؛ فقط باعث می‌شود `Counted<Thermometer>` و `Counted<Barometer>` دو کلاس متفاوت باشند که هر کدام `count_` خودش را دارد."
+        }
+      },
+      {
+        "lines": [38, 52],
+        "note": {
+          "en": "The \"curiously recurring\" part: each class passes itself as the template argument of its bases and supplies the functions `read()` expects.",
+          "fa": "بخش «به‌طرز عجیب بازگشتی»: هر کلاس خودش را به‌عنوان آرگومان تمپلیت به کلاس‌های پایه‌اش می‌دهد و توابعی را که `read()` انتظار دارد فراهم می‌کند."
+        }
+      },
+      {
+        "lines": [54, 73],
+        "note": {
+          "en": "Calls through `logReading` are resolved at compile time, the counters are independent per type, and `sizeof(Thermometer)` is 1 — a virtual version would need at least a vtable pointer.",
+          "fa": "فراخوانی‌ها از طریق `logReading` در زمان کامپایل حل می‌شوند، شمارنده‌ها برای هر نوع مستقل‌اند و `sizeof(Thermometer)` برابر ۱ است؛ نسخهٔ virtual دست‌کم به یک اشاره‌گر vtable نیاز پیدا می‌کرد."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What does CRTP give a base class that an ordinary base class does not have?",
+        "fa": "CRTP چه چیزی به کلاس پایه می‌دهد که یک کلاس پایهٔ معمولی ندارد؟"
+      },
+      "options": {
+        "en": [
+          "Access to the private members of the derived class",
+          "An automatically generated virtual destructor",
+          "Knowledge of the exact derived type at compile time, so it can call derived functions without virtual dispatch",
+          "The ability to be instantiated on its own"
+        ],
+        "fa": [
+          "دسترسی به اعضای خصوصی کلاس مشتق",
+          "یک مخرب virtual که خودکار تولید می‌شود",
+          "شناخت نوع دقیق کلاس مشتق در زمان کامپایل، تا بتواند توابع مشتق را بدون توزیع virtual صدا بزند",
+          "امکان نمونه‌سازی مستقل از خودش"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "Because the derived class is a template argument, the base can downcast `*this` with `static_cast` and call derived functions directly. The compiler sees the concrete type, so the calls can be inlined — static polymorphism.",
+        "fa": "چون کلاس مشتق آرگومان تمپلیت است، کلاس پایه می‌تواند `*this` را با `static_cast` به نوع مشتق تبدیل کند و توابع آن را مستقیماً صدا بزند. کامپایلر نوع مشخص را می‌بیند، پس فراخوانی‌ها قابل inline شدن‌اند؛ یعنی چندریختی ایستا."
+      }
+    },
+    {
+      "question": {
+        "en": "Why is `static_cast<const Derived&>(*this)` inside `Sensor<Derived>` safe, although downcasts are dangerous in general?",
+        "fa": "چرا `static_cast<const Derived&>(*this)` داخل `Sensor<Derived>` امن است، در حالی که downcast در حالت کلی خطرناک است؟"
+      },
+      "options": {
+        "en": [
+          "`static_cast` always checks the type at runtime",
+          "By design every `Sensor<D>` is the base subobject of a `D`, and the private constructor with `friend Derived` enforces it",
+          "Because `Sensor` has a virtual destructor",
+          "It is not safe; `dynamic_cast` must be used instead"
+        ],
+        "fa": [
+          "`static_cast` همیشه نوع را در زمان اجرا بررسی می‌کند",
+          "طبق طراحی، هر `Sensor<D>` زیرشیء پایهٔ یک `D` است و سازندهٔ private همراه با `friend Derived` این را اجبار می‌کند",
+          "چون `Sensor` یک مخرب virtual دارد",
+          "امن نیست؛ باید به‌جای آن از `dynamic_cast` استفاده کرد"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "A `static_cast` downcast is valid only if the object really is a `D`. CRTP makes that true by construction, and the guard turns violations like `class Hygro : Sensor<Barometer>` into compile errors. `dynamic_cast` would not even compile — `Sensor` has no virtual functions.",
+        "fa": "downcast با `static_cast` فقط وقتی معتبر است که شیء واقعاً یک `D` باشد. CRTP این را طبق ساختار تضمین می‌کند و آن محافظ، تخلفی مثل `class Hygro : Sensor<Barometer>` را به خطای کامپایل تبدیل می‌کند. `dynamic_cast` حتی کامپایل هم نمی‌شود، چون `Sensor` هیچ تابع virtualی ندارد."
+      }
+    },
+    {
+      "question": {
+        "en": "Which requirement makes CRTP the wrong tool?",
+        "fa": "کدام نیازمندی CRTP را به ابزار نامناسبی تبدیل می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "Sensor reads must be as fast as possible inside a tight loop",
+          "Several unrelated classes need the same instance-counting feature",
+          "The algorithm is fixed and all types are known at compile time",
+          "Plugins loaded at runtime add new sensor types, and all sensors must live in one `std::vector`"
+        ],
+        "fa": [
+          "خواندن حسگرها داخل یک حلقهٔ فشرده باید تا حد ممکن سریع باشد",
+          "چند کلاس نامرتبط به قابلیت یکسان شمارش نمونه‌ها نیاز دارند",
+          "الگوریتم ثابت است و همهٔ انواع در زمان کامپایل مشخص‌اند",
+          "پلاگین‌هایی که در زمان اجرا بارگذاری می‌شوند انواع حسگر جدید اضافه می‌کنند و همهٔ حسگرها باید در یک `std::vector` باشند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "`Sensor<A>` and `Sensor<B>` share no common type, and templates must be instantiated at compile time. Heterogeneous containers and runtime-loaded types need dynamic polymorphism (virtual functions) or type erasure. The other three are exactly where CRTP shines.",
+        "fa": "`Sensor<A>` و `Sensor<B>` هیچ نوع مشترکی ندارند و تمپلیت‌ها باید در زمان کامپایل نمونه‌سازی شوند. containerهای ناهمگن و انواعی که در زمان اجرا بارگذاری می‌شوند به چندریختی پویا (توابع virtual) یا type erasure نیاز دارند. سه گزینهٔ دیگر دقیقاً جاهایی هستند که CRTP می‌درخشد."
+      }
+    },
+    {
+      "question": {
+        "en": "How does CRTP relate to the Template Method pattern?",
+        "fa": "CRTP چه رابطه‌ای با الگوی تمپلیت متد دارد؟"
+      },
+      "options": {
+        "en": [
+          "CRTP can implement a Template Method whose steps are bound at compile time instead of through virtual functions",
+          "They are opposites: Template Method forbids inheritance, CRTP requires it",
+          "CRTP can only be used to implement Singletons",
+          "Template Method requires C++ templates, and CRTP is its runtime version"
+        ],
+        "fa": [
+          "CRTP می‌تواند یک تمپلیت متد پیاده‌سازی کند که مراحلش به‌جای توابع virtual در زمان کامپایل مقید می‌شوند",
+          "متضاد هم‌اند: تمپلیت متد وراثت را ممنوع می‌کند و CRTP به آن نیاز دارد",
+          "از CRTP فقط برای پیاده‌سازی سینگلتون می‌توان استفاده کرد",
+          "تمپلیت متد به templateهای C++ نیاز دارد و CRTP نسخهٔ زمان اجرای آن است"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "`Sensor::read()` is a skeleton that calls steps (`raw()`, `scale()`) supplied by the subclass — exactly Template Method. Classic Template Method binds the steps through virtual calls at runtime; CRTP binds them at compile time, trading runtime flexibility for speed.",
+        "fa": "`Sensor::read()` یک اسکلت است که مراحلی (`raw()` و `scale()`) را صدا می‌زند که زیرکلاس فراهم می‌کند؛ یعنی دقیقاً تمپلیت متد. تمپلیت متد کلاسیک مراحل را با فراخوانی virtual در زمان اجرا متصل می‌کند و CRTP در زمان کامپایل؛ یعنی انعطاف زمان اجرا را با سرعت معاوضه می‌کند."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "Drone firmware polls a dozen sensor types at 1 kHz. They all share the same read-scale-log routine, but the team cannot afford a vtable pointer per object or indirect calls the compiler cannot inline.",
+      "fa": "firmware یک پهپاد ده‌دوازده نوع حسگر را با فرکانس ۱ کیلوهرتز می‌خواند. همهٔ آن‌ها روال یکسان خواندن، مقیاس کردن و لاگ گرفتن را دارند، اما تیم نمی‌تواند هزینهٔ یک اشاره‌گر vtable برای هر شیء یا فراخوانی‌های غیرمستقیمی را که کامپایلر نمی‌تواند inline کند بپردازد."
+    },
+    {
+      "en": "Twenty unrelated game-entity classes each need a per-class count of live instances and a `debugName()` built from the class's own constants; the engine team forbids virtual functions in these hot types and nobody wants to write the code twenty times.",
+      "fa": "بیست کلاس نامرتبط از موجودیت‌های یک بازی هر کدام به شمارش اشیای زندهٔ مخصوص همان کلاس و یک `debugName()` ساخته‌شده از ثابت‌های خود کلاس نیاز دارند؛ تیم موتور بازی استفاده از توابع virtual را در این نوع‌های پرکاربرد ممنوع کرده و هیچ‌کس نمی‌خواهد این کد را بیست بار بنویسد."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A tracing mixin for services", "fa": "یک mixin برای لاگ‌گیری سرویس‌ها" },
+    "task": {
+      "en": "`Traced<Derived>` should give any service a `trace()` function that prints `[<tag>] <message>`, where the tag comes from the derived class's `tag()`. Right now it prints `[?]` because the base cannot reach the derived object, and `EmailService` does not use the mixin at all. Add the CRTP `derived()` helper, use it in `trace()`, and turn `EmailService` into a `Traced<EmailService>` that traces `sending receipt to ana@example.com`.",
+      "fa": "`Traced<Derived>` باید به هر سرویس یک تابع `trace()` بدهد که `[<tag>] <message>` را چاپ کند و tag از تابع `tag()` در کلاس مشتق بیاید. فعلاً `[?]` چاپ می‌شود، چون کلاس پایه راهی برای رسیدن به شیء مشتق ندارد و `EmailService` اصلاً از این mixin استفاده نمی‌کند. تابع کمکی `derived()` مخصوص CRTP را اضافه کنید، در `trace()` از آن استفاده کنید و `EmailService` را به یک `Traced<EmailService>` تبدیل کنید که `sending receipt to ana@example.com` را trace کند."
+    },
+    "hints": {
+      "en": [
+        "The base knows its derived type — it is the template parameter — so it can downcast itself at compile time.",
+        "`const Derived& derived() const { return static_cast<const Derived&>(*this); }` — after that, `derived().tag()` works inside `trace()`.",
+        "`class EmailService : public Traced<EmailService>` — the class passes **itself** as the argument. In `send()`: `trace(\"sending receipt to \" + std::string(to));`"
+      ],
+      "fa": [
+        "کلاس پایه نوع مشتقش را می‌شناسد (همان پارامتر تمپلیت است)، پس می‌تواند خودش را در زمان کامپایل به نوع مشتق تبدیل کند.",
+        "`const Derived& derived() const { return static_cast<const Derived&>(*this); }`؛ بعد از آن `derived().tag()` داخل `trace()` کار می‌کند.",
+        "`class EmailService : public Traced<EmailService>`؛ کلاس **خودش** را به‌عنوان آرگومان می‌دهد. در `send()` بنویسید: `trace(\"sending receipt to \" + std::string(to));`"
+      ]
+    },
+    "expectedOutput": "[payments] charging 1999 cents\n[email] sending receipt to ana@example.com\n[payments] refunding 500 cents"
+  }
+}

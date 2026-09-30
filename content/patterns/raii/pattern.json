@@ -1,0 +1,358 @@
+{
+  "id": "raii",
+  "category": "idioms",
+  "order": 1,
+  "difficulty": 1,
+  "icon": "shield-check",
+  "name": { "en": "RAII", "fa": "RAII (مدیریت منبع با طول عمر شیء)" },
+  "aka": {
+    "en": "Resource Acquisition Is Initialization; Scope-Bound Resource Management (SBRM)",
+    "fa": "Resource Acquisition Is Initialization (گرفتن منبع یعنی مقداردهی اولیه)؛ SBRM"
+  },
+  "tagline": {
+    "en": "Tie every resource to an object's lifetime — cleanup can never be forgotten.",
+    "fa": "هر منبع را به طول عمر یک شیء گره بزنید؛ دیگر هیچ‌وقت آزادسازی فراموش نمی‌شود."
+  },
+  "intent": {
+    "en": "Bind the lifetime of a resource (memory, file, socket, lock, transaction) to the lifetime of an object: acquire it in the constructor and release it in the destructor, so the release happens automatically and exactly once, on every path out of the scope.",
+    "fa": "طول عمر یک منبع (حافظه، فایل، سوکت، قفل، تراکنش) را به طول عمر یک شیء گره می‌زند: منبع در سازنده گرفته و در مخرب آزاد می‌شود، تا آزادسازی به‌طور خودکار و دقیقاً یک بار، در هر مسیری که از scope خارج می‌شویم، انجام شود."
+  },
+  "problem": {
+    "en": "Code that manages resources by hand needs a release call on every exit path: every `return`, every `break` and every exception that might fly through. A function that opens a socket, sends two messages and closes it looks correct — until the second `send` throws and the close is skipped. The leak is invisible in tests, and after a few thousand requests the server runs out of file descriptors. Wrapping each function in `try/catch` just to clean up is verbose, easy to get wrong and has to be repeated everywhere.",
+    "fa": "کدی که منابع را دستی مدیریت می‌کند، در هر مسیر خروج به یک فراخوانی آزادسازی نیاز دارد: هر `return`، هر `break` و هر exceptionی که ممکن است از آن عبور کند. تابعی که یک سوکت باز می‌کند، دو پیام می‌فرستد و آن را می‌بندد درست به نظر می‌رسد؛ تا وقتی که `send` دوم exception پرتاب کند و بستن سوکت اجرا نشود. این نشتی در تست‌ها دیده نمی‌شود و بعد از چند هزار درخواست، file descriptorهای سرور تمام می‌شود. پیچیدن هر تابع در `try/catch` فقط برای تمیزکاری، طولانی و خطاپذیر است و باید همه‌جا تکرار شود."
+  },
+  "solution": {
+    "en": "Wrap the resource in a small class. The constructor acquires the resource (or throws, so a half-initialized owner never exists); the destructor releases it. C++ guarantees that the destructors of local objects run when their scope ends — on a normal return **and** during stack unwinding after an exception — so the release can no longer be forgotten. Make the owner non-copyable (a copy would release twice) and, if ownership should be transferable, movable, leaving the moved-from object empty.",
+    "fa": "منبع را در یک کلاس کوچک بپیچید. سازنده منبع را می‌گیرد (یا exception پرتاب می‌کند تا مالکی نیمه‌کاره هرگز وجود نداشته باشد) و مخرب آن را آزاد می‌کند. C++ تضمین می‌کند که مخرب اشیای محلی در پایان scope اجرا شود؛ هم در بازگشت عادی **و** هم هنگام stack unwinding پس از یک exception. پس دیگر آزادسازی فراموش نمی‌شود. مالک را غیرقابل کپی کنید (کپی باعث دو بار آزادسازی می‌شود) و اگر مالکیت باید قابل انتقال باشد، آن را قابل move کنید و شیء مبدأ را خالی بگذارید."
+  },
+  "analogy": {
+    "en": "A library book that returns itself: the moment you leave the reading room — through the main door, the side door or because the fire alarm went off — the book is automatically back on its shelf. You never need to remember to return it, no matter how you leave.",
+    "fa": "کتاب کتابخانه‌ای را تصور کنید که خودش برمی‌گردد: همین که از سالن مطالعه بیرون بروید (از در اصلی، از در کناری یا چون آژیر آتش‌سوزی به صدا درآمده) کتاب خودکار به قفسه‌اش برمی‌گردد. هر طور که بیرون بروید، لازم نیست پس دادنش را به خاطر بسپارید."
+  },
+  "participants": [
+    {
+      "name": "Resource",
+      "role": {
+        "en": "Something that must be released after use: heap memory, a file or socket handle (here the `int` from `open_socket`), a mutex lock, a database transaction.",
+        "fa": "چیزی که بعد از استفاده باید آزاد شود: حافظهٔ heap، دستگیرهٔ فایل یا سوکت (این‌جا همان `int` که `open_socket` برمی‌گرداند)، قفل یک mutex یا یک تراکنش پایگاه داده."
+      }
+    },
+    {
+      "name": "RAII wrapper (Socket)",
+      "role": {
+        "en": "Acquires the resource in its constructor, releases it in its destructor and defines the ownership rules (non-copyable, optionally movable).",
+        "fa": "منبع را در سازنده می‌گیرد، در مخرب آزاد می‌کند و قوانین مالکیت را تعیین می‌کند (غیرقابل کپی و در صورت نیاز قابل move)."
+      }
+    },
+    {
+      "name": "Scope / Client (syncInventory)",
+      "role": {
+        "en": "Creates the wrapper as a local variable; leaving the scope — normally or through an exception — triggers the release.",
+        "fa": "wrapper را به‌صورت متغیر محلی می‌سازد؛ خروج از scope (به‌طور عادی یا با exception) آزادسازی را فعال می‌کند."
+      }
+    }
+  ],
+  "diagram": {
+    "nodes": [
+      { "id": "syncInventory", "kind": "client", "col": 0, "row": 0, "members": ["Socket sock(host);", "sock.send(...);"] },
+      { "id": "Socket", "kind": "concrete", "col": 1, "row": 0, "members": ["+ Socket(host) : acquires", "+ ~Socket() : releases", "+ Socket(Socket&&) noexcept", "- fd_ : int"] },
+      { "id": "SocketApi", "label": "C socket API", "kind": "concrete", "col": 3, "row": 0, "members": ["+ open_socket(host) : int", "+ close_socket(fd)"] },
+      { "id": "Unwinding", "label": "Stack unwinding", "kind": "note", "col": 1, "row": 2, "members": ["exception → ~Socket() runs", "before the catch handler"] },
+      { "id": "StdRaii", "label": "Same idiom in std", "kind": "note", "col": 3, "row": 2, "members": ["std::unique_ptr", "std::lock_guard", "std::fstream", "std::jthread"] }
+    ],
+    "edges": [
+      { "from": "syncInventory", "to": "Socket", "type": "owns", "label": "local variable" },
+      { "from": "Socket", "to": "SocketApi", "type": "uses", "label": "open / close" }
+    ]
+  },
+  "steps": {
+    "en": [
+      "Identify the resource and its acquire/release pair: `open`/`close`, `lock`/`unlock`, `begin`/`rollback`, `new`/`delete`.",
+      "Write a class whose constructor acquires the resource and throws if that fails, so every object holds a valid resource.",
+      "Release the resource in the destructor; keep the destructor `noexcept` (the default) and never let it throw.",
+      "Choose the ownership model: `= delete` the copy operations for unique ownership, and add `noexcept` move operations that leave the source empty (e.g. with `std::exchange`).",
+      "Expose only the operations clients need (`send`, `commit`); if you must hand out the raw handle, name it clearly, like `native_handle()`.",
+      "Use the wrapper as a local variable or a member — never allocate it with a raw `new`, or you are back to manual cleanup."
+    ],
+    "fa": [
+      "منبع و جفت «گرفتن/آزاد کردن» آن را مشخص کنید: `open`/`close`، `lock`/`unlock`، `begin`/`rollback`، `new`/`delete`.",
+      "کلاسی بنویسید که سازنده‌اش منبع را بگیرد و در صورت شکست exception پرتاب کند، تا هر شیء همیشه منبعی معتبر در دست داشته باشد.",
+      "منبع را در مخرب آزاد کنید؛ مخرب را `noexcept` نگه دارید (حالت پیش‌فرض) و هرگز اجازه ندهید exception پرتاب کند.",
+      "مدل مالکیت را انتخاب کنید: برای مالکیت انحصاری عملیات کپی را `= delete` کنید و عملیات move از نوع `noexcept` اضافه کنید که شیء مبدأ را خالی بگذارند (مثلاً با `std::exchange`).",
+      "فقط عملیاتی را که کلاینت‌ها لازم دارند در اختیارشان بگذارید (`send`، `commit`)؛ اگر مجبورید دستگیرهٔ خام را بدهید، اسمش را واضح بگذارید، مثل `native_handle()`.",
+      "wrapper را به‌صورت متغیر محلی یا عضو کلاس استفاده کنید؛ هرگز آن را با `new` خام نسازید، وگرنه دوباره به تمیزکاری دستی برمی‌گردید."
+    ]
+  },
+  "whenToUse": {
+    "en": [
+      "Always, for anything that must be released: heap memory, files, sockets, GPU buffers, mutex locks, database transactions.",
+      "Code where exceptions or early returns can leave a function along paths nobody wrote cleanup code for.",
+      "Wrapping a C API that hands out handles together with a matching `*_close()` / `*_free()` function.",
+      "Restoring temporary state at scope exit (a \"scope guard\"): resetting a flag, restoring stream formatting, re-enabling UI updates."
+    ],
+    "fa": [
+      "همیشه، برای هر چیزی که باید آزاد شود: حافظهٔ heap، فایل، سوکت، بافر GPU، قفل mutex، تراکنش پایگاه داده.",
+      "کدی که در آن exception یا `return` زودهنگام می‌تواند تابع را از مسیرهایی ترک کند که کسی برایشان کد تمیزکاری ننوشته است.",
+      "پیچیدن یک API به زبان C که دستگیره‌ها را همراه با یک تابع متناظر `*_close()` یا `*_free()` می‌دهد.",
+      "برگرداندن یک وضعیت موقت هنگام خروج از scope (معروف به «scope guard»): ریست کردن یک flag، برگرداندن قالب‌بندی stream، فعال کردن دوبارهٔ به‌روزرسانی UI."
+    ]
+  },
+  "pros": {
+    "en": [
+      "Cleanup happens automatically and exactly once, on every exit path — including exceptions.",
+      "Exception safety without `try/catch/finally` noise; the happy path stays readable.",
+      "Ownership becomes part of the type: non-copyable, movable or shared is visible in the class.",
+      "Deterministic: the resource is released at a known point (the end of the scope), unlike garbage-collected finalizers.",
+      "Zero overhead compared with correct hand-written cleanup code."
+    ],
+    "fa": [
+      "تمیزکاری به‌طور خودکار و دقیقاً یک بار در هر مسیر خروج انجام می‌شود؛ از جمله هنگام exception.",
+      "ایمنی در برابر exception بدون شلوغی `try/catch/finally`؛ مسیر اصلی کد خوانا می‌ماند.",
+      "مالکیت بخشی از نوع می‌شود: غیرقابل کپی، قابل move یا اشتراکی بودن در خود کلاس دیده می‌شود.",
+      "قطعی (deterministic) است: منبع در نقطه‌ای مشخص (پایان scope) آزاد می‌شود، برخلاف finalizerها در زبان‌های دارای garbage collector.",
+      "در مقایسه با کد تمیزکاری دستیِ درست، هیچ سربار اضافه‌ای ندارد."
+    ]
+  },
+  "cons": {
+    "en": [
+      "Each kind of resource needs a wrapper class (although `std::unique_ptr` with a custom deleter covers many cases).",
+      "Destructors cannot report errors: a failing `close()` or `rollback()` must not throw, so the error has to be logged or exposed through an explicit method.",
+      "It only works if the owner itself is scoped: an owner created with raw `new`, or a `std::shared_ptr` cycle, is never destroyed."
+    ],
+    "fa": [
+      "برای هر نوع منبع یک کلاس wrapper لازم است (البته `std::unique_ptr` با یک deleter سفارشی خیلی از موارد را پوشش می‌دهد).",
+      "مخرب نمی‌تواند خطا گزارش کند: `close()` یا `rollback()` شکست‌خورده نباید exception پرتاب کند، پس خطا باید لاگ شود یا از طریق یک متد صریح در دسترس قرار گیرد.",
+      "فقط وقتی کار می‌کند که خود مالک در یک scope باشد: مالکی که با `new` خام ساخته شده یا یک چرخه از `std::shared_ptr` هرگز نابود نمی‌شود."
+    ]
+  },
+  "cppTips": {
+    "en": [
+      "Reach for existing RAII types first: `std::unique_ptr` / `std::make_unique` for memory, `std::lock_guard` / `std::scoped_lock` / `std::unique_lock` for mutexes, `std::fstream` for files, `std::jthread` (joins in its destructor).",
+      "A custom deleter turns `std::unique_ptr` into a RAII wrapper for C handles in one line: `std::unique_ptr<FILE, decltype(&std::fclose)> f{std::fopen(path, \"r\"), &std::fclose};`.",
+      "Destructors are implicitly `noexcept`; throwing from one during stack unwinding calls `std::terminate`. If release can fail, offer an explicit `close()` that reports it and let the destructor clean up silently.",
+      "Follow the rule of zero/five: let members like `std::unique_ptr` do the work and write no special members, or — when you hold a raw handle — define or delete all five on purpose. `std::exchange(other.fd_, -1)` keeps move operations short.",
+      "Always name the guard: `std::lock_guard<std::mutex>{m};` creates a temporary that unlocks again at the semicolon. Write `std::lock_guard lock{m};` (C++17 class template argument deduction).",
+      "Unwinding is only guaranteed if the exception is caught somewhere; if it escapes `main`, `std::terminate` may run without calling any destructors — catch at the top level."
+    ],
+    "fa": [
+      "اول سراغ انواع RAII موجود بروید: `std::unique_ptr` و `std::make_unique` برای حافظه، `std::lock_guard`، `std::scoped_lock` و `std::unique_lock` برای mutex، `std::fstream` برای فایل و `std::jthread` (که در مخربش join می‌کند).",
+      "یک deleter سفارشی، `std::unique_ptr` را در یک خط به wrapper از نوع RAII برای دستگیره‌های C تبدیل می‌کند: `std::unique_ptr<FILE, decltype(&std::fclose)> f{std::fopen(path, \"r\"), &std::fclose};`.",
+      "مخرب‌ها به‌طور ضمنی `noexcept` هستند و پرتاب exception از آن‌ها هنگام stack unwinding باعث فراخوانی `std::terminate` می‌شود. اگر آزادسازی ممکن است شکست بخورد، یک `close()` صریح ارائه دهید که خطا را گزارش کند و بگذارید مخرب بی‌صدا تمیزکاری کند.",
+      "از قاعدهٔ صفر/پنج (rule of zero/five) پیروی کنید: یا بگذارید اعضایی مثل `std::unique_ptr` کار را انجام دهند و هیچ عضو ویژه‌ای ننویسید، یا اگر دستگیرهٔ خام نگه می‌دارید، هر پنج عضو ویژه را آگاهانه تعریف یا delete کنید. `std::exchange(other.fd_, -1)` عملیات move را کوتاه نگه می‌دارد.",
+      "همیشه برای guard اسم بگذارید: `std::lock_guard<std::mutex>{m};` یک شیء موقت می‌سازد که همان‌جا در نقطه‌ویرگول قفل را آزاد می‌کند. بنویسید `std::lock_guard lock{m};` (استنتاج آرگومان تمپلیت کلاس در C++17).",
+      "unwinding فقط وقتی تضمین شده است که exception جایی گرفته شود؛ اگر از `main` بیرون برود، ممکن است `std::terminate` بدون اجرای هیچ مخربی صدا زده شود. پس در بالاترین سطح catch کنید."
+    ]
+  },
+  "realWorld": {
+    "en": [
+      "`std::unique_ptr`, `std::shared_ptr`, `std::vector` and `std::string` release their memory in their destructors — every standard container is RAII.",
+      "`std::lock_guard`, `std::scoped_lock`, `std::fstream` and `std::jthread` in the standard library; `QMutexLocker` and `QFile` in Qt.",
+      "Scope guards for arbitrary cleanup: `gsl::finally` (C++ Core Guidelines support library), `absl::Cleanup`, Boost.Scope."
+    ],
+    "fa": [
+      "`std::unique_ptr`، `std::shared_ptr`، `std::vector` و `std::string` حافظه‌شان را در مخرب آزاد می‌کنند؛ همهٔ containerهای استاندارد RAII هستند.",
+      "`std::lock_guard`، `std::scoped_lock`، `std::fstream` و `std::jthread` در کتابخانهٔ استاندارد؛ `QMutexLocker` و `QFile` در Qt.",
+      "scope guardها برای تمیزکاری دلخواه: `gsl::finally` (کتابخانهٔ پشتیبان C++ Core Guidelines)، `absl::Cleanup` و Boost.Scope."
+    ]
+  },
+  "related": [
+    {
+      "id": "copy-and-swap",
+      "note": {
+        "en": "Copy-and-swap is the standard way to give a copyable RAII class a strongly exception-safe assignment operator.",
+        "fa": "copy-and-swap روش استاندارد برای دادن یک عملگر انتساب با تضمین قوی در برابر exception به یک کلاس RAII قابل کپی است."
+      }
+    },
+    {
+      "id": "proxy",
+      "note": {
+        "en": "Smart pointers are RAII owners and proxies at the same time: they stand in for the object and control its lifetime.",
+        "fa": "اشاره‌گرهای هوشمند هم‌زمان مالک RAII و پراکسی هستند: به‌جای شیء قرار می‌گیرند و طول عمر آن را کنترل می‌کنند."
+      }
+    },
+    {
+      "id": "object-pool",
+      "note": {
+        "en": "A pool typically hands out RAII handles whose destructor returns the object to the pool instead of destroying it.",
+        "fa": "یک pool معمولاً دستگیره‌های RAII تحویل می‌دهد که مخربشان شیء را به‌جای نابود کردن، به pool برمی‌گرداند."
+      }
+    }
+  ],
+  "example": {
+    "title": { "en": "A socket that closes itself", "fa": "سوکتی که خودش را می‌بندد" },
+    "description": {
+      "en": "`Socket` wraps a C-style handle. Watch sync #2: `send(\"\")` throws halfway through, yet `close fd 4` is printed **before** the `catch` block runs — stack unwinding destroyed `sock` on the way out. At the end, `b` takes ownership from `a`, so fd 5 is closed exactly once.",
+      "fa": "`Socket` یک دستگیرهٔ خام به سبک C را در خود می‌پیچد. به همگام‌سازی دوم دقت کنید: `send(\"\")` وسط کار exception پرتاب می‌کند، اما `close fd 4` **قبل از** اجرای بلوک `catch` چاپ می‌شود؛ stack unwinding در مسیر خروج، `sock` را نابود کرده است. در پایان `b` مالکیت را از `a` می‌گیرد، پس fd 5 دقیقاً یک بار بسته می‌شود."
+    },
+    "output": "sync #1\n  open fd 3 -> inventory.local\n  fd 3 <- HELLO\n  fd 3 <- sku=42 qty=7\n  sync done\n  close fd 3\nsync #2\n  open fd 4 -> inventory.local\n  fd 4 <- HELLO\n  close fd 4\n  caught: refusing to send an empty message\nhand-over\n  open fd 5 -> metrics.local\nend of main\n  close fd 5",
+    "highlights": [
+      {
+        "lines": [7, 13],
+        "note": {
+          "en": "The raw C-style API: every `open_socket` must be matched by exactly one `close_socket`, on every path. That is the bookkeeping RAII takes off your hands.",
+          "fa": "API خام به سبک C: هر `open_socket` باید در هر مسیری دقیقاً با یک `close_socket` جفت شود. این همان حساب‌وکتابی است که RAII از دوش شما برمی‌دارد."
+        }
+      },
+      {
+        "lines": [15, 22],
+        "note": {
+          "en": "The heart of the idiom: the constructor acquires, the destructor releases. `std::unique_ptr` does the same with `delete`, `std::lock_guard` with `unlock()`.",
+          "fa": "قلب این ایدیوم: سازنده منبع را می‌گیرد و مخرب آزادش می‌کند. `std::unique_ptr` همین کار را با `delete` انجام می‌دهد و `std::lock_guard` با `unlock()`."
+        }
+      },
+      {
+        "lines": [24, 36],
+        "note": {
+          "en": "Ownership rules: copies are deleted (two owners would close twice); moves transfer the handle with `std::exchange` and leave `-1` behind, so the moved-from object releases nothing.",
+          "fa": "قوانین مالکیت: کپی delete شده است (دو مالک یعنی دو بار بستن)؛ move دستگیره را با `std::exchange` منتقل می‌کند و `-1` به جا می‌گذارد، پس شیء مبدأ چیزی را آزاد نمی‌کند."
+        }
+      },
+      {
+        "lines": [47, 52],
+        "note": {
+          "en": "No cleanup code at all. Whether the function returns normally or `send` throws, `sock`'s destructor runs when the scope is left.",
+          "fa": "هیچ کد تمیزکاری‌ای وجود ندارد. چه تابع به‌طور عادی برگردد و چه `send` یک exception پرتاب کند، مخرب `sock` هنگام خروج از scope اجرا می‌شود."
+        }
+      },
+      {
+        "lines": [58, 63],
+        "note": {
+          "en": "Stack unwinding in action: the socket is closed before the handler runs, so the `catch` block never has to know that a socket existed.",
+          "fa": "stack unwinding در عمل: سوکت قبل از اجرای handler بسته می‌شود، پس بلوک `catch` اصلاً لازم نیست بداند سوکتی وجود داشته است."
+        }
+      }
+    ]
+  },
+  "quiz": [
+    {
+      "question": {
+        "en": "What exactly does RAII guarantee?",
+        "fa": "RAII دقیقاً چه چیزی را تضمین می‌کند؟"
+      },
+      "options": {
+        "en": [
+          "A garbage collector releases resources at some later point",
+          "A resource is released automatically when its owning object goes out of scope — on normal exit and during exception unwinding",
+          "Resources are acquired lazily, on first use",
+          "Functions that use RAII objects can never throw exceptions"
+        ],
+        "fa": [
+          "یک garbage collector منابع را در زمانی بعدتر آزاد می‌کند",
+          "منبع وقتی شیء مالکش از scope خارج می‌شود به‌طور خودکار آزاد می‌شود؛ هم در خروج عادی و هم هنگام unwinding ناشی از exception",
+          "منابع به‌صورت تنبل و در اولین استفاده گرفته می‌شوند",
+          "توابعی که از اشیای RAII استفاده می‌کنند هرگز exception پرتاب نمی‌کنند"
+        ]
+      },
+      "answer": 1,
+      "explanation": {
+        "en": "C++ runs the destructors of automatic objects deterministically when their scope ends, whatever the reason. RAII puts the release into the destructor, so it happens exactly once on every path — no garbage collector, and exceptions are still allowed.",
+        "fa": "C++ مخرب اشیای خودکار را به‌طور قطعی در پایان scope اجرا می‌کند، به هر دلیلی که scope تمام شود. RAII آزادسازی را در مخرب قرار می‌دهد، پس در هر مسیری دقیقاً یک بار انجام می‌شود؛ بدون garbage collector و بدون این‌که exception ممنوع باشد."
+      }
+    },
+    {
+      "question": {
+        "en": "In `syncInventory(\"\")` the second `send()` throws, and `main()` catches it. In which order are the last two lines printed?",
+        "fa": "در `syncInventory(\"\")` فراخوانی دوم `send()` exception پرتاب می‌کند و `main()` آن را می‌گیرد. دو خط آخر به چه ترتیبی چاپ می‌شوند؟"
+      },
+      "options": {
+        "en": [
+          "`caught: ...` first, then `close fd 4` when `main()` ends",
+          "Only `caught: ...` — the socket leaks because the function never finished",
+          "`close fd 4` first, then `caught: ...` — the destructor runs during stack unwinding, before the handler",
+          "The order is unspecified and differs between compilers"
+        ],
+        "fa": [
+          "اول `caught: ...` و بعد `close fd 4` وقتی `main()` تمام می‌شود",
+          "فقط `caught: ...`؛ سوکت نشت می‌کند چون تابع هیچ‌وقت تمام نشد",
+          "اول `close fd 4` و بعد `caught: ...`؛ مخرب هنگام stack unwinding و قبل از handler اجرا می‌شود",
+          "ترتیب مشخص نیست و بین کامپایلرها فرق می‌کند"
+        ]
+      },
+      "answer": 2,
+      "explanation": {
+        "en": "When an exception propagates, every fully constructed local object between the `throw` and the matching `catch` is destroyed in reverse order of construction — before the handler is entered. That is why `sock` is already closed inside the `catch` block.",
+        "fa": "وقتی یک exception منتشر می‌شود، هر شیء محلیِ کامل‌ساخته‌شده بین `throw` و `catch` متناظر، به ترتیب عکس ساخت نابود می‌شود؛ آن هم قبل از ورود به handler. به همین دلیل `sock` داخل بلوک `catch` از قبل بسته شده است."
+      }
+    },
+    {
+      "question": {
+        "en": "Closing the resource can fail (e.g. a network error during `close()`). What should the RAII destructor do?",
+        "fa": "بستن منبع ممکن است شکست بخورد (مثلاً خطای شبکه هنگام `close()`). مخرب RAII چه باید بکند؟"
+      },
+      "options": {
+        "en": [
+          "Throw an exception so the caller notices",
+          "Call `std::exit()` so the program cannot continue in a bad state",
+          "Retry in a loop until the close succeeds",
+          "Never throw: log the problem, and offer an explicit `close()` that can report errors to callers who care"
+        ],
+        "fa": [
+          "یک exception پرتاب کند تا فراخوان متوجه شود",
+          "`std::exit()` را صدا بزند تا برنامه در وضعیت بد ادامه ندهد",
+          "در یک حلقه آن‌قدر تلاش کند تا بستن موفق شود",
+          "هرگز exception پرتاب نکند: مشکل را لاگ کند و یک `close()` صریح ارائه دهد که بتواند خطا را به فراخوان‌های علاقه‌مند گزارش کند"
+        ]
+      },
+      "answer": 3,
+      "explanation": {
+        "en": "Destructors are `noexcept` by default, and a throw during stack unwinding calls `std::terminate`. That is the idiom's main limitation: the destructor is a silent safety net, and error reporting belongs in an explicit `close()` / `commit()` call.",
+        "fa": "مخرب‌ها به‌طور پیش‌فرض `noexcept` هستند و پرتاب exception هنگام stack unwinding باعث فراخوانی `std::terminate` می‌شود. محدودیت اصلی این ایدیوم همین است: مخرب یک تور ایمنی بی‌صداست و گزارش خطا باید در یک فراخوانی صریح مثل `close()` یا `commit()` انجام شود."
+      }
+    },
+    {
+      "question": {
+        "en": "A database connection pool must get every borrowed connection back. How do RAII and Object Pool work together here?",
+        "fa": "یک pool اتصال پایگاه داده باید همهٔ اتصال‌های قرض‌داده‌شده را پس بگیرد. RAII و Object Pool این‌جا چطور با هم کار می‌کنند؟"
+      },
+      "options": {
+        "en": [
+          "The pool hands out a handle whose destructor returns the connection to the pool instead of closing it",
+          "They can't: pooled objects must never be destroyed, so RAII does not apply",
+          "Every function calls `pool.release(conn)` inside a `catch (...)` block",
+          "The pool closes all connections in its own destructor, which is enough"
+        ],
+        "fa": [
+          "pool یک دستگیره تحویل می‌دهد که مخربش اتصال را به‌جای بستن، به pool برمی‌گرداند",
+          "نمی‌توانند؛ اشیای pool هرگز نباید نابود شوند، پس RAII کاربردی ندارد",
+          "هر تابع `pool.release(conn)` را داخل یک بلوک `catch (...)` صدا می‌زند",
+          "pool در مخرب خودش همهٔ اتصال‌ها را می‌بندد و همین کافی است"
+        ]
+      },
+      "answer": 0,
+      "explanation": {
+        "en": "\"Release\" does not have to mean \"destroy\" — it can mean \"give back\". A handle (or a `std::unique_ptr` with a deleter that calls `pool.release`) returns the connection on every exit path, just as `std::lock_guard` gives a mutex back.",
+        "fa": "«آزادسازی» لزوماً به معنی «نابود کردن» نیست و می‌تواند «پس دادن» باشد. یک دستگیره (یا `std::unique_ptr` با deleterی که `pool.release` را صدا می‌زند) اتصال را در هر مسیر خروج برمی‌گرداند؛ درست همان‌طور که `std::lock_guard` قفل mutex را پس می‌دهد."
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "en": "A C imaging library returns `Image*` handles that must be passed to `img_free()`. Your processing functions have many early returns and may throw, and memory leaks keep showing up in production.",
+      "fa": "یک کتابخانهٔ پردازش تصویر به زبان C دستگیره‌های `Image*` برمی‌گرداند که باید به `img_free()` داده شوند. توابع پردازش شما `return`های زودهنگام زیادی دارند و ممکن است exception پرتاب کنند و مدام در محیط production نشتی حافظه پیدا می‌شود."
+    },
+    {
+      "en": "A background job must hold a mutex while it updates a shared cache, and code reviews keep finding paths — an early `return`, an exception from the parser — where the mutex is never unlocked.",
+      "fa": "یک job پس‌زمینه هنگام به‌روزرسانی یک cache مشترک باید یک mutex را در دست داشته باشد و در بازبینی کد مدام مسیرهایی پیدا می‌شود (یک `return` زودهنگام، یک exception از parser) که در آن‌ها mutex هیچ‌وقت آزاد نمی‌شود."
+    }
+  ],
+  "exercise": {
+    "title": { "en": "A transaction that rolls itself back", "fa": "تراکنشی که خودکار rollback می‌شود" },
+    "task": {
+      "en": "`transfer()` moves money inside a database transaction. When crediting carol fails, the debit from alice must be undone — but `transfer()` must not contain any `try/catch`. Turn `Transaction` into an RAII guard: begin the transaction in the constructor, roll it back in the destructor unless `commit()` was called, and let `commit()` record that it ran. The failed transfer must then print `ROLLBACK` before the error message.",
+      "fa": "`transfer()` پول را داخل یک تراکنش پایگاه داده جابه‌جا می‌کند. وقتی واریز به carol شکست می‌خورد، برداشت از alice باید برگردانده شود؛ اما `transfer()` نباید هیچ `try/catch`ی داشته باشد. `Transaction` را به یک guard از نوع RAII تبدیل کنید: تراکنش را در سازنده شروع کنید، در مخرب اگر `commit()` صدا زده نشده rollback کنید و کاری کنید که `commit()` ثبت کند اجرا شده است. در این صورت انتقال ناموفق باید `ROLLBACK` را قبل از پیام خطا چاپ کند."
+    },
+    "hints": {
+      "en": [
+        "The constructor acquires, the destructor releases — the acquisition here is `db_.begin()`.",
+        "The destructor must tell success from failure; that is what the `committed_` flag is for.",
+        "`~Transaction() { if (!committed_) db_.rollback(); }` and `void commit() { db_.commit(); committed_ = true; }`"
+      ],
+      "fa": [
+        "سازنده منبع را می‌گیرد و مخرب آزادش می‌کند؛ گرفتن منبع در این‌جا همان `db_.begin()` است.",
+        "مخرب باید موفقیت را از شکست تشخیص دهد؛ flag به نام `committed_` برای همین است.",
+        "`~Transaction() { if (!committed_) db_.rollback(); }` و `void commit() { db_.commit(); committed_ = true; }`"
+      ]
+    },
+    "expectedOutput": "BEGIN\n  debit alice 100\n  credit bob 100\nCOMMIT\nBEGIN\n  debit alice 50\nROLLBACK\nerror: carol is locked"
+  }
+}
